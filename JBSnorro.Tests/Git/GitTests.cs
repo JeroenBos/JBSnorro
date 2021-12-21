@@ -7,8 +7,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
@@ -134,12 +134,10 @@ namespace JBSnorro.Csx.Tests
             Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr);
             //Console.WriteLine(stdOut);
             //Assert.AreEqual(stdErr.Split('\n').Length, 3, message: stdOut);
-            var stdErrLines = stdErr.Split('\n');
+            var stdErrLines = stdErr.Split('\n')
+                                    .Where(line => !line.StartsWith("warning", StringComparison.OrdinalIgnoreCase)) // "warning: no common commits", and "Warning: Permanently added the RSA host ..."
+                                    .ToArray();
             Assert.IsTrue(stdErrLines[0].StartsWith("Identity added"));
-            if (stdErrLines[1].StartsWith("warning: no common commits"))
-            {
-                stdErrLines = new[] { stdErrLines[0], stdErrLines[2], stdErrLines[3] };
-            }
             Assert.IsTrue(stdErrLines[1].StartsWith("From github.com:JeroenBos/TestPlayground"), stdErrLines[1]);
             Assert.IsTrue(stdErrLines[2].StartsWith(" * [new branch]      master     -> origin/master"), stdErrLines[2]);
 
