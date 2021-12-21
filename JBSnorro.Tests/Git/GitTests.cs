@@ -153,7 +153,7 @@ namespace JBSnorro.Csx.Tests
             Assert.AreEqual(stdOut.Split('\n').Length, 1);
             Assert.IsTrue(stdOut.StartsWith("HEAD is now at"));
 
-            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git push --force".Execute(cwd: dir);
+            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git push --force-with-lease".Execute(cwd: dir);
             Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr);
             // Assert.AreEqual(stdErr.Split('\n').Length, 2); // 3 with when (forced-updated)
             // Assert.IsTrue(stdErr.Split('\n')[1].StartsWith("Everything up-to-date"));

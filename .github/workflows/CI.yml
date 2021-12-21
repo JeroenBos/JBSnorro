@@ -23,7 +23,7 @@ jobs:
         echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
         sudo chmod 600 ~/.ssh/playground
     - name: test
-      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime linux-x64 --framework net6.0
+      run: | 
+          export $HOME/.ssh/playground
+          dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime linux-x64 --framework net6.0
       timeout-minutes: 5
-      env:
-        SSH_FILE: "$HOME/.ssh/playground"
