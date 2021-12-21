@@ -209,7 +209,7 @@ namespace JBSnorro
             }
             return result;
         }
-        public static string ToBashPath(string path, bool includeMnt = true)
+        public static string ToBashPath(this string path, bool includeMnt = true)
         {
             if (path.Length >= 2 && path[1] == ':')
             {

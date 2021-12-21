@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
+using JBSnorro.Tests.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections;
@@ -22,7 +23,7 @@ namespace JBSnorro.Csx.Tests
 
 		// if SSH_FILE cannot be found, consider adding JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
 		protected static string ssh_file => Environment.GetEnvironmentVariable("SSH_FILE") ?? throw new Exception("Env var 'SSH_FILE' not found");
-		protected static string SSH_SCRIPT => $"source ../startup.sh && ssh-add {ssh_file}";
+		protected static string SSH_SCRIPT => $"source {TestProject.CurrentDirectory.ToBashPath(false)}/../.github/init-ssh-agent.sh && ssh-add {ssh_file}";
 
 		protected static async Task<string> InitEmptyRepo()
 		{
@@ -113,33 +114,12 @@ namespace JBSnorro.Csx.Tests
 			Git.SSH_SCRIPT = SSH_SCRIPT;
 			string dir = await InitRepo();
 
-			File.WriteAllText(Path.Combine(dir, "ap.sh"), "#!/bin/sh\nexec cat");
-			string startup = @"env=~/.ssh/agent.env
-
-agent_load_env () { test -f ""$env"" && . ""$env"" >| /dev/null ; }
-
-agent_start () {
-    (umask 077; ssh-agent >| ""$env"")
-    . ""$env"" >| /dev/null ; }
-
-agent_load_env
-
-# agent_run_state: 0=agent running w/ key; 1=agent w/o key; 2= agent not running
-agent_run_state=$(ssh-add -l >| /dev/null 2>&1; echo $?)
-
-if [ ! ""$SSH_AUTH_SOCK"" ] || [ $agent_run_state = 2 ]; then
-    agent_start
-fi
-
-unset env".Replace("\r", "");
-
-			File.WriteAllText(Path.Combine(dir, "../startup.sh"), startup);
 			// var (exitCode, stdOut, stdErr) = await $"source ../startup.sh".Execute(cwd: dir);
 			var (exitCode, stdOut, stdErr) = await SSH_SCRIPT.Execute(cwd: dir);
 			// (exitCode, stdOut, stdErr) = await $"source ../startup.sh  && echo '{pass}' | SSH_ASKPASS=./ap.sh ssh-add".Execute(cwd: dir);
 			if (stdErr.StartsWith("@@@@@@"))
 			{
-				await "sudo chmod 600 {ssh_file}".Execute(cwd: dir); // or just execute manually if I ever reinstalled Windows or something
+				await $"sudo chmod 600 {ssh_file}".Execute(cwd: dir); // or just execute manually if I ever reinstalled Windows or something
 				(exitCode, stdOut, stdErr) = await $"source ../startup.sh && ssh-add {ssh_file}".Execute(cwd: dir);
 			}
 			(exitCode, stdOut, stdErr) = await "git remote add origin git@github.com:JeroenBos/TestPlayground.git".Execute(cwd: dir);
@@ -164,7 +144,7 @@ unset env".Replace("\r", "");
 			Assert.IsTrue(stdOut.StartsWith("HEAD is now at"));
 
 			(exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git push --force".Execute(cwd: dir);
-			Assert.AreEqual((exitCode, stdOut), (0, ""));
+			Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr);
 			// Assert.AreEqual(stdErr.Split('\n').Length, 2); // 3 with when (forced-updated)
 			// Assert.IsTrue(stdErr.Split('\n')[1].StartsWith("Everything up-to-date"));
 			return dir;
