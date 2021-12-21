@@ -20,10 +20,8 @@ jobs:
     - name: Create ssh access file
       run: |
         mkdir ~/.ssh
-        echo "$SSH_KEY" > ~/.ssh/playground
+        echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
         sudo chmod 600 ~/.ssh/playground
-      env:
-        SSH_KEY: ${{secrets.PLAYGROUND_SSH_KEY}}
     - name: test
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime linux-x64 --framework net6.0
       timeout-minutes: 5
