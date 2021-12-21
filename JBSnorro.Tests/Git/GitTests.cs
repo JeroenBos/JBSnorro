@@ -116,6 +116,9 @@ namespace JBSnorro.Csx.Tests
             Git.SSH_SCRIPT = SSH_SCRIPT;
             string dir = await InitRepo();
 
+            var sshKey = File.ReadAllLines(ssh_file.ToWindowsPath());
+            Assert.AreEqual(27, sshKey.Length, delta: 1);
+
             // var (exitCode, stdOut, stdErr) = await $"source ../startup.sh".Execute(cwd: dir);
             var (exitCode, stdOut, stdErr) = await SSH_SCRIPT.Execute(cwd: dir);
             // (exitCode, stdOut, stdErr) = await $"source ../startup.sh  && echo '{pass}' | SSH_ASKPASS=./ap.sh ssh-add".Execute(cwd: dir);
