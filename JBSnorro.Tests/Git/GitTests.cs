@@ -140,8 +140,8 @@ namespace JBSnorro.Csx.Tests
             {
                 stdErrLines = new[] { stdErrLines[0], stdErrLines[2], stdErrLines[3] };
             }
-            Assert.IsTrue(stdErrLines[1].StartsWith("From github.com:JeroenBos/TestPlayground"));
-            Assert.IsTrue(stdErrLines[2].StartsWith(" * [new branch]      master     -> origin/master"));
+            Assert.IsTrue(stdErrLines[1].StartsWith("From github.com:JeroenBos/TestPlayground"), stdErrLines[1]);
+            Assert.IsTrue(stdErrLines[2].StartsWith(" * [new branch]      master     -> origin/master"), stdErrLines[2]);
 
             (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git branch --set-upstream-to=origin/master master".Execute(cwd: dir);
             Assert.AreEqual((exitCode, stdOut), (0, "Branch 'master' set up to track remote branch 'master' from 'origin'."));
