@@ -20,6 +20,7 @@ namespace JBSnorro.Csx.Tests
 	{
 		protected const string ROOT_HASH = "818c7ad1722e9c4fe682b30ade4413bf1e36c542";
 
+		// if SSH_FILE cannot be found, consider adding JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
 		protected static string ssh_file => Environment.GetEnvironmentVariable("SSH_FILE") ?? throw new Exception("Env var 'SSH_FILE' not found");
 		protected static string SSH_SCRIPT => $"source ../startup.sh && ssh-add {ssh_file}";
 
@@ -459,7 +460,7 @@ unset env".Replace("\r", "");
 			Assert.IsTrue(File.Exists(Path.Combine(dir, "u")));
 		}
 
-		// TODO: [TestMethod]
+		[TestMethod]
 		public async Task Test_New_Pulls_Remote()
 		{
 			var commitHash = new Reference<string>();

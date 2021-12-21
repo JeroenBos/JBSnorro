@@ -19,8 +19,8 @@
 	
 	<PropertyGroup>
 		<DefineConstants Condition="'$(Configuration)' == 'CI'">$(DefineConstants);CI</DefineConstants>
-		<DefineConstants Condition="'$(RuntimeIdentifier)' == 'win10-x64'">$(DefineConstants);WINDOWS</DefineConstants>
-		<DefineConstants Condition="'$(RuntimeIdentifier)' == 'linux-x64'">$(DefineConstants);LINUX</DefineConstants>
+		<DefineConstants Condition=" '$(OS)' == 'Windows_NT' ">$(DefineConstants);WINDOWS</DefineConstants>
+		<DefineConstants Condition=" '$(OS)' != 'Windows_NT' ">$(DefineConstants);LINUX</DefineConstants>
 	</PropertyGroup>
 	
 	<ItemGroup>
