@@ -18,7 +18,10 @@ jobs:
     - name: build
       run: dotnet build JBSnorro/JBSnorro.csproj
     - name: Create ssh access file
-      run: mkdir ~/.ssh && echo "{{ secrets.PLAYGROUND_SSH_KEY }}" > ~/.ssh/playground
+      run: |
+        mkdir ~/.ssh
+        echo "{{ secrets.PLAYGROUND_SSH_KEY }}" > ~/.ssh/playground
+        sudo chmod 600 ~/.ssh/playground
     - name: test
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime linux-x64 --framework net6.0
       timeout-minutes: 5
