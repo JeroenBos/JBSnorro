@@ -20,7 +20,8 @@ jobs:
     - name: Create ssh access file
       run: |
         mkdir ~/.ssh
-        echo "{{ secrets.PLAYGROUND_SSH_KEY }}" > ~/.ssh/playground
+        echo "{{ secrets.PLAYGROUND_SSH_KEY ffs }}" > ~/.ssh/playground
+        dos2unix ~/.ssh/playground
         sudo chmod 600 ~/.ssh/playground
         echo "$(head -n 2 ~/.ssh/playground)"
     - name: test
