@@ -24,6 +24,6 @@ jobs:
         sudo chmod 600 ~/.ssh/playground
     - name: test
       run: | 
-          export $HOME/.ssh/playground
+          export SSH_FILE="$HOME/.ssh/playground"
           dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime linux-x64 --framework net6.0
       timeout-minutes: 5
