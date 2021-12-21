@@ -222,6 +222,24 @@ namespace JBSnorro
             path = path.Replace('\\', '/');
             return path;
         }
+        public static string ToWindowsPath(this string path, bool alsoOnOtherOSes = false)
+        {
+            if (!alsoOnOtherOSes && !OperatingSystem.IsWindows())
+                return path;
+
+            if (path.StartsWith('/'))
+            {
+                if (path.Length > 3 && path[2] == '/')
+                {
+                    path = path[1] + ":" + path[2..];
+                }
+            }
+            else if (path.StartsWith('~'))
+            {
+                path = "%USER%" + path[1..];
+            }
+            return path.Replace("/", "\\");
+        }
 
         internal static async Task<DebugProcessOutput> ExecuteJSViaTempFile(string js)
         {
@@ -423,7 +441,7 @@ namespace JBSnorro
             var converter = new ExtraPropertyJsonConverter(typeIdPropertyName, obj => jsIdentifiers.getTypeIdentifierValue(obj), options);
             extraPropOptions.Converters.Add(converter);
 #if NET6_0_OR_GREATER
-			extraPropOptions.Converters.Add(new IEnumerableJsonConverter<IEnumerable>());
+            extraPropOptions.Converters.Add(new IEnumerableJsonConverter<IEnumerable>());
 #endif
             return extraPropOptions;
         }
