@@ -174,6 +174,8 @@ namespace JBSnorro
 		/// <see href="https://stackoverflow.com/a/35046453/308451" />
 		public static bool IsFullPathInWindows(string path)
 		{
+			if (!OperatingSystem.IsWindows()) throw new NotImplementedException(nameof(IsFullPathInWindows) + " is only implemented on Windows");
+
 			return !string.IsNullOrWhiteSpace(path)
 				&& path.IndexOfAny(Path.GetInvalidPathChars().ToArray()) == -1
 				&& Path.IsPathRooted(path)

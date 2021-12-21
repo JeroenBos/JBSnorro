@@ -167,31 +167,47 @@ namespace JBSnorro
                 bash = "#!/bin/bash\n" + bash;
             }
             await File.AppendAllTextAsync(path, bash, cancellationToken);
-            string bashPath = ToBashPath(path, includeMnt: includeMnt);
-            string bashFile = Path.GetFileName(bashPath).Replace("\\", "/");
-            string bashDir = Path.GetDirectoryName(bashPath)!.Replace("\\", "/");
-            const string bashExePath = "C:\\Program Files\\Git\\bin\\bash.exe"; // this used to be "C:\\Windows\\System32\\bash.exe" but that one suddenly stopped working (exit code 1, no output, so I assume failed windows update)
 
-            const string redirecterFile = "C:/Users/Windows/execute.sh";
-            Contract.Assert(File.Exists(redirecterFile), "redirector file missing");
-            string bashRedirecterFile = ToBashPath(redirecterFile, includeMnt: false);
 
-            string args = $"'{bashRedirecterFile}' '{bashDir}' '{bashFile}'";
-            var result = await new ProcessStartInfo(bashExePath, $"-c \"{args}\"").WaitForExitAndReadOutputAsync(cancellationToken);
+            string bashDir;
+            ProcessStartInfo process;
+            if (OperatingSystem.IsWindows())
+            {
+                const string bashExePath = "C:\\Program Files\\Git\\bin\\bash.exe"; // this used to be "C:\\Windows\\System32\\bash.exe" but that one suddenly stopped working (exit code 1, no output, so I assume failed windows update)
+                const string redirecterFile = "~/.dotnet/execute.sh";
+
+                string bashPath = ToBashPath(path, includeMnt: includeMnt);
+                string bashFile = Path.GetFileName(bashPath).Replace("\\", "/");
+                bashDir = Path.GetDirectoryName(bashPath)!.Replace("\\", "/");
+
+                string bashRedirecterFile = ToBashPath(redirecterFile, includeMnt: false);
+                if (!File.Exists(redirecterFile))
+                {
+                    Directory.CreateDirectory("~/.dotnet");
+                    File.WriteAllLines(redirecterFile, new[]
+                    {
+                    "#!/bin/bash",
+                    "cd \"$1\"",
+                    "pwd",
+                    "./\"$2\"",
+                    });
+                }
+
+                string args = $"'{bashRedirecterFile}' '{bashDir}' '{bashFile}'";
+                process = new ProcessStartInfo(bashExePath, $"-c \"{args}\"");
+            }
+            else
+            {
+                bashDir = Path.GetDirectoryName(path)!;
+                process = new ProcessStartInfo("/bin/bash", path);
+            }
+
+            var result = await process.WaitForExitAndReadOutputAsync(cancellationToken);
             if (result.StandardOutput.StartsWith(bashDir + "\n"))
             {
                 result = result.With(standardOutput: result.StandardOutput[(bashDir.Length + "\n".Length)..]);
             }
             return result;
-            // if (exitCode == 1 && stdErr.Contains("No such file or directory"))
-            // {
-            //     bashPath = ToBashPath(path, includeMnt: !includeMnt); // try the opposite 
-            //     (exitCode, stdOut, stdErr) = await ProcessExtensions.ExecuteBash($"chmod u+x '{bashPath}'", cancellationToken);
-            //     if (exitCode != 0)
-            //         throw new BashNonzeroExitCodeException(exitCode, "chmod: " + stdErr);
-            // }
-            // var output = await new ProcessStartInfo("bash", $"'{bashPath}'").WaitForExitAndReadOutputAsync(cancellationToken);
-            // return output;
         }
         public static string ToBashPath(string path, bool includeMnt = true)
         {

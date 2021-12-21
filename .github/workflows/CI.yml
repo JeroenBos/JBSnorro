@@ -14,13 +14,13 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.100  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
+        dotnet-version: 6.0.101  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
     - name: build
       run: dotnet build JBSnorro/JBSnorro.csproj
     - name: Create ssh access file
       run: mkdir ~/.ssh && echo "{{ secrets.PLAYGROUND_SSH_KEY }}" > ~/.ssh/playground
     - name: test
-      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime net6
+      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime linux-x64 --framework net6.0
       timeout-minutes: 5
       env:
         SSH_FILE: "~/.ssh/playground"

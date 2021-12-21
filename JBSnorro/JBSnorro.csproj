@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
+	<TargetFrameworks>net6.0</TargetFrameworks>
 	<LangVersion>latest</LangVersion>
 	<Version>0.0.11</Version>
 	<Authors>JeroenBos</Authors>
@@ -10,8 +10,7 @@
 	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 	<IncludeSymbols>true</IncludeSymbols>
 	<IncludeSource>true</IncludeSource>
-	  <DocumentationFile>C:\git\ASDE\JBSnorro\obj\JBSnorro.xml</DocumentationFile>
-	  <NoWarn>1701;1702;1591;1573;1712</NoWarn>
+	<NoWarn>1701;1702;1591;1573;1712</NoWarn>
   </PropertyGroup>
   <ItemGroup>
 	<PackageReference Include="System.Collections.Immutable" Version="1.5.0" />

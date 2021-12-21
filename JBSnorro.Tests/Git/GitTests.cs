@@ -28,7 +28,7 @@ namespace JBSnorro.Csx.Tests
 			string dir = IOExtensions.CreateTemporaryDirectory();
 			var result = await "git init; git config user.name 'tester'; git config user.email 'tester@test.com'".Execute(cwd: dir);
 
-			Assert.AreEqual(result.ExitCode, 0);
+			Assert.AreEqual(result.ExitCode, 0, result.ErrorOutput);
 			Assert.IsTrue(result.StandardOutput.StartsWith("Initialized empty Git repository"));
 			return dir;
 		}

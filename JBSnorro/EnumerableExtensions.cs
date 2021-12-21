@@ -1786,8 +1786,8 @@ namespace JBSnorro
 		/// <param name="endOfSequenceReached"> A boolean indicating whether all elements in the original sequence matched the predicate and were returned. </param>
 		public static List<T> TakeWhile<T>(this IEnumerable<T> sequence, Func<T, bool> predicate, out bool endOfSequenceReached)
 		{
-			Contract.Requires<ArgumentNullException>(sequence != null);
-			Contract.Requires<ArgumentNullException>(predicate != null);
+			if (sequence == null) throw new ArgumentNullException(nameof(sequence));
+			if (predicate == null) throw new ArgumentNullException(nameof(predicate));
 
 			endOfSequenceReached = true;
 
