@@ -146,7 +146,7 @@ unset env".Replace("\r", "");
 			Assert.AreEqual((exitCode, stdOut, stdErr), (0, "", ""));
 
 			(exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git fetch".Execute(cwd: dir);
-			Assert.AreEqual((exitCode, stdOut), (0, ""));
+			Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr);
 			Assert.AreEqual(stdErr.Split('\n').Length, 3);
 			Assert.IsTrue(stdErr.Split('\n')[0].StartsWith("Identity added"));
 			//Assert.IsTrue(stdErr.Split('\n')[1].StartsWith("warning: no common commits"));
