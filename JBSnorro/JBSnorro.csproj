@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net5.0</TargetFrameworks>
+	<LangVersion>latest</LangVersion>
+	<Version>0.0.11</Version>
+	<Authors>JeroenBos</Authors>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<RepositoryUrl>https://github.com/jeroenbos/ASDE</RepositoryUrl>
+	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+	<IncludeSymbols>true</IncludeSymbols>
+	<IncludeSource>true</IncludeSource>
+	  <DocumentationFile>C:\git\ASDE\JBSnorro\obj\JBSnorro.xml</DocumentationFile>
+	  <NoWarn>1701;1702;1591;1573;1712</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+	<PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
+	<PackageReference Include="System.Text.Json" Version="4.7.0" />
+  </ItemGroup>
+</Project>

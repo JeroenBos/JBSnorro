@@ -1,0 +1,42 @@
+{
+	// Use IntelliSense to find out which attributes exist for C# debugging
+	// Use hover for the description of the existing attributes
+	// For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Debug Test",
+			"type": "coreclr",
+			"request": "launch",
+			"program": "${workspaceFolder}/bin/Debug/netcoreapp3.1/JBSnorro.Tests.dll",
+			"args": [
+				"ExecutingJSViaTempFileOrBashIsIdentical" // no-commit //https://stackoverflow.com/a/20574486/308451
+			],
+			"preLaunchTask": "wait_for_build",
+			"cwd": "${workspaceFolder}",
+			"stopAtEntry": false,
+			"console": "internalConsole",
+			"justMyCode": false,
+			"symbolOptions": {
+				"searchMicrosoftSymbolServer": false,
+				"moduleFilter": {
+					"mode": "loadOnlyIncluded",
+					"includedModules": [
+						"/home/jeroen/git/**"
+					],
+				}
+			},
+			// for debugging .NET:
+			// "symbolOptions": {
+			//     "searchPaths": [],
+			//     "searchMicrosoftSymbolServer": true,
+			//     "moduleFilter": {
+			//         "mode": "loadAllButExcluded",
+			//         "excludedModules": [
+			//             "System.Private.CoreLib.dll"
+			//         ]
+			//     }
+			// },
+		},
+	]
+}
