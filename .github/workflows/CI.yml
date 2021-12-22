@@ -28,11 +28,11 @@ jobs:
       run: |
         mkdir ~/.ssh
         echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
-    - name: Fix issue in Windows host resolution
+    - name: Fix issue in git host resolution (Windows)
       if: ${{ matrix.runtime == 'win10-x64' }} 
       run: git config core.sshCommand 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' 
 
-    - name: Give access to ssh key
+    - name: Give access to ssh key (Linux)
       if: ${{ matrix.runtime == 'linux-x64' }} 
       run: sudo chmod 600 ~/.ssh/playground
     - name: test
