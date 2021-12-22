@@ -24,6 +24,7 @@ jobs:
     - name: build
       run: dotnet build JBSnorro/JBSnorro.csproj
     - name: Create ssh access file
+      shell: bash
       run: |
         mkdir ~/.ssh
         echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
