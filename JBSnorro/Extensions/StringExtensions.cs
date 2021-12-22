@@ -412,6 +412,15 @@ namespace JBSnorro.Extensions
 			}
 		}
 		/// <summary>
+		/// If the path starts with `~`, it's replaced by the current user's home directory.
+		/// </summary>
+		public static string ExpandTildeAsHomeDir(this string path)
+		{
+			if (path.StartsWith("~"))
+				return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + path[1..];
+			return path;
+		}
+		/// <summary>
 		/// Returns whether the string ends with any of the specified items.
 		/// </summary>
 		public static bool EndsWith(this string s, params char[] items)

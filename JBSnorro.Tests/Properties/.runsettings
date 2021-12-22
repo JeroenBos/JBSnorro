@@ -2,7 +2,7 @@
 <RunSettings>
 	<RunConfiguration>
 		<EnvironmentVariables>
-			<SSH_FILE>%UserProfile%/.ssh/playground</SSH_FILE>
+			<SSH_FILE>~/.ssh/playground</SSH_FILE>
 		</EnvironmentVariables>
 	</RunConfiguration>
 </RunSettings>

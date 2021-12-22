@@ -23,7 +23,7 @@ namespace JBSnorro.Csx.Tests
 
         // if SSH_FILE cannot be found, consider adding JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
         protected static string ssh_file => Environment.GetEnvironmentVariable("SSH_FILE") ?? throw new Exception("Env var 'SSH_FILE' not found");
-        protected static string ssh_key_path => Path.GetFullPath(ssh_file).ToBashPath(false);
+        protected static string ssh_key_path => Path.GetFullPath(ssh_file.ExpandTildeAsHomeDir()).ToBashPath(false);
         protected static string init_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/../.github/init-ssh-agent.sh";
         protected static string SSH_SCRIPT => $"source {init_ssh_agent_path} && ssh-add {ssh_key_path}";
 
