@@ -28,9 +28,7 @@ jobs:
       run: |
         mkdir ~/.ssh
         echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
-    - name: Fix issue in git host resolution (Windows)
-      if: ${{ matrix.runtime == 'win10-x64' }} 
-      run: git config core.sshCommand 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' 
+        ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
     - name: Give access to ssh key (Linux)
       if: ${{ matrix.runtime == 'linux-x64' }} 
