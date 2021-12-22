@@ -236,7 +236,11 @@ namespace JBSnorro
             }
             else if (path.StartsWith('~'))
             {
-                path = "%USER%" + path[1..];
+                path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + path[1..];
+            }
+            else if (path.StartsWith("%UserProfile%", StringComparison.OrdinalIgnoreCase))
+            {
+                path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + path["%UserProfile%".Length..];
             }
             return path.Replace("/", "\\");
         }
