@@ -49,6 +49,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Detect if version changed
+      continue-on-error: true
+      id: up-to-date
       run: | 
         current_version=$(bash .github/get_current_version.sh | xargs)
         published_version=$(bash .github/get_published_version.sh | xargs)
@@ -65,8 +67,8 @@ jobs:
             echo "Publishing"
         fi
     - name: cancelling
+      if: ${{ steps.up-to-date.outcome == 'failure' }}
       uses: andymckay/cancel-action@0.2
-      if: ${{ failure() }}
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
@@ -77,6 +79,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
       # TODO
     # - name: Publish
+    #   if: ${{ steps.up-to-date.outcome != 'failure' }}
     #   # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
     #   uses: alirezanet/publish-nuget@v3.0.0
     #   with:
