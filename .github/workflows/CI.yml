@@ -51,8 +51,8 @@ jobs:
     - name: Detect if version changed
       run: | 
         set -eu
-        current_version=$(bash .github/get_current_version.sh)
-        published_version=$(bash .github/get_published_version.sh)
+        current_version=$(bash .github/get_current_version.sh | xargs)
+        published_version=$(bash .github/get_published_version.sh | xargs)
         echo "current_version: $current_version"
         echo "published_version: $published_version"
         if [ "$current_version" == "$published_version" ] ; then
