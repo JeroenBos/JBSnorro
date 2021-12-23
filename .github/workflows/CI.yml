@@ -55,7 +55,7 @@ jobs:
         echo "current_version: \"$current_version\""
         echo "published_version: \"$published_version\""
 
-        is_up_to_date=$([ $current_version = "$published_version" ] && echo true || echo false)
+        is_up_to_date=$([[ $current_version == "$published_version" ]] && echo true || echo false)
         echo "is_up_to_date: $is_up_to_date"
 
         if [ "$is_up_to_date" = "true" ]; then
