@@ -3,6 +3,10 @@
 on:
   push:
     branches: [ master, auto-upload-to-nuget ] # for testing
+    paths:
+      - 'JBSnorro/JBSnorro.csproj'
+      - '.github/workflows/Publish.yml'
+
 
 jobs:
   build:
