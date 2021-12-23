@@ -50,7 +50,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: Detect if version changed
       run: | 
-        set -eu
         current_version=$(bash .github/get_current_version.sh | xargs)
         published_version=$(bash .github/get_published_version.sh | xargs)
         echo "current_version: $current_version"
