@@ -65,9 +65,9 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
-    # - name: Publish
-    #   uses: brandedoutcast/publish-nuget@v2.5.2
-    #   with:
-    #       PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
-    #       NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-    #       INCLUDE_SYMBOLS: true
+    - name: Publish
+      uses: brandedoutcast/publish-nuget@v2.5.2
+      with:
+          PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          INCLUDE_SYMBOLS: true
