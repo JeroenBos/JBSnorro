@@ -54,7 +54,11 @@ jobs:
         published_version=$(bash .github/get_published_version.sh | xargs)
         echo "current_version: $current_version"
         echo "published_version: $published_version"
-        if [ "$current_version" = "$published_version" ]; then
+
+        is_up_to_date=$([ "$current_version" = "$published_version" ] && echo true || echo false)
+        echo "is_up_to_date: $is_up_to_date"
+
+        if [ "$is_up_to_date" = "true" ]; then
             echo "Up-to-date"
             exit 1
         else
