@@ -4,7 +4,7 @@
 # nuget list "id:JBSnorro" # doesn't hang
 # $(nuget list "id:JBSnorro") # hangs 🤷‍ in VS wsl in Developer Powershell window (but not in VSCode terminal)
 
-version=$(nuget list "id:JBSnorro" | sed 's/JBSnorro//' | xargs | tr -d '\n')
+version=$(nuget list "id:JBSnorro" | sed 's/JBSnorro//' | xargs | tr -d '\n' | tr -d '\r')
 # xargs trims. tr trims newlines
 
 if [ -z $version ]; then
