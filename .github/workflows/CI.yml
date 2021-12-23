@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ master , auto-upload-to-nuget ] # for testing
+    branches: [ master , auto-upload-to-nuget ] # for testing  # TODO
   pull_request:
 
 jobs:
@@ -11,8 +11,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: windows-latest
-            runtime: win10-x64
+          # - os: windows-latest  # TODO
+          # runtime: win10-x64  # TODO
           - os: ubuntu-latest
             runtime: linux-x64
     steps:
