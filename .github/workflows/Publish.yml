@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: $(bash .github/get_current_version.sh) != $(bash .github/get_published_version.sh)
+    if: "$(bash .github/get_current_version.sh) != $(bash .github/get_published_version.sh)"
 
     steps:
     - uses: actions/checkout@v2
