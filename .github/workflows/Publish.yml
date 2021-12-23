@@ -1,0 +1,36 @@
+﻿name: Publish
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: $(bash .github/get_current_version.sh) != $(bash .github/get_published_version.sh)
+
+    steps:
+    - uses: actions/checkout@v2
+    # - name: Detect if version changed
+    #   run: | 
+    #     set -eu
+    #     current_version=$(bash .github/get_current_version.sh)
+    #     published_version=$(bash .github/get_published_version.sh)
+    #     if [ "$current_version" = "$published_version" ] ; then
+    #         echo "Up-to-date"
+    #         exit 1
+    #     fi
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.1.101
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    # - name: Publish
+    #   uses: brandedoutcast/publish-nuget@v2.5.2
+    #   with:
+    #       PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
+    #       NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+    #       INCLUDE_SYMBOLS: true
