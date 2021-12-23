@@ -2,7 +2,7 @@
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, auto-upload-to-nuget ] # for testing
 
 jobs:
   build:
