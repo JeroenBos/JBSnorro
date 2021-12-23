@@ -11,8 +11,8 @@ jobs:
     strategy:
       matrix:
         include:
-          # - os: windows-latest  # TODO
-          # runtime: win10-x64  # TODO
+          - os: windows-latest
+          runtime: win10-x64
           - os: ubuntu-latest
             runtime: linux-x64
     steps:
@@ -44,7 +44,7 @@ jobs:
 
   publish:
     needs: test
-    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/pull/4/merge' }}  # TODO
+    if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -66,23 +66,25 @@ jobs:
         else
             echo "Publishing"
         fi
+
     - name: Setup .NET Core
       if: ${{ steps.up-to-date.outcome != 'failure' }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.101
+
     - name: Install dependencies
       if: ${{ steps.up-to-date.outcome != 'failure' }}
       run: dotnet restore
+
     - name: Build
       if: ${{ steps.up-to-date.outcome != 'failure' }}
       run: dotnet build --configuration Release --no-restore
-      # TODO
-    # - name: Publish
-    #   if: ${{ steps.up-to-date.outcome != 'failure' }}
-    #   # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
-    #   uses: alirezanet/publish-nuget@v3.0.0
-    #   with:
-    #       PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
-    #       NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-    #       INCLUDE_SYMBOLS: true
+
+    - name: Publish
+      if: ${{ steps.up-to-date.outcome != 'failure' }}
+      uses: alirezanet/publish-nuget@v3.0.0  # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
+      with:
+          PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          INCLUDE_SYMBOLS: true
