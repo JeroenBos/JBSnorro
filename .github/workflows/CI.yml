@@ -17,8 +17,6 @@ jobs:
             runtime: linux-x64
     steps:
     - uses: actions/checkout@v2
-    - name: print
-      run : echo ${{ github.ref }}
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
@@ -55,6 +53,8 @@ jobs:
         set -eu
         current_version=$(bash .github/get_current_version.sh)
         published_version=$(bash .github/get_published_version.sh)
+        echo "current_version: $current_version"
+        echo "published_version: $published_version"
         if [ "$current_version" = "$published_version" ] ; then
             echo "Up-to-date"
             exit 1
