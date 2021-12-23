@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ master ] 
+    branches: [ master ]
   pull_request:
 
 jobs:
@@ -11,12 +11,14 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: windows-latest
-            runtime: win10-x64
+          # - os: windows-latest  # TODO
+          # runtime: win10-x64  # TODO
           - os: ubuntu-latest
             runtime: linux-x64
     steps:
     - uses: actions/checkout@v2
+    - name: print
+      run : echo ${{ github.ref }}
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
@@ -39,3 +41,36 @@ jobs:
           export SSH_FILE="$HOME/.ssh/playground"
           dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime ${{ matrix.runtime }} --framework net6.0
       timeout-minutes: 5
+
+
+
+  publish:
+    needs: test
+    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/pull/4/merge' }}  # TODO
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Detect if version changed
+      run: | 
+        set -eu
+        current_version=$(bash .github/get_current_version.sh)
+        published_version=$(bash .github/get_published_version.sh)
+        if [ "$current_version" = "$published_version" ] ; then
+            echo "Up-to-date"
+            exit 1
+        fi
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.101
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Publish
+      # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
+      uses: alirezanet/publish-nuget@v3.0.0
+      with:
+          PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          INCLUDE_SYMBOLS: true
