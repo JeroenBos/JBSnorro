@@ -66,16 +66,16 @@ jobs:
         else
             echo "Publishing"
         fi
-    - name: cancelling
-      if: ${{ steps.up-to-date.outcome == 'failure' }}
-      uses: andymckay/cancel-action@0.2
     - name: Setup .NET Core
+      if: ${{ steps.up-to-date.outcome != 'failure' }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.101
     - name: Install dependencies
+      if: ${{ steps.up-to-date.outcome != 'failure' }}
       run: dotnet restore
     - name: Build
+      if: ${{ steps.up-to-date.outcome != 'failure' }}
       run: dotnet build --configuration Release --no-restore
       # TODO
     # - name: Publish
