@@ -193,6 +193,28 @@ namespace JBSnorro.Extensions
 				return @this;
 			return @this[..i];
 		}
+		/// <summary> 
+		/// Gets the substring of <paramref name="this"/> until the last occurrence of <paramref name="value"/>;
+		/// or <paramref name="this"/> if the value was not.
+		/// </summary>
+		/// <param name="value"> The value to find. </param>
+		public static string SubstringUntilLast(this string @this, string value)
+		{
+			return SubstringUntilLast(@this, value, Index.End);
+		}
+		/// <summary> 
+		/// Gets the substring of <paramref name="this"/> until the last occurrence of <paramref name="value"/>;
+		/// or <paramref name="this"/> if the value was not.
+		/// </summary>
+		/// <param name="value"> The value to find. </param>
+		/// <param name="startIndex"> The search starting position. The search proceeds from startIndex toward the beginning of this instance. </param>
+		public static string SubstringUntilLast(this string @this, string value, Index startIndex)
+		{
+			int i = @this.LastIndexOf(value, startIndex.GetOffset(@this.Length));
+			if (i == -1)
+				return @this;
+			return @this[..i];
+		}
 		/// <summary>
 		/// Gets the index of the specified value in the string, searching up to <paramref name="endIndex"/>.
 		/// </summary>
