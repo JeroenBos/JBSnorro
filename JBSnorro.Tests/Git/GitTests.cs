@@ -151,7 +151,9 @@ namespace JBSnorro.Csx.Tests
             Assert.AreEqual(stdOut.Split('\n').Length, 1);
             Assert.IsTrue(stdOut.StartsWith("HEAD is now at"));
 
-            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git push --force-with-lease".Execute(cwd: dir);
+            // this can throw with error containing "! [remote rejected] master -> master (cannot lock ref 'refs/heads/master'"
+            // it's presumably due to parallelism, but that shouldn't be there :/
+            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git fetch && git push --force-with-lease".Execute(cwd: dir);
             Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr);
             // Assert.AreEqual(stdErr.Split('\n').Length, 2); // 3 with when (forced-updated)
             // Assert.IsTrue(stdErr.Split('\n')[1].StartsWith("Everything up-to-date"));
