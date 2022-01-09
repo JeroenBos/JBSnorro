@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace JBSnorro.Tests.Extensions
 {
     [TestClass]
-    internal class StringExtensions
+    public class StringExtensionsTests
     {
         [TestMethod]
         public void SubstringUntilLast_Returns_Input_If_Not_Found()
