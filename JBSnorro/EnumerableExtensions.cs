@@ -975,14 +975,15 @@ namespace JBSnorro
 			Contract.Requires(sources != null);
 			Contract.RequiresForAll(sources, NotNull);
 
-			return DebuggerHidden.Invoke(_concat, sources);
-		}
-		[DebuggerHidden]
-		private static IEnumerable<T> _concat<T>(IEnumerable<IEnumerable<T>> sources)
-		{
-			foreach (var sequence in sources)
-				foreach (T element in sequence)
-					yield return element;
+			return _concat(sources);
+
+			[DebuggerHidden]
+			IEnumerable<T> _concat(IEnumerable<IEnumerable<T>> sources)
+			{
+				foreach (var sequence in sources)
+					foreach (T element in sequence)
+						yield return element;
+			}
 		}
 		/// <summary> Concatenates all specified sequences. </summary>
 		/// <typeparam name="T"> The type of the sequence elements. </typeparam>
