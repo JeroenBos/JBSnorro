@@ -517,5 +517,23 @@ namespace JBSnorro.Extensions
 				_ => throw new ArgumentException()
 			};
 		}
+
+		/// <summary>
+		/// Finds all types in all loaded assemblies that have the specified unqualified name.
+		/// </summary>
+		[DebuggerHidden]
+		public static IEnumerable<Type> FindType(string name)
+		{
+			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
+			{
+				foreach (var type in assembly.GetTypes())
+				{
+					if (type.Name == name)
+					{
+						yield return type;
+					}
+				}
+			}
+		}
 	}
 }
