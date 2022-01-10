@@ -1,6 +1,7 @@
 ﻿using JBSnorro.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -57,11 +58,17 @@ namespace JBSnorro
 			return new Span<byte>(stream.GetBuffer()).Slice(0, (int)stream.Length);
 		}
 		/// <summary> Gets a new temporary directory. </summary>
-		public static string CreateTemporaryDirectory()
+		public static string CreateTempDirectory()
 		{
 			string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 			Directory.CreateDirectory(tempDirectory);
 			return tempDirectory.Replace('\\', '/');
+		}
+		/// <summary> Gets a new temporary directory, and deletes it on disposal. </summary>
+		public static Disposable<string> CreateTemporaryDirectory()
+		{
+			string tempDirectory = CreateTempDirectory();
+			return new Disposable<string>(tempDirectory, [DebuggerHidden] () => Directory.Delete(tempDirectory));
 		}
 #nullable enable
 		/// <summary>
