@@ -66,6 +66,11 @@ namespace JBSnorro.Testing
         {
             return GetTestMethods(assembly).Where([DebuggerHidden] (test) => matches(test, predicate));
         }
+        [DebuggerHidden]
+        public static IEnumerable<Test> GetTestMethods(this Type type, string predicate)
+        {
+            return GetTestMethods(type).Where([DebuggerHidden] (test) => matches(test, predicate));
+        }
 
         [DebuggerHidden]
         public static IEnumerable<Test> GetTestMethods(this Assembly assembly)
@@ -128,6 +133,11 @@ namespace JBSnorro.Testing
         {
             return GetTestMethods(assembly, predicate).Select(toExecutable);
         }
+        [DebuggerHidden]
+        public static IEnumerable<Func<Task>> GetExecutableTestMethods(this Type type, string predicate)
+        {
+            return GetTestMethods(type, predicate).Select(toExecutable);
+        }
         /// <returns> Even if the test is void-returning, it is still wrapped in a Task.</returns>
         public static IEnumerable<Func<Task>> GetExecutableTestMethods(this Assembly assembly)
         {
@@ -181,7 +191,6 @@ namespace JBSnorro.Testing
             var initAndCleanup = test.Type.GetInitAndCleanupMethods();
             [DebuggerHidden] Task curry() => execute(test.Method, ctor, initAndCleanup);
             return curry;
-            // return DebuggerHidden.Curry<MethodInfo, ConstructorInfo, (IReadOnlyList<MethodInfo>, IReadOnlyList<MethodInfo>), Task>(execute, test.Method, ctor, initAndCleanup);
         }
         /// <summary>
         /// A helper method which asserts that the signature of the specified method could be a test method.
