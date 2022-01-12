@@ -174,7 +174,7 @@ namespace JBSnorro
             if (OperatingSystem.IsWindows())
             {
                 const string bashExePath = "C:\\Program Files\\Git\\bin\\bash.exe"; // this used to be "C:\\Windows\\System32\\bash.exe" but that one suddenly stopped working (exit code 1, no output, so I assume failed windows update)
-                const string redirecterFile = "~/.dotnet/execute.sh";
+                string redirecterFile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.dotnet/execute.sh";
 
                 string bashPath = ToBashPath(path, includeMnt: includeMnt);
                 string bashFile = Path.GetFileName(bashPath).Replace("\\", "/");
