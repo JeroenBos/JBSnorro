@@ -463,6 +463,34 @@ namespace JBSnorro.Csx.Tests
             Assert.AreEqual(await Git.GetCurrentHash(dir), commitHash.Value);
 
         }
+        [TestClass]
+        public class TestGHGetPrName
+        {
+            [TestMethod]
+            public async Task Test_Get_Pr_Name()
+            {
+                var dir = await InitRemoteRepoWithRemoteCommit();
+
+                var branchName = await Git.GetPRBranchName(dir, "1");
+
+                Assert.AreEqual("patch-1", branchName); 
+
+            }
+        }
+        [TestClass]
+        public class TestGHGetPrCommitHash
+        {
+            [TestMethod]
+            public async Task Test_Get_Pr_CommitHash()
+            {
+                var dir = await InitRemoteRepoWithRemoteCommit();
+
+                var branchName = await Git.GetPRBranchCommitHash(dir, "1");
+
+                Assert.AreEqual("0b439655789e463e598535fb619a43b8bb1af8e1", branchName);
+
+            }
+        }
     }
     //[TestClass]
     //public class CheckoutTests : GitTestsBase

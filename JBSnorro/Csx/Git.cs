@@ -10,6 +10,7 @@ using JBSnorro.Collections;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace JBSnorro.Csx
 {
@@ -436,6 +437,39 @@ fi");
             string bash = "gh run list";
             var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
 
+        }
+        /// <param name="prId">Empty string for current branch.</param>
+        public static async Task<string> GetPRBranchName(string gitDir, string prId = "")
+        {
+            string bash = $"gh pr view {prId} --json \"headRefName\"";
+            var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
+            if (exitCode == 0)
+            {
+                var response = JsonSerializer.Deserialize<HeadRefNameResponse>(stdOut);
+                if (response != null)
+                    return response.headRefName;
+            }
+
+            throw NotImplementedException(exitCode, stdOut, stdErr);
+        }
+
+        class HeadRefNameResponse
+        {
+            public string headRefName { get; init; } = default!;
+        }
+
+        /// <param name="prId">Empty string for current branch.</param>
+        public static async Task<string> GetPRBranchCommitHash(string gitDir, string prId = "")
+        {
+            string bash = $"gh pr view {prId} --json \"commits\" --jq '.[\"commits\"][-1][\"oid\"]'";
+            var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
+            if (exitCode == 0)
+            {
+                if (Git.IsGitHash(stdOut))
+                    return stdOut;
+            }
+
+            throw NotImplementedException(exitCode, stdOut, stdErr);
         }
 
         public static async Task Reset(string gitDir, string destRef, bool hard = false)
