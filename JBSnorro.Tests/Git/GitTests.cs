@@ -466,7 +466,7 @@ namespace JBSnorro.Csx.Tests
         [TestClass]
         public class TestGHGetPrName
         {
-            [TestMethod]
+            // [TestMethod] // reimplement when GH login works from CI
             public async Task Test_Get_Pr_Name()
             {
                 var dir = await InitRemoteRepoWithRemoteCommit();
@@ -480,7 +480,7 @@ namespace JBSnorro.Csx.Tests
         [TestClass]
         public class TestGHGetPrCommitHash
         {
-            [TestMethod]
+            // [TestMethod] // reimplement when GH login works from CI
             public async Task Test_Get_Pr_CommitHash()
             {
                 var dir = await InitRemoteRepoWithRemoteCommit();
