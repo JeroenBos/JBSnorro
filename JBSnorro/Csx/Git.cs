@@ -541,7 +541,7 @@ fi");
         {
             if (s == null)
                 return false;
-            if (s.Length != 32)
+            if (s.Length != 40)
                 return false;
             if (!s.All(StringExtensions.IsHexNumber))
                 return false;
