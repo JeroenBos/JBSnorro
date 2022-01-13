@@ -441,7 +441,7 @@ fi");
         /// <param name="prId">Empty string for current branch.</param>
         public static async Task<string> GetPRBranchName(string gitDir, string prId = "")
         {
-            string bash = $"gh pr view {prId} --json \"headRefName\"";
+            string bash = $"gh pr view \"{prId}\" --json \"headRefName\"";
             var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
             if (exitCode == 0)
             {
@@ -461,7 +461,7 @@ fi");
         /// <param name="prId">Empty string for current branch.</param>
         public static async Task<string> GetPRBranchCommitHash(string gitDir, string prId = "")
         {
-            string bash = $"gh pr view {prId} --json \"commits\" --jq '.[\"commits\"][-1][\"oid\"]'";
+            string bash = $"gh pr view \"{prId}\" --json \"commits\" --jq '.[\"commits\"][-1][\"oid\"]'";
             var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
             if (exitCode == 0)
             {
@@ -474,15 +474,17 @@ fi");
         // <param name="prId">Empty string for current branch.</param>
         public static async Task<string> GetPRBaseBranch(string gitDir, string prId = "")
         {
-            string bash = $"gh pr view {prId} --json \"baseRefName\"";
+            string bash = $"gh pr view \"{prId}\" --json \"baseRefName\"";
+            Console.WriteLine(bash);
             var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
             if (exitCode == 0)
             {
                 var response = JsonSerializer.Deserialize<BaseRefNameResponse>(stdOut);
                 if (response != null)
                 {
-                    if(Git.IsValidBranchName(stdOut) || Git.IsGitHash(stdOut))
-                        return response.baseRefName;
+                    var result = response.baseRefName;
+                    if(Git.IsValidBranchName(result) || Git.IsGitHash(result))
+                        return result;
                 }
             }
 
