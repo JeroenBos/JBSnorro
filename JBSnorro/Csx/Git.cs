@@ -441,7 +441,7 @@ fi");
         /// <param name="prId">Empty string for current branch.</param>
         public static async Task<string> GetPRBranchName(string gitDir, string prId = "")
         {
-            string bash = $"gh pr view {prId} --json \"headRefName\"";
+            string bash = $"gh pr view \"{prId}\" --json \"headRefName\"";
             var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
             if (exitCode == 0)
             {
@@ -457,11 +457,11 @@ fi");
         {
             public string headRefName { get; init; } = default!;
         }
-
+        
         /// <param name="prId">Empty string for current branch.</param>
         public static async Task<string> GetPRBranchCommitHash(string gitDir, string prId = "")
         {
-            string bash = $"gh pr view {prId} --json \"commits\" --jq '.[\"commits\"][-1][\"oid\"]'";
+            string bash = $"gh pr view \"{prId}\" --json \"commits\" --jq '.[\"commits\"][-1][\"oid\"]'";
             var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
             if (exitCode == 0)
             {
@@ -471,7 +471,30 @@ fi");
 
             throw NotImplementedException(exitCode, stdOut, stdErr);
         }
+        // <param name="prId">Empty string for current branch.</param>
+        public static async Task<string> GetPRBaseBranch(string gitDir, string prId = "")
+        {
+            string bash = $"gh pr view \"{prId}\" --json \"baseRefName\"";
+            var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
+            if (exitCode == 0)
+            {
+                var response = JsonSerializer.Deserialize<BaseRefNameResponse>(stdOut);
+                if (response != null)
+                {
+                    var result = response.baseRefName;
+                    if (Git.IsValidBranchName(result))
+                        return "origin/" + result;
+                    else if(Git.IsGitHash(result))
+                        return result;
+                }
+            }
 
+            throw NotImplementedException(exitCode, stdOut, stdErr);
+        }
+        class BaseRefNameResponse
+        {
+            public string baseRefName { get; init; } = default!;
+        }
         public static async Task Reset(string gitDir, string destRef, bool hard = false)
         {
             if (!hard)

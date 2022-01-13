@@ -474,7 +474,6 @@ namespace JBSnorro.Csx.Tests
                 var branchName = await Git.GetPRBranchName(dir, "1");
 
                 Assert.AreEqual("patch-1", branchName); 
-
             }
         }
         [TestClass]
@@ -488,7 +487,19 @@ namespace JBSnorro.Csx.Tests
                 var branchName = await Git.GetPRBranchCommitHash(dir, "1");
 
                 Assert.AreEqual("0b439655789e463e598535fb619a43b8bb1af8e1", branchName);
+            }
+        }
+        [TestClass]
+        public class TestGHGetPrBaseName
+        {
+            // [TestMethod] // reimplement when GH login works from CI
+            public async Task Test_Get_Pr_BaseName()
+            {
+                var dir = await InitRemoteRepoWithRemoteCommit();
 
+                var branchName = await Git.GetPRBaseBranch(dir, "1");
+
+                Assert.AreEqual("origin/master", branchName);
             }
         }
     }
