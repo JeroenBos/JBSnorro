@@ -483,7 +483,9 @@ fi");
                 if (response != null)
                 {
                     var result = response.baseRefName;
-                    if(Git.IsValidBranchName(result) || Git.IsGitHash(result))
+                    if (Git.IsValidBranchName(result))
+                        return "origin/" + result;
+                    else if(Git.IsGitHash(result))
                         return result;
                 }
             }
