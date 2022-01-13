@@ -457,7 +457,7 @@ fi");
         {
             public string headRefName { get; init; } = default!;
         }
-
+        
         /// <param name="prId">Empty string for current branch.</param>
         public static async Task<string> GetPRBranchCommitHash(string gitDir, string prId = "")
         {
@@ -471,7 +471,27 @@ fi");
 
             throw NotImplementedException(exitCode, stdOut, stdErr);
         }
+        // <param name="prId">Empty string for current branch.</param>
+        public static async Task<string> GetPRBaseBranch(string gitDir, string prId = "")
+        {
+            string bash = $"gh pr view {prId} --json \"baseRefName\"";
+            var (exitCode, stdOut, stdErr) = await bash.Execute(cwd: gitDir);
+            if (exitCode == 0)
+            {
+                var response = JsonSerializer.Deserialize<BaseRefNameResponse>(stdOut);
+                if (response != null)
+                {
+                    if(Git.IsValidBranchName(stdOut) || Git.IsGitHash(stdOut))
+                        return response.baseRefName;
+                }
+            }
 
+            throw NotImplementedException(exitCode, stdOut, stdErr);
+        }
+        class BaseRefNameResponse
+        {
+            public string baseRefName { get; init; } = default!;
+        }
         public static async Task Reset(string gitDir, string destRef, bool hard = false)
         {
             if (!hard)
