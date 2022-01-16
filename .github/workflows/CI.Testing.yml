@@ -1,4 +1,4 @@
-name: CI
+name: CI (JBSnorro.Testing)
 
 on:
   push:
@@ -26,22 +26,10 @@ jobs:
       with:
         dotnet-version: 6.0.101  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
     - name: build
-      run: dotnet build JBSnorro/JBSnorro.csproj
-    - name: Create ssh access file
-      shell: bash
-      run: |
-        mkdir ~/.ssh
-        echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
-        ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-
-    - name: Give access to ssh key (Linux)
-      if: ${{ matrix.runtime == 'linux-x64' }} 
-      run: sudo chmod 600 ~/.ssh/playground
+      run: dotnet build JBSnorro.Testing/JBSnorro.Testing.csproj
     - name: test
       shell: bash
-      run: | 
-          export SSH_FILE="$HOME/.ssh/playground"
-          dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime ${{ matrix.runtime }} --framework net6.0
+      run: dotnet test JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --runtime ${{ matrix.runtime }} --framework net6.0
       timeout-minutes: 5
 
 
@@ -56,8 +44,8 @@ jobs:
       continue-on-error: true
       id: up-to-date
       run: | 
-        current_version=$(bash .github/get_current_version.sh "JBSnorro" | xargs)
-        published_version=$(bash .github/get_published_version.sh "JBSnorro" | xargs)
+        current_version=$(bash .github/get_current_version.sh "JBSnorro.Testing" | xargs)
+        published_version=$(bash .github/get_published_version.sh "JBSnorro.Testing" | xargs)
         echo "current_version: \"$current_version\""
         echo "published_version: \"$published_version\""
 
@@ -89,6 +77,6 @@ jobs:
       if: ${{ steps.up-to-date.outcome != 'failure' }}
       uses: alirezanet/publish-nuget@v3.0.0  # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
       with:
-          PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
+          PROJECT_FILE_PATH: JBSnorro.Testing/JBSnorro.Testing.csproj
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
           INCLUDE_SYMBOLS: true
