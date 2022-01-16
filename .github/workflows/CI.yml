@@ -5,9 +5,13 @@ on:
     branches: [ master ]
     paths-ignore:
     - '**.md'
+    - 'JBSnorro.Testing/**'
+    - 'JBSnorro.Testing.Tests/**'
   pull_request:
     paths-ignore:
     - '**.md'
+    - 'JBSnorro.Testing/**'
+    - 'JBSnorro.Testing.Tests/**'
 
 jobs:
   test:
