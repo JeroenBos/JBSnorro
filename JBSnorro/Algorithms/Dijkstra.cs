@@ -1,4 +1,5 @@
-﻿using JBSnorro.Collections;
+﻿#nullable enable
+using JBSnorro.Collections;
 using JBSnorro.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Text;
 
 namespace JBSnorro.Algorithms
 {
-	public static class Dijkstra<T>
+	public static class Dijkstra<T> where T : notnull
 	{
 		internal struct Node : IComparable<Node>
 		{
@@ -38,18 +39,21 @@ namespace JBSnorro.Algorithms
 			{
 				return Element.GetHashCode();
 			}
-			public override bool Equals(object obj)
+			public override bool Equals(object? obj)
 			{
-				Contract.Requires(obj is Node);
-
-				return Element.Equals(((Node)obj).Element);//default equality comparer for T
+				if (obj is Node node)
+				{
+					// Use default equality comparer for T
+					return Element.Equals(node.Element);
+				}
+				return false;
 			}
 		}
-		public static IEnumerable<T> FindPath(IEnumerable<T> initialElements, Func<T, IEnumerable<T>> getLinkedNodes, Func<T, bool> isTarget, IEqualityComparer<T> equalityComparer = null)
+		public static IEnumerable<T>? FindPath(IEnumerable<T> initialElements, Func<T, IEnumerable<T>> getLinkedNodes, Func<T, bool> isTarget, IEqualityComparer<T>? equalityComparer = null)
 		{
 			return FindPath(initialElements, getLinkedNodes, (t, _) => isTarget(t), equalityComparer);
 		}
-		public static IEnumerable<T> FindPath(IEnumerable<T> initialElements, Func<T, IEnumerable<T>> getLinkedNodes, Func<T, int/*distance from any initial element*/, bool> isTarget, IEqualityComparer<T> equalityComparer = null)
+		public static IEnumerable<T>? FindPath(IEnumerable<T> initialElements, Func<T, IEnumerable<T>> getLinkedNodes, Func<T, int/*distance from any initial element*/, bool> isTarget, IEqualityComparer<T>? equalityComparer = null)
 		{
 			equalityComparer = equalityComparer ?? EqualityComparer<T>.Default;
 
