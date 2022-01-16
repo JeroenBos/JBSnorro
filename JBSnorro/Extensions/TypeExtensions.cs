@@ -519,16 +519,34 @@ namespace JBSnorro.Extensions
 		}
 
 		/// <summary>
-		/// Finds all types in all loaded assemblies that have the specified name, possibly with namespace.
+		/// Finds all types in all loaded assemblies that have the specified unqualified name.
 		/// </summary>
 		[DebuggerHidden]
 		public static IEnumerable<Type> FindType(string name)
 		{
+			return AppDomain.CurrentDomain.GetAssemblies().Reverse().FindType(name);
+		}
+		/// <summary>
+		/// Finds all types in all loaded assemblies that have the specified unqualified name.
+		/// </summary>
+		[DebuggerHidden]
+		public static IEnumerable<Type> FindType(this IEnumerable<Assembly> assemblies, string name)
+		{
 			var typeName = name.SubstringAfterLast(".");
 			var @namespace = typeName.Length == name.Length ? null : name.SubstringUntilLast(".");
-			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
+			foreach (var assembly in assemblies)
 			{
-				foreach (var type in assembly.GetTypes())
+				Type[] types;
+				try
+				{
+					types = assembly.GetTypes();
+				}
+				catch (ReflectionTypeLoadException)
+				{
+					// https://stackoverflow.com/a/67976906/308451
+					continue;
+				}
+				foreach (var type in types)
 				{
 					if (type.Name == typeName && (@namespace == null || @namespace == type.Namespace))
 					{
