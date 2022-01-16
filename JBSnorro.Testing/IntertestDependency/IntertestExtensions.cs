@@ -25,7 +25,8 @@ public static class IntertestExtensions
                 return dependencyTracker.DependsOn(new[] { identifier }, caller);
             }
         }
-        catch (CircularDependencyException ex)
+        catch (Exception ex)
+        // catch (Exception ex) // CircularDependencyException in 0.0.13
         {
             throw new InvalidTestConfigurationException("No circular test dependencies are allowed", ex);
         }

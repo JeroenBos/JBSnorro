@@ -31,7 +31,6 @@ Global
 		{DACC807A-A1D2-44CB-9629-D81A1A3E74EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DACC807A-A1D2-44CB-9629-D81A1A3E74EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DACC807A-A1D2-44CB-9629-D81A1A3E74EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DACC807A-A1D2-44CB-9629-D81A1A3E74EC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0B0745BD-9A38-4281-9504-2E316D18565E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0B0745BD-9A38-4281-9504-2E316D18565E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B0745BD-9A38-4281-9504-2E316D18565E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,7 +38,6 @@ Global
 		{0D359CD5-058C-4F2B-BA17-86D4CB925B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D359CD5-058C-4F2B-BA17-86D4CB925B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D359CD5-058C-4F2B-BA17-86D4CB925B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0D359CD5-058C-4F2B-BA17-86D4CB925B85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
