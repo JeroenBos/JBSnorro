@@ -90,6 +90,14 @@ namespace JBSnorro.Extensions
 		/// Gets whether the specified info has an attribute with the specified full name.
 		/// </summary>
 		[DebuggerHidden]
+		public static bool HasAttribute(this MemberInfo member, params string[] attributeFullNames)
+		{
+			return HasAttribute(member, (IReadOnlyCollection<string>)attributeFullNames);
+		}
+		/// <summary>
+		/// Gets whether the specified info has an attribute with the specified full name.
+		/// </summary>
+		[DebuggerHidden]
 		public static bool HasAttribute(this MemberInfo member, IReadOnlyCollection<string> attributeFullNames, bool inherit = true)
 		{
 			return GetAttribute(member, attributeFullNames, inherit) != null;
@@ -104,26 +112,12 @@ namespace JBSnorro.Extensions
 			Contract.Requires(attributeFullNames != null);
 			Contract.Requires(attributeFullNames.Length != 0);
 
-			return new SpecialForDebuggerHiddenDEBUG<TMemberInfo>(attributeFullNames).HasAttribute;
+			return [DebuggerHidden] (TMemberInfo member) =>
+		    {
+			    return member.HasAttribute(attributeFullNames);
+		    };
 		}
-		/// <summary>
-		/// The purpose of this function is to prevent landing in a lambda when debugging with F11.
-		/// </summary>
-		readonly struct SpecialForDebuggerHiddenDEBUG<TMemberInfo> where TMemberInfo : MemberInfo
-		{
-			public readonly IReadOnlyCollection<string> attributeFullNames;
-			[DebuggerHidden]
-			public SpecialForDebuggerHiddenDEBUG(IReadOnlyCollection<string> attributeFullNames)
-			{
-				this.attributeFullNames = attributeFullNames;
-			}
 
-			[DebuggerHidden]
-			public bool HasAttribute(TMemberInfo member)
-			{
-				return member.HasAttribute(attributeFullNames);
-			}
-		}
 		/// <summary>
 		/// Gets a function that computer whether the specified member info has an attribute with the specified full name.
 		/// </summary>

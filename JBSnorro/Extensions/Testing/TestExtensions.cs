@@ -46,20 +46,31 @@ namespace JBSnorro.Testing
         {
             Contract.Requires(assembly != null);
 
-            var msTestClasses = assembly.GetTypes().Where(AttributeExtensions.HasAttributeDelegate<Type>("Microsoft.VisualStudio.TestTools.UnitTesting.TestClassAttribute"));
-            var xUnitTestClasses = assembly.GetTypes().Where(isxUnitTestClass).ToList();
-            return msTestClasses.Concat(xUnitTestClasses).Where(isNotAbstract).Where(isNotStatic);
-
-            [DebuggerHidden] static bool isNotStatic(Type type) => !type.IsStatic();
-            [DebuggerHidden] static bool isNotAbstract(MemberInfo member) => !member.IsAbstract();
+            return assembly.GetTypes().Where(IsTestClass);
         }
         [DebuggerHidden]
-        private static bool isxUnitTestClass(Type type)
+        public static bool IsTestClass(this Type type)
         {
-            // This function is non-local to enable applying the DebuggerHidden attribute
-
+            return type.isxUnitTestClass() || type.isMSTestClass();
+        }
+        [DebuggerHidden]
+        private static bool isxUnitTestClass(this Type type)
+        {
+            if (type.IsAbstract)
+                return false;
+            if (type.IsStatic())
+                return false;
             // All types could potentially host xUnit's facts, but we require there's at least one method marked xUnit.Fact in there
             return type.GetMethods().Any(AttributeExtensions.HasAttributeDelegate("Xunit.FactAttribute", "Xunit.Sdk.XunitTest"));
+        }
+        [DebuggerHidden]
+        private static bool isMSTestClass(this Type type)
+        {
+            if (type.IsAbstract)
+                return false;
+            if (type.IsStatic())
+                return false;
+            return type.HasAttribute("Microsoft.VisualStudio.TestTools.UnitTesting.TestClassAttribute");
         }
         [DebuggerHidden]
         public static IEnumerable<Test> GetTestMethods(this Assembly assembly, string predicate)
