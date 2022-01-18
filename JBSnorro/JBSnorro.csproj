@@ -3,7 +3,7 @@
 	<PropertyGroup>
 	<TargetFrameworks>net6.0</TargetFrameworks>
 	<LangVersion>latest</LangVersion>
-	<Version>0.0.12</Version>
+	<Version>0.0.12.1</Version>
 	<Authors>JeroenBos</Authors>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	<RepositoryUrl>https://github.com/jeroenbos/JBSnorro</RepositoryUrl>
