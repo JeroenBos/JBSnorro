@@ -141,7 +141,7 @@ namespace JBSnorro.Collections
 		public BitArray(ulong[] backingData, int length)
 		{
 			Contract.Requires(backingData != null);
-			Contract.Requires(length < 64 * backingData.Length);
+			Contract.Requires(0 <= length && length < 64 * backingData.Length);
 
 			this.Length = length;
 			this.data = backingData;
