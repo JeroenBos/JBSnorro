@@ -135,7 +135,17 @@ namespace JBSnorro.Collections
 			foreach (int index in indicesOfTrueBits)
 				this[index] = true;
 		}
+		/// <summary> Creates a new bit array from <param ref="backingData"/>, i.e. no copy is made. </summary>
+		/// <param name="backingData"> The indices of bits to set to true. </param>
+		/// <param name="length"> The number of bits that are considered to be set in the given data. </param>
+		public BitArray(ulong[] backingData, int length)
+		{
+			Contract.Requires(backingData != null);
+			Contract.Requires(length < 64 * backingData.Length);
 
+			this.Length = length;
+			this.data = backingData;
+		}
 
 		/// <summary> Gets a clone of this bit array. </summary>
 		[DebuggerHidden]
