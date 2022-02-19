@@ -142,7 +142,10 @@ namespace JBSnorro.Csx.Tests
             Assert.IsTrue(stdErrLines[2].StartsWith(" * [new branch]      master     -> origin/master"), stdErrLines[2]);
 
             (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git branch --set-upstream-to=origin/master master".Execute(cwd: dir);
-            Assert.AreEqual((exitCode, stdOut), (0, "Branch 'master' set up to track remote branch 'master' from 'origin'."));
+            Assert.AreEqual(exitCode, 0);
+            // the following depends on git version or something:
+            Assert.IsTrue(stdOut.IsAnyOf("Branch 'master' set up to track remote branch 'master' from 'origin'.", 
+                                         "branch 'master' set up to track 'origin/master'."), stdOut);
             Assert.AreEqual(stdErr.Split('\n').Length, 1);
             Assert.IsTrue(stdErr.StartsWith("Identity added"));
 
