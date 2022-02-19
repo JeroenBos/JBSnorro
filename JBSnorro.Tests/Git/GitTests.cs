@@ -145,7 +145,7 @@ namespace JBSnorro.Csx.Tests
             Assert.AreEqual(exitCode, 0);
             // the following depends on git version or something:
             Assert.IsTrue(stdOut.IsAnyOf("Branch 'master' set up to track remote branch 'master' from 'origin'.", 
-                                         "branch 'master' set up to track 'origin/master'"), stdOut);
+                                         "branch 'master' set up to track 'origin/master'."), stdOut);
             Assert.AreEqual(stdErr.Split('\n').Length, 1);
             Assert.IsTrue(stdErr.StartsWith("Identity added"));
 
