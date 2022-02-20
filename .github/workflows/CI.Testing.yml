@@ -27,9 +27,11 @@ jobs:
         dotnet-version: 6.0.101  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
     - name: build
       run: dotnet build JBSnorro.Testing/JBSnorro.Testing.csproj
+    - name: build tests
+      run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj
     - name: test
       shell: bash
-      run: dotnet test JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --runtime ${{ matrix.runtime }} --framework net6.0
+      run: dotnet test 'JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj' --runtime ${{ matrix.runtime }} --framework net6.0 --blame-hang-timeout 60s
       timeout-minutes: 5
 
 
