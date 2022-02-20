@@ -4,11 +4,16 @@
 # nuget list "id:JBSnorro" # doesn't hang
 # $(nuget list "id:JBSnorro") # hangs 🤷‍ in VS wsl in Developer Powershell window (but not in VSCode terminal)
 
-version=$(nuget list "id:JBSnorro" | sed 's/JBSnorro//' | xargs | tr -d '\n' | tr -d '\r')
+if [[ "$#" -ne 1 ]]; then
+    echo "Expected exactly 1 argument, namely the nuget package ID, e.g. 'JBSnorro'";
+    exit 1;
+fi
+
+version=$(nuget list "id:$1" | sed "s/$1//" | xargs | tr -d '\n' | tr -d '\r')
 # xargs trims. tr trims newlines
 
-if [ -z $version ]; then
-    echo "fatal: No version found"
+if [[ "$version" == "No packages found." ]]; then
+    echo "fatal: No version of '$1' found"
     exit 1
 fi
 
