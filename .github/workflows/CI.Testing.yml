@@ -31,7 +31,7 @@ jobs:
       run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj
     - name: test
       shell: bash
-      run: dotnet test 'JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj' --runtime ${{ matrix.runtime }} --framework net6.0 --blame-hang-timeout 60s
+      run: dotnet test 'JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj' --runtime ${{ matrix.runtime }} --framework net6.0
       timeout-minutes: 10
 
 
