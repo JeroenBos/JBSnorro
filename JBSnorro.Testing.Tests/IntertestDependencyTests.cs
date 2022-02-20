@@ -373,7 +373,49 @@ namespace TestProject1
         Assert.Contains(TestsStartedExpected, output.StandardOutput);
         Assert.Contains(TestsStartedExpected2, output.StandardOutput);
         Assert.Contains(ExpectedTally(failed: 1, skipped: 1), output.StandardOutput);
+    }
 
+    [@Fact]
+    public async Task Test_depending_on_asynchronously_failing_test_type_skips()
+    {
+        // Arrange
+        string tmpDir = IOExtensions.CreateTemporaryDirectory();
+        File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
+        File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
+            @"
+using System;
+using System.Threading.Tasks;
+using Xunit;
+using JBSnorro.Testing.IntertestDependency;
+
+namespace TestProject1
+{
+    public class UnitTest1
+    {
+        [SkippableFact]
+        public async Task TestMethod1()
+        {
+            await this.DependsOn(nameof(UnitTest2));
+        }
+    }
+    public class UnitTest2
+    {
+        [SkippableFact]
+        public async Task TestMethod1()
+        {
+            await Task.Delay(10);
+            throw new Exception();
+        }
+    }
+}
+");
+        // Act
+        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""));
+
+        // Assert
+        Assert.Contains(TestsStartedExpected, output.StandardOutput);
+        Assert.Contains(TestsStartedExpected2, output.StandardOutput);
+        Assert.Contains(ExpectedTally(failed: 1, skipped: 1), output.StandardOutput);
     }
 }
 
