@@ -8,6 +8,7 @@ public static class IntertestExtensions
     /// - we can then infer the calling type
     /// - then we can infer circular dependencies
     /// - and for convenience: `await this.DependsOn(SomeTest)` reads better than `await IntertestExtensions.DependsOn(SomeTest)`. </param>
+    /// <param name="name"> The name of a local test or a test type on which this depends. </param>
     public static Task DependsOn(this object @this, string name, [CallerMemberName] string calledMemberName = null!)
     {
         try
@@ -25,8 +26,7 @@ public static class IntertestExtensions
                 return dependencyTracker.DependsOn(new[] { identifier }, caller);
             }
         }
-        catch (Exception ex)
-        // catch (Exception ex) // CircularDependencyException in 0.0.13
+        catch (CircularDependencyException ex)
         {
             throw new InvalidTestConfigurationException("No circular test dependencies are allowed", ex);
         }

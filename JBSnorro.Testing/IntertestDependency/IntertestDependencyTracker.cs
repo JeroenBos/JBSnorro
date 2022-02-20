@@ -108,7 +108,6 @@ internal class IntertestDependencyTracker : IIntertestDependencyTracker
             this.Pending = true;
             try
             {
-                // On JBSnorro version 0.0.12 we can use the type instead of the assembly
                 var testType = Type.GetType(testIdentifier.TypeName);
                 if (testType == null)
                 {

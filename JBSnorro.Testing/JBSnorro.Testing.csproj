@@ -22,7 +22,7 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="JBSnorro" Version="0.0.12.1" Condition="'$(Configuration)'!='Debug'" />
+		<PackageReference Include="JBSnorro" Version="0.0.13" Condition="'$(Configuration)'!='Debug'" />
 		<ProjectReference Include="..\JBSnorro\JBSnorro.csproj" Condition="'$(Configuration)'=='Debug'" />
 	</ItemGroup>
 
