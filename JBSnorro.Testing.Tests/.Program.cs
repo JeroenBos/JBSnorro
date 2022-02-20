@@ -1,11 +1,9 @@
 ﻿using System.Diagnostics;
-using System.Threading.Tasks;
 
-namespace JBSnorro.Tests
+namespace JBSnorro.Tests;
+
+class Program
 {
-	class Program
-	{
-		[DebuggerHidden]
-		public static Task Main(string[] args) => Testing.TestExtensions.DefaultMainTestProjectImplementation(args);
-	}
+    [DebuggerHidden]
+    public static Task Main(string[] args) => Testing.TestExtensions.DefaultMainTestProjectImplementation(args);
 }
