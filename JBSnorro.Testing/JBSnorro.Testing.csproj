@@ -8,7 +8,7 @@
 		<NoWarn>1701;1702;1591;1573;1712</NoWarn>
 	</PropertyGroup>
 	
-	<PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<!-- Publishing properties-->
 		<Version>0.0.2.1</Version>
 		<Authors>JeroenBos</Authors>
