@@ -2,18 +2,19 @@
 
 public interface IIntertestDependencyTracker
 {
-#pragma warning disable CA2211 // Non-constant fields should not be visible
     /// <summary>
-    /// Allows to configure how which IIntertestDependencyTracker is used for all tests.
+    /// Gets the default <see cref="IIntertestDependencyTracker"/>.
     /// </summary>
-    public static Func<IIntertestDependencyTracker> GetSingleton = () => IntertestDependencyTracker.singleton;
+    public static IIntertestDependencyTracker Default => GetDefault();
+    /// <summary>
+    /// Allows to configure the default <see cref="IIntertestDependencyTracker"/> used in all tests.
+    /// </summary>
+    public static Func<IIntertestDependencyTracker> GetDefault { get; set; } = () => IntertestDependencyTracker.singleton;
     /// <summary>
     /// The list of assemblies that can be searched through for types containing tests.
     /// </summary>
-    public static IEnumerable<Assembly>? TestAssemblies;  // TODO: find a better solution
-#pragma warning restore CA2211 // Non-constant fields should not be visible
-
-    public static IIntertestDependencyTracker Singleton => GetSingleton();
+    public static IEnumerable<Assembly>? TestAssemblies { get; set; }
+    
 
     /// <summary>
     /// Raises a <see cref="SkipException"/> if any of the dependency tests failed.

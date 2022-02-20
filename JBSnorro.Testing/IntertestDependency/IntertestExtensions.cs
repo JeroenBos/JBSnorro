@@ -13,15 +13,15 @@ public static class IntertestExtensions
     {
         try
         {
-            ITestIdentifier identifier = TestIdentifier.FromString(name, @this.GetType());
-            var dependencyTracker = IIntertestDependencyTracker.GetSingleton();
+            ITestIdentifier identifier = TestIdentifier.From(name, @this.GetType());
+            var dependencyTracker = IIntertestDependencyTracker.GetDefault();
             if (calledMemberName == null)
             {
                 return dependencyTracker.DependsOn(new[] { identifier });
             }
             else
             {
-                var caller = TestIdentifier.FromString(calledMemberName, @this.GetType());
+                var caller = TestIdentifier.From(calledMemberName, @this.GetType());
                 return dependencyTracker.DependsOn(new[] { identifier }, caller);
             }
         }

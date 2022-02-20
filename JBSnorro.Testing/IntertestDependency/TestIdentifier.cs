@@ -4,11 +4,11 @@ namespace JBSnorro.Testing.IntertestDependency;
 
 internal class TestIdentifier : ITestIdentifier
 {
-    public string FullName { get; init; } = default!;
-    public bool IsType { get; init; }
+    public string FullName { get; }
+    public bool IsType { get; }
     public string TypeName { get; }
     private readonly string? testName;
-    public string TestName => IsType ? throw new InvalidTestConfigurationException() : testName!;
+    public string TestName => IsType ? throw new InvalidOperationException() : testName!;
 
     public TestIdentifier(string fullName, bool isType)
     {
@@ -24,7 +24,7 @@ internal class TestIdentifier : ITestIdentifier
             this.testName = FullName.SubstringAfterLast(".");
         }
     }
-    public static TestIdentifier FromString(string identifier, Type callerType)
+    public static TestIdentifier From(string identifier, Type callerType)
     {
         bool isDefinitelyQualifiedIdentifier = identifier.Contains('.');
         if (isDefinitelyQualifiedIdentifier)
