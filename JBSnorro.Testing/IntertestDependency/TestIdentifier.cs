@@ -1,7 +1,7 @@
 ﻿using JBSnorro.Algorithms;
 
 namespace JBSnorro.Testing.IntertestDependency;
-class TestIdentifier : ITestIdentifier
+internal class TestIdentifier : ITestIdentifier
 {
     public string FullName { get; init; } = default!;
     public bool IsType { get; init; }

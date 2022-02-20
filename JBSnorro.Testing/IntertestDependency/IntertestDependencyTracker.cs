@@ -10,9 +10,11 @@ namespace JBSnorro.Testing.IntertestDependency;
 internal class IntertestDependencyTracker : IIntertestDependencyTracker
 {
     public static readonly IntertestDependencyTracker singleton = new();
-    private ImmutableDictionary<TestIdentifier, ITestRun> testResults;
-    private CircularDependencyTracker<TestIdentifier> circularReferenceTracker;
     public IImmutableDictionary<TestIdentifier, ITestRun> TestResults => testResults;
+
+
+    private ImmutableDictionary<TestIdentifier, ITestRun> testResults;
+    private readonly CircularDependencyTracker<TestIdentifier> circularReferenceTracker;
 
     private IntertestDependencyTracker()
     {
@@ -20,6 +22,7 @@ internal class IntertestDependencyTracker : IIntertestDependencyTracker
         this.circularReferenceTracker = new CircularDependencyTracker<TestIdentifier>(TestIdentifier.TestIdentifierContainmentEqualityComparerInstance);
     }
 
+    /// <inheritdoc cref="IIntertestDependencyTracker.DependsOn(ITestIdentifier[])"/>
     public async Task DependsOn(params TestIdentifier[] testsIdentifiers)
     {
         Contract.Requires(testsIdentifiers != null);
@@ -48,6 +51,13 @@ internal class IntertestDependencyTracker : IIntertestDependencyTracker
             }
         }
     }
+    /// <inheritdoc cref="IIntertestDependencyTracker.FindCircularDependencies(ITestIdentifier, ITestIdentifier[])"/>
+    public void FindCircularDependencies(TestIdentifier node, TestIdentifier[] dependencies)
+    {
+        this.circularReferenceTracker.Add(node, dependencies);
+    }
+
+
     private async Task DependsOn(TestIdentifier testIdentifier)
     {
         var created = new TestRun(testIdentifier);
@@ -73,15 +83,11 @@ internal class IntertestDependencyTracker : IIntertestDependencyTracker
             Skip.If(testRunInDict.CompletedUnsuccessfully);
         }
     }
-
     Task IIntertestDependencyTracker.DependsOn(ITestIdentifier[] testsIdentifiers) => this.DependsOn(testsIdentifiers.Cast<TestIdentifier>().ToArray());
     void IIntertestDependencyTracker.FindCircularDependencies(ITestIdentifier node, ITestIdentifier[] dependencies) => FindCircularDependencies((TestIdentifier)node, dependencies.Cast<TestIdentifier>().ToArray());
-    public void FindCircularDependencies(TestIdentifier node, TestIdentifier[] dependencies)
-    {
-        this.circularReferenceTracker.Add(node, dependencies);
-    }
 
-    class TestRun : ITestRun
+
+    private sealed class TestRun : ITestRun
     {
         public bool CompletedUnsuccessfully { get; private set; }
         public bool CompletedSuccessfully { get; private set; }

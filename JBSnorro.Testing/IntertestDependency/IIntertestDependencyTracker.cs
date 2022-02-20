@@ -16,12 +16,12 @@
         public static IIntertestDependencyTracker Singleton => GetSingleton();
 
         /// <summary>
-        /// Raises a <see cref="SkipException "/> if any of the dependency tests failed.
+        /// Raises a <see cref="SkipException"/> if any of the dependency tests failed.
         /// </summary>
         /// <param name="testsIdentifiers"> The identifiers of the tests the current test depends on.</param>
         Task DependsOn(ITestIdentifier[] testsIdentifiers);
         /// <summary>
-        /// Raises a <see cref="SkipException "/> if any of the dependency tests failed, and checks for circular dependencies.
+        /// Raises a <see cref="SkipException"/> if any of the dependency tests failed, and checks for circular dependencies.
         /// </summary>
         /// <param name="testsIdentifiers"> The identifiers of the tests the current test depends on.</param>
         /// <param name="current">The identifier of the current test.</param>
