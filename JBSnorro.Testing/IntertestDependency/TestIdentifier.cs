@@ -20,7 +20,7 @@ internal class TestIdentifier : ITestIdentifier
         }
         else
         {
-            this.TypeName =  FullName.SubstringUntilLast(".");
+            this.TypeName = FullName.SubstringUntilLast(".");
             this.testName = FullName.SubstringAfterLast(".");
         }
     }
@@ -75,6 +75,7 @@ internal class TestIdentifier : ITestIdentifier
             }
 
             var assemblies = IIntertestDependencyTracker.TestAssemblies ?? new[] { callerType.Assembly };
+
             // the type name may not be fully qualified. Search some more
             return assemblies.FindType(typeName)
                              .Where(TestExtensions.IsTestClass)

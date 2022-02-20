@@ -17,7 +17,6 @@ public static class IntertestExtensions
             var dependencyTracker = IIntertestDependencyTracker.GetSingleton();
             if (calledMemberName == null)
             {
-
                 return dependencyTracker.DependsOn(new[] { identifier });
             }
             else
