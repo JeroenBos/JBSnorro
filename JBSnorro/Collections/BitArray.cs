@@ -34,7 +34,7 @@ namespace JBSnorro.Collections
 			return division + (remainer == 0 ? 0 : 1);
 		}
 
-		private readonly ulong[] data;
+		private ulong[] data;
 		/// <summary> Gets the whether the flag at the specified index in this array is set. </summary>
 		public bool this[int index]
 		{
@@ -66,7 +66,7 @@ namespace JBSnorro.Collections
 			}
 		}
 		/// <summary> Gets the number of bits in this bit array. </summary>
-		public int Length { get; }
+		public int Length { get; private set; }
 
 		/// <summary> Creates a new empty bit array. </summary>
 		public BitArray()
@@ -419,7 +419,17 @@ namespace JBSnorro.Collections
 		{
 			get { return false; }
 		}
-
+		public void Insert(int index, bool value)
+		{
+			this.data = BitTwiddling.InsertBits(this.data, new[] { index }, new[] { value }, (ulong)this.Length);
+			this.Length++;
+		}
+		public void InsertRange(int[] sortedIndices, bool[] values)
+		{
+			// there's still PERF to be gained by not creating a new array if it would fit, by implementing `ref this.data`
+			this.data = BitTwiddling.InsertBits(this.data, sortedIndices, values, (ulong)this.Length);
+			this.Length += sortedIndices.Length;
+		}
 		#endregion
 
 		#region Not supported IList<bool> Members
@@ -437,10 +447,6 @@ namespace JBSnorro.Collections
 			throw new NotImplementedException();
 		}
 		int IList<bool>.IndexOf(bool item)
-		{
-			throw new NotSupportedException();
-		}
-		void IList<bool>.Insert(int index, bool item)
 		{
 			throw new NotSupportedException();
 		}
