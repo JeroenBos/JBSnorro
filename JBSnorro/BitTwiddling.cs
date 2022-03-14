@@ -81,9 +81,9 @@ namespace JBSnorro
 			if (remainder == 0)
 				return i;
 
-			return i - remainder + multiple;//may overflow
-											//i - remainder is obviously a multiple
-											//hence that + multiple is as well
+			return i - remainder + multiple;// may overflow
+											// i - remainder is obviously a multiple
+											// hence that + multiple is as well
 		}
 
 		public static BitArray ToBitArray(this uint flags, int capacity = 32)
