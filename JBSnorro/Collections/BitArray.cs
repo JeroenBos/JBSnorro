@@ -34,7 +34,7 @@ namespace JBSnorro.Collections
 			return division + (remainer == 0 ? 0 : 1);
 		}
 
-		private readonly ulong[] data;
+		private ulong[] data;
 		/// <summary> Gets the whether the flag at the specified index in this array is set. </summary>
 		public bool this[int index]
 		{
@@ -66,7 +66,7 @@ namespace JBSnorro.Collections
 			}
 		}
 		/// <summary> Gets the number of bits in this bit array. </summary>
-		public int Length { get; }
+		public int Length { get; private set; }
 
 		/// <summary> Creates a new empty bit array. </summary>
 		public BitArray()
@@ -134,6 +134,18 @@ namespace JBSnorro.Collections
 
 			foreach (int index in indicesOfTrueBits)
 				this[index] = true;
+		}
+		/// <summary> Creates a new bit array from the specified bytes (i.e. concat all bytes, each representing 8 bits). </summary>
+		public BitArray(IEnumerable<byte> bytes) : this(bytes.SelectMany(b => ToBits(b)))
+		{
+		}
+		/// <summary> Creates a new bit array from the specified bytes (i.e. concat all bytes, each representing 8 bits), with prescribed length. </summary>
+		public BitArray(IEnumerable<byte> bytes, int bitCount) : this(bytes.SelectMany(b => ToBits(b)), count: bitCount)
+		{
+		}
+		private static IEnumerable<bool> ToBits(byte b)
+		{
+			return Enumerable.Range(0, 8).Select(i => b.HasBit(i));
 		}
 		/// <summary> Creates a new bit array from <param ref="backingData"/>, i.e. no copy is made. </summary>
 		/// <param name="backingData"> The indices of bits to set to true. </param>
@@ -362,6 +374,39 @@ namespace JBSnorro.Collections
 		{
 			this.data.CopyTo(array, arrayIndex);
 		}
+		public void CopyTo(Span<byte> array, int arrayIndex)
+		{
+			const int bytesPerULong = 8;
+			const int bitsPerULong = 64;
+			const int bitsPerByte = 8;
+
+			if (this.Length == 0)
+				return;
+			int neededNumberOfBytes = this.Length == 0 ? 0 : ((this.Length - 1) / bitsPerByte);
+			if (array.Length < arrayIndex + neededNumberOfBytes)
+				throw new IndexOutOfRangeException("Specified array too small");
+
+			int i;
+			for (i = 0; i < this.Length / bitsPerULong; i++)
+			{
+				for (int j = 0; j < bytesPerULong; j++)
+				{
+					array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> (j * bitsPerByte));
+				}
+			}
+			for (int j = 0; j < (this.Length % bitsPerULong) / bytesPerULong; j++)
+			{
+				array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> (j * bitsPerByte));
+			}
+			// << shifts to higher order bits
+			// mask the last byte that may contain unzeroed data:
+			int extraBits = this.Length % bitsPerByte;
+			if (extraBits != 0)
+			{
+				byte mask = (byte)-(byte.MaxValue >> extraBits);
+				array[^1] &= mask;
+			}
+		}
 		public IEnumerator<bool> GetEnumerator()
 		{
 			return Enumerable.Range(0, this.Length).Select(i => this[i]).GetEnumerator();
@@ -374,7 +419,33 @@ namespace JBSnorro.Collections
 		{
 			get { return false; }
 		}
-
+		public void Insert(int index, bool value)
+		{
+			this.data = BitTwiddling.InsertBits(this.data, new[] { index }, new[] { value }, (ulong)this.Length);
+			this.Length++;
+		}
+		public void InsertRange(int[] sortedIndices, bool[] values)
+		{
+			// there's still PERF to be gained by not creating a new array if it would fit, by implementing `ref this.data`
+			this.data = BitTwiddling.InsertBits(this.data, sortedIndices, values, (ulong)this.Length);
+			this.Length += sortedIndices.Length;
+		}
+		public void RemoveAt(int index)
+		{
+			this.RemoveAt(new int[] { index });
+		}
+		public void RemoveAt(params int[] indices)
+		{
+			if (indices.Length == 0)
+				return;
+			if (indices.Length > this.Length)
+				throw new ArgumentOutOfRangeException(nameof(indices), "More indices specified than bits");
+			// this is a very inefficient implementation
+			// use constructor to convert to ulong[]
+			var bitArray = new BitArray(this.AsEnumerable().ExceptAt(indices), this.Length - indices.Length);
+			bitArray.CopyTo(this.data, 0); // overwrite current; will always fit
+			this.Length -= indices.Length;
+		}
 		#endregion
 
 		#region Not supported IList<bool> Members
@@ -395,15 +466,7 @@ namespace JBSnorro.Collections
 		{
 			throw new NotSupportedException();
 		}
-		void IList<bool>.Insert(int index, bool item)
-		{
-			throw new NotSupportedException();
-		}
 		bool ICollection<bool>.Remove(bool item)
-		{
-			throw new NotSupportedException();
-		}
-		public void RemoveAt(int index)
 		{
 			throw new NotSupportedException();
 		}

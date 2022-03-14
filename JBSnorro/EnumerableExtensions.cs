@@ -1399,8 +1399,8 @@ namespace JBSnorro
 		/// <param name="nodesToInsert"> A delegate getting the nodes to be inserted between the first and second argument. The returned enumerable may be empty, but not null. </param>
 		public static IEnumerable<T> Insert<T>(this IEnumerable<T> sequence, Func<T, T, IEnumerable<T>> nodesToInsert)
 		{
-			if (sequence == null) throw new ArgumentNullException("sequence");
-			if (nodesToInsert == null) throw new ArgumentNullException("nodesToInsert");
+			if (sequence == null) throw new ArgumentNullException(nameof(sequence));
+			if (nodesToInsert == null) throw new ArgumentNullException(nameof(nodesToInsert));
 
 			T last = default(T);
 			bool first = true;
@@ -1714,9 +1714,8 @@ namespace JBSnorro
 		/// <param name="insertInNew"> The function which takes an element and its index in the specified enumerable and returns whether a new enumerable should be started here. </param>
 		public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> enumerable, Func<T, int, bool> insertInNew)
 		{
-			if (enumerable == null) throw new ArgumentNullException("enumerable");
-			if (insertInNew == null) throw new ArgumentNullException("insertInNew");
-			//if (!Enum.IsDefined(typeof(SplitCachingOptions), cachingOption)) throw new ArgumentOutOfRangeException("Caching option not valid");
+			if (enumerable == null) throw new ArgumentNullException(nameof(enumerable));
+			if (insertInNew == null) throw new ArgumentNullException(nameof(insertInNew));
 
 			using (IEnumerator<T> enumerator = enumerable.GetEnumerator())
 			{

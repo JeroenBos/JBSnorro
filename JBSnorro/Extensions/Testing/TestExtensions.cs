@@ -299,6 +299,7 @@ namespace JBSnorro.Testing
         /// - NUnit not implemented
         /// A special argument "--args" can be supplied to ignore all previous arguments.
         /// </summary>
+        [DebuggerHidden]
         public static async Task DefaultMainTestProjectImplementation(string[] args, Assembly? assemblyUnderTest = null)
         {
             var originalArgs = args;
