@@ -135,6 +135,18 @@ namespace JBSnorro.Collections
 			foreach (int index in indicesOfTrueBits)
 				this[index] = true;
 		}
+		/// <summary> Creates a new bit array from the specified bytes (i.e. concat all bytes, each representing 8 bits). </summary>
+		public BitArray(IEnumerable<byte> bytes) : this(bytes.SelectMany(b => ToBits(b)))
+		{
+		}
+		/// <summary> Creates a new bit array from the specified bytes (i.e. concat all bytes, each representing 8 bits), with prescribed length. </summary>
+		public BitArray(IEnumerable<byte> bytes, int bitCount) : this(bytes.SelectMany(b => ToBits(b)), count: bitCount)
+		{
+		}
+		private static IEnumerable<bool> ToBits(byte b)
+		{
+			return Enumerable.Range(0, 8).Select(i => b.HasBit(i));
+		}
 		/// <summary> Creates a new bit array from <param ref="backingData"/>, i.e. no copy is made. </summary>
 		/// <param name="backingData"> The indices of bits to set to true. </param>
 		/// <param name="length"> The number of bits that are considered to be set in the given data. </param>
@@ -361,6 +373,39 @@ namespace JBSnorro.Collections
 		public void CopyTo(ulong[] array, int arrayIndex)
 		{
 			this.data.CopyTo(array, arrayIndex);
+		}
+		public void CopyTo(Span<byte> array, int arrayIndex)
+		{
+			const int bytesPerULong = 8;
+			const int bitsPerULong = 64;
+			const int bitsPerByte = 8;
+
+			if (this.Length == 0)
+				return;
+			int neededNumberOfBytes = this.Length == 0 ? 0 : ((this.Length - 1) / bitsPerByte);
+			if (array.Length < arrayIndex + neededNumberOfBytes)
+				throw new IndexOutOfRangeException("Specified array too small");
+
+			int i;
+			for (i = 0; i < this.Length / bitsPerULong; i++)
+			{
+				for (int j = 0; j < bytesPerULong; j++)
+				{
+					array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> (j * bitsPerByte));
+				}
+			}
+			for (int j = 0; j < (this.Length % bitsPerULong) / bytesPerULong; j++)
+			{
+				array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> (j * bitsPerByte));
+			}
+			// << shifts to higher order bits
+			// mask the last byte that may contain unzeroed data:
+			int extraBits = this.Length % bitsPerByte;
+			if (extraBits != 0)
+			{
+				byte mask = (byte)-(byte.MaxValue >> extraBits);
+				array[^1] &= mask;
+			}
 		}
 		public IEnumerator<bool> GetEnumerator()
 		{
