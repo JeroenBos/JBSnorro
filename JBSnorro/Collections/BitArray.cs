@@ -430,6 +430,22 @@ namespace JBSnorro.Collections
 			this.data = BitTwiddling.InsertBits(this.data, sortedIndices, values, (ulong)this.Length);
 			this.Length += sortedIndices.Length;
 		}
+		public void RemoveAt(int index)
+		{
+			this.RemoveAt(new int[] { index });
+		}
+		public void RemoveAt(params int[] indices)
+		{
+			if (indices.Length == 0)
+				return;
+			if (indices.Length > this.Length)
+				throw new ArgumentOutOfRangeException(nameof(indices), "More indices specified than bits");
+			// this is a very inefficient implementation
+			// use constructor to convert to ulong[]
+			var bitArray = new BitArray(this.AsEnumerable().ExceptAt(indices), this.Length - indices.Length);
+			bitArray.CopyTo(this.data, 0); // overwrite current; will always fit
+			this.Length -= indices.Length;
+		}
 		#endregion
 
 		#region Not supported IList<bool> Members
@@ -451,10 +467,6 @@ namespace JBSnorro.Collections
 			throw new NotSupportedException();
 		}
 		bool ICollection<bool>.Remove(bool item)
-		{
-			throw new NotSupportedException();
-		}
-		public void RemoveAt(int index)
 		{
 			throw new NotSupportedException();
 		}

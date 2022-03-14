@@ -178,6 +178,62 @@ namespace JBSnorro.Tests
     }
 
     [TestClass]
+    public class BitRemovalTests
+    {
+        [TestMethod]
+        public void Test_SimpleRemoval()
+        {
+            var array = new BitArray(new byte[] { 255 });
+            array.RemoveAt(3);
+            Contract.AssertSequenceEqual(array, Enumerable.Range(0, 7).Select(_ => true));
+        }
+        [TestMethod]
+        public void Test_SimpleRemovalOnlyBit()
+        {
+            var array = new BitArray(new bool[] { true });
+            array.RemoveAt(0);
+            Contract.AssertSequenceEqual(array, Array.Empty<bool>());
+        }
+        [TestMethod]
+        public void Test_SimpleRemovalAtBeginning()
+        {
+            var array = new BitArray(new bool[] { true, false, true });
+            array.RemoveAt(0);
+            Contract.AssertSequenceEqual(array, new bool[] { false, true });
+        }
+        [TestMethod]
+        public void Test_SimpleRemovalAtEnd()
+        {
+            var array = new BitArray(new bool[] { true, false, true });
+            array.RemoveAt(2);
+            Contract.AssertSequenceEqual(array, new bool[] { true, false });
+        }
+        [TestMethod]
+        public void Test_RemovalInSecondULong()
+        {
+            var array = new BitArray(Enumerable.Range(0, 50).SelectMany(_ => new bool[] { true, false }));
+            array.RemoveAt(80); // i.e. longer than bits in a ulong
+            var expected = Enumerable.Range(0, 50).SelectMany(_ => new bool[] { true, false }).ExceptAt(80);
+            Contract.AssertSequenceEqual(array, expected);
+        }
+        [TestMethod]
+        public void Test_RemovalofMultipleInULong()
+        {
+            var array = new BitArray(Enumerable.Range(0, 50).SelectMany(_ => new bool[] { true, false }));
+            array.RemoveAt(40, 80, 81); // i.e. longer than bits in a ulong
+            var expected = Enumerable.Range(0, 50).SelectMany(_ => new bool[] { true, false }).ExceptAt(40, 80, 81);
+            Contract.AssertSequenceEqual(array, expected);
+        }
+        [TestMethod]
+        public void Test_SimpleRemovalofMultiple()
+        {
+            var array = new BitArray(new bool[] { true, false, true, true, false, false, true });
+            array.RemoveAt(4, 5);
+            var expected = new bool[] { true, false, true, true, true };
+            Contract.AssertSequenceEqual(array, expected);
+        }
+    }
+    [TestClass]
     public class TestCopyBitArray
     {
         [TestMethod]

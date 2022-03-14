@@ -290,5 +290,23 @@ namespace JBSnorro
 
 			return ClearHighBits(ClearLowBits(ulong.MaxValue, from), 64 - until);
 		}
+		/// <summary>
+		/// Removes bits at specified indices.
+		/// </summary>
+		/// <param name="bytes">The source sequence to remove from.</param>
+		/// <param name="sortedBitIndices"> The indices of the bits to remove. </param>
+		/// <param name="bytesLengthInBits"> The length of the bytes sequence. Defaults to <code>8 * bytes.Count()</code>.</param>
+ 		public static byte[] RemoveBits(this IEnumerable<byte> bytes, int[] sortedBitIndices, int? bytesLengthInBits = null)
+		{
+			BitArray bitArray;
+			if (bytesLengthInBits == null)
+				bitArray = new BitArray(bytes);
+			else
+				bitArray = new BitArray(bytes, bytesLengthInBits.Value);
+			bitArray.RemoveAt(sortedBitIndices);
+			var result = new byte[bitArray.Length / 8 + ((bitArray.Length % 8) == 0 ? 0 : 1)];
+			bitArray.CopyTo(result.AsSpan(), 0);
+			return result;
+		}
 	}
 }
