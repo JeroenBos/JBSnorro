@@ -27,7 +27,7 @@ namespace JBSnorro.Collections
 		}
 		/// <summary> Gets the length of the internal data structure given the number of bits it should hold. </summary>
 		/// <param name="bitCount"> The number of bits to store in the internal data. </param>
-		internal static int GetInternalStructureSize(int bitCount)
+		internal static int ComputeInternalStructureSize(int bitCount)
 		{
 			int remainer;
 			int division = Math.DivRem(bitCount, bitCountPerInternalElement, out remainer);
@@ -77,7 +77,7 @@ namespace JBSnorro.Collections
 		[DebuggerHidden]
 		public BitArray(int length, bool defaultValue = false)
 		{
-			data = new ulong[GetInternalStructureSize(length)];
+			data = new ulong[ComputeInternalStructureSize(length)];
 			Length = length;
 			if (defaultValue)
 			{
@@ -108,7 +108,7 @@ namespace JBSnorro.Collections
 			Contract.LazilyAssertCount(ref bits, count);
 
 			this.Length = count;
-			this.data = new ulong[GetInternalStructureSize(count)];
+			this.data = new ulong[ComputeInternalStructureSize(count)];
 			int i = 0;
 			foreach (bool bit in bits)
 			{
@@ -153,7 +153,7 @@ namespace JBSnorro.Collections
 		public BitArray(ulong[] backingData, int length)
 		{
 			Contract.Requires(backingData != null);
-			Contract.Requires(0 <= length && length < 64 * backingData.Length);
+			Contract.Requires(0 <= length && length <= 64 * backingData.Length);
 
 			this.Length = length;
 			this.data = backingData;
@@ -418,6 +418,10 @@ namespace JBSnorro.Collections
 		public bool IsReadOnly
 		{
 			get { return false; }
+		}
+		public long IndexOf(ulong item, int? itemLength = null, ulong startIndex = 0)
+		{
+			return BitTwiddling.IndexOfBits(this.data, item, itemLength, startIndex, (ulong)this.Length);
 		}
 		public void Insert(int index, bool value)
 		{
