@@ -48,12 +48,27 @@ namespace JBSnorro
 		/// <summary> Gets the bitwise reversed unsigned integer of the specified unsigned integer. </summary>
 		public static uint ReverseBitwise(this uint i)
 		{
+			const int N = 32;
 			uint result = 0;
-			int bi = 31;//bit index to set
-			while (i != 0)
+			for (int bi = N - 1; i != 0; bi--)
 			{
-				result |= (i % 2) >> bi;
-				bi--;
+				result |= (i & 1) >> bi;
+				i >>= 1;
+			}
+			return result;
+		}
+		public static long ReverseBitwise(this long i)
+		{
+			return (long)ReverseBitwise((ulong)i);
+		}
+		/// <summary> Gets the bitwise reversed unsigned long of the specified unsigned long. </summary>
+		public static ulong ReverseBitwise(this ulong i)
+		{
+			const int N = 64;
+			ulong result = 0;
+			for (int bi = N - 1; i != 0; bi--)
+			{
+				result |= (i & 1) >> bi;
 				i >>= 1;
 			}
 			return result;
@@ -156,7 +171,7 @@ namespace JBSnorro
 				ulong uselessBitCount = (ulong)sourceCount * nLength - bitCount;
 				Contract.Assert(uselessBitCount >= 0);
 				ulong requiredBitCount = (ulong)sourceCount * nLength + (ulong)valuesLength;
-				ulong requiredCount = ((requiredBitCount - uselessBitCount) + (nLength - 1)) /nLength;
+				ulong requiredCount = ((requiredBitCount - uselessBitCount) + (nLength - 1)) / nLength;
 				var newLength = requiredCount;
 				return new ulong[newLength];
 			}
@@ -175,7 +190,7 @@ namespace JBSnorro
 					dest += (sourceBitIndex - previousSourceBitIndex);
 					previousSourceBitIndex = sourceBitIndex;
 					i++;
-					dest+=1;
+					dest += 1;
 				}
 				yield return (previousSourceBitIndex, dest, bitCount - previousSourceBitIndex, null);
 			}
@@ -188,7 +203,7 @@ namespace JBSnorro
 				ulong currentSource = sourceStart;
 				ulong currentDest = destStart;
 				long remaining = (long)length;
-				while (remaining  > 0)
+				while (remaining > 0)
 				{
 					ulong nextDestUlongBoundary = currentDest + (nLength - (currentDest % nLength));
 					if (nextDestUlongBoundary < currentDest) throw new Exception();
@@ -296,7 +311,7 @@ namespace JBSnorro
 		/// <param name="bytes">The source sequence to remove from.</param>
 		/// <param name="sortedBitIndices"> The indices of the bits to remove. </param>
 		/// <param name="bytesLengthInBits"> The length of the bytes sequence. Defaults to <code>8 * bytes.Count()</code>.</param>
- 		public static byte[] RemoveBits(this IEnumerable<byte> bytes, int[] sortedBitIndices, int? bytesLengthInBits = null)
+		public static byte[] RemoveBits(this IEnumerable<byte> bytes, int[] sortedBitIndices, int? bytesLengthInBits = null)
 		{
 			BitArray bitArray;
 			if (bytesLengthInBits == null)
@@ -308,5 +323,103 @@ namespace JBSnorro
 			bitArray.CopyTo(result.AsSpan(), 0);
 			return result;
 		}
+
+		public static long IndexOfBits(IEnumerable<ulong> data, ulong item, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null)
+		{
+			const int N = 64;
+			if (data == null) throw new ArgumentNullException(nameof(data));
+			if (itemLength != null && (itemLength < 0 || itemLength > N)) throw new ArgumentOutOfRangeException(nameof(itemLength));
+			if (startIndex < 0) throw new ArgumentOutOfRangeException(nameof(startIndex));
+			bool hasCount = data.TryGetNonEnumeratedCount(out int count);
+			if (hasCount && startIndex > N * (ulong)count) throw new ArgumentOutOfRangeException(nameof(startIndex));
+
+			itemLength ??= N;
+			dataLength ??= hasCount ? (ulong)(N * count) : null;
+
+			long bitIndex = 0;
+			int elementIndex = 0;
+			foreach (var ((element, nextElement), isLast) in data.Append(0UL).Windowed2().WithIsLast())
+			{
+				while (Fits(bitIndex, elementIndex, itemLength.Value, dataLength, isLast))
+				{
+					if (IsMatch(bitIndex, element, nextElement, elementIndex, item, itemLength.Value))
+						return bitIndex;
+					bitIndex++;
+				}
+				elementIndex++;
+			}
+			return -1;
+
+
+			static bool IsMatch(long bitIndex, ulong element, ulong nextElement, int elementIndex, ulong item, int itemLength)
+			{
+				int start = (int)(bitIndex - N * elementIndex);
+				Contract.Assert(0 <= start && start < N);
+
+				ulong aligned = TakeBits(element, nextElement, start, end: start + itemLength);
+				return aligned == item;
+			}
+			static bool Fits(long bitIndex, int elementIndex, int itemLength, ulong? dataLength, bool isLast)
+			{
+				// if we should just go to the next data element even though it fits, report that it doesn't fit
+				if (bitIndex >= N * (elementIndex + 1))
+				{
+					return false;
+				}
+				
+				ulong minDataLength = dataLength ?? (N * (ulong)(elementIndex + (isLast ? 1 : 2)));
+				ulong minRequiredLength = (ulong)(bitIndex + itemLength);
+				return minRequiredLength <= minDataLength;
+			}
+		}
+
+		public static ulong TakeBits(ulong first, ulong second, int start, int end)
+		{
+			const int N = 64;
+			Contract.Assert(0 <= start);
+			Contract.Assert(start <= end);
+			Contract.Assert(end <= 2 * N);
+
+			ulong firstPart, secondPart;
+			if (end > N)
+			{
+				firstPart = TakeBits(first, start, N, 0);
+				secondPart = TakeBits(second, 0, end - N, N - start);
+			}
+			else
+			{
+				firstPart = TakeBits(first, start, end, 0);
+				secondPart = 0;
+			}
+			ulong result = firstPart | secondPart;
+			return result;
+
+			static ulong TakeBits(ulong bits, int start, int end, int destIndex)
+			{
+				Contract.Assert(0 <= start);
+				Contract.Assert(start <= end);
+				Contract.Assert(end <= N);
+				Contract.Assert(0 <= destIndex && destIndex <= N);
+
+				ulong shifted;
+				if (start < destIndex)
+				{
+					shifted = bits << (destIndex - start);
+				}
+				else
+				{
+					shifted = bits >> (start - destIndex);
+				}
+				int length = end - start;
+				int numberToBitsToKeep = destIndex + length;
+				Contract.Assert(numberToBitsToKeep <= N);
+				ulong result = ClearHighBits(shifted, numberOfBitsToClear: N - numberToBitsToKeep);
+				return result;
+			}
+
+		}
+
+
 	}
+
 }

@@ -295,4 +295,52 @@ namespace JBSnorro.Tests
             Contract.AssertSequenceEqual(dest, new byte[] { 0b_0101_0101, 0b_0000_1111 });
         }
     }
+    [TestClass]
+    public class BitArrayIndexOfTests
+    {
+        [TestMethod]
+        public void TestFindExactUlongMatch()
+        {
+            const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            var array = new BitArray(new[] { item }, 64);
+            var i = array.IndexOf(item);
+
+            Contract.Assert(i == 0);
+        }
+        [TestMethod]
+        public void TestFindMatchOnSecondBit()
+        {
+            const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            var array = new BitArray(new[] { item << 1, 1UL }, 128);
+            var i = array.IndexOf(item);
+
+            Contract.Assert(i == 1);
+
+            // double check that when clearing last bit it doesn't work:
+            array = new BitArray(new[] { item << 1, 0UL }, 128);
+            i = array.IndexOf(item);
+
+            Contract.Assert(i == -1);
+        }
+
+
+        [TestMethod]
+        public void TestFindMatchOnLastNonAlignedBit()
+        {
+            const ulong item = 0b0010_0000_0000;
+            var array = new BitArray(new[] { 0UL, item }, 74);
+            Contract.Assert(new BitArray(new[] { 0UL, item }, 73).IndexOf(1, itemLength: 1) == -1);
+            Contract.Assert(new BitArray(new[] { 0UL, item }, 74).IndexOf(1, itemLength: 1) == 73);
+            Contract.Assert(new BitArray(new[] { 0UL, item }, 75).IndexOf(1, itemLength: 1) == 73);
+        }
+        [TestMethod]
+        public void TestFindExactSecondUlongMatch()
+        {
+            const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            var array = new BitArray(new[] { 0UL, item }, 128);
+            var i = array.IndexOf(item);
+
+            Contract.Assert(i == 64);
+        }
+    }
 }
