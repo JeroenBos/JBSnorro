@@ -342,5 +342,44 @@ namespace JBSnorro.Tests
 
             Contract.Assert(i == 64);
         }
+        [TestMethod]
+        public void TestFindZero()
+        {
+            Contract.Assert(new BitArray(new[] { 0b00001111UL }, 4).IndexOf(0, itemLength: 1) == -1);
+            Contract.Assert(new BitArray(new[] { 0b00001111UL }, 5).IndexOf(0, itemLength: 1) == 4);
+            Contract.Assert(new BitArray(new[] { 0b00001111UL }, 6).IndexOf(0, itemLength: 1) == 4);
+            Contract.Assert(new BitArray(new[] { 0b00001111UL }, 4).IndexOf(0, itemLength: 2) == -1);
+            Contract.Assert(new BitArray(new[] { 0b00001111UL }, 5).IndexOf(0, itemLength: 2) == -1);
+            Contract.Assert(new BitArray(new[] { 0b00001111UL }, 6).IndexOf(0, itemLength: 2) == 4);
+            Contract.Assert(new BitArray(new[] { 0b00001111UL }, 7).IndexOf(0, itemLength: 2) == 4);
+        }
+
+        [TestMethod]
+        public void TestFindMultiple()
+        {
+            var t1 = AssertEquivalent(new[] { 0b00001111UL }, new[] { 0b0001UL, 0b0011UL }, 4);
+            Contract.Assert(t1 == (2, 1));
+
+
+            static (long, int) AssertEquivalent(ulong[] data, IReadOnlyList<ulong> items, int itemLength)
+            {
+                var bitArray = new BitArray(data, data.Length * 64);
+                var result = bitArray.IndexOfAny(items, itemLength);
+
+                var expected = equivalent(bitArray, items, itemLength);
+                Contract.Assert(expected == result);
+
+                return result;
+                
+                // a dumb equivalent implementation of IndexOfAny:
+                static (long, int) equivalent(BitArray data, IReadOnlyList<ulong> items, int itemLength)
+                {
+                    return items.Select((item, i) => (data.IndexOf(item, itemLength), i))
+                                .Where(pair => pair.Item1 != -1)
+                                .MinBy(pair => pair.Item1 * 1000 + pair.Item2);
+                }
+
+            }
+        }
     }
 }
