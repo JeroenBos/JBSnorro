@@ -423,6 +423,10 @@ namespace JBSnorro.Collections
 		{
 			return BitTwiddling.IndexOfBits(this.data, item, itemLength, startIndex, (ulong)this.Length);
 		}
+		public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
+		{
+			return BitTwiddling.IndexOfBits(this.data, items, itemLength, startIndex, (ulong)this.Length);
+		}
 		public void Insert(int index, bool value)
 		{
 			this.data = BitTwiddling.InsertBits(this.data, new[] { index }, new[] { value }, (ulong)this.Length);

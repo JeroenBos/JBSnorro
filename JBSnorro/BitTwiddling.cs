@@ -324,15 +324,22 @@ namespace JBSnorro
 			return result;
 		}
 
+		/// <summary> Gets the bit index in the specified data of the specified item. </summary>
 		public static long IndexOfBits(IEnumerable<ulong> data, ulong item, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null)
+		{
+			return IndexOfBits(data, new[] { item }, itemLength, startIndex, dataLength).BitIndex;
+		}
+		/// <summary> Gets the first bit index in the specified data of any of the specified equilong items. </summary>
+		public static (long BitIndex, int ItemIndex) IndexOfBits(IEnumerable<ulong> data, IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null)
 		{
 			const int N = 64;
 			if (data == null) throw new ArgumentNullException(nameof(data));
+			if (items == null) throw new ArgumentNullException(nameof(items));
+			if (items.Count == 0) throw new ArgumentException(nameof(items));
 			if (itemLength != null && (itemLength < 0 || itemLength > N)) throw new ArgumentOutOfRangeException(nameof(itemLength));
 			if (startIndex < 0) throw new ArgumentOutOfRangeException(nameof(startIndex));
 			bool hasCount = data.TryGetNonEnumeratedCount(out int count);
 			if (hasCount && startIndex > N * (ulong)count) throw new ArgumentOutOfRangeException(nameof(startIndex));
-
 			itemLength ??= N;
 			dataLength ??= hasCount ? (ulong)(N * count) : null;
 
@@ -342,13 +349,16 @@ namespace JBSnorro
 			{
 				while (Fits(bitIndex, elementIndex, itemLength.Value, dataLength, isLast))
 				{
-					if (IsMatch(bitIndex, element, nextElement, elementIndex, item, itemLength.Value))
-						return bitIndex;
+					for (int itemIndex = 0; itemIndex < items.Count; itemIndex++)
+					{
+						if (IsMatch(bitIndex, element, nextElement, elementIndex, items[itemIndex], itemLength.Value))
+							return (bitIndex, itemIndex);
+					}
 					bitIndex++;
 				}
 				elementIndex++;
 			}
-			return -1;
+			return (-1, -1);
 
 
 			static bool IsMatch(long bitIndex, ulong element, ulong nextElement, int elementIndex, ulong item, int itemLength)
@@ -366,7 +376,7 @@ namespace JBSnorro
 				{
 					return false;
 				}
-				
+
 				ulong minDataLength = dataLength ?? (N * (ulong)(elementIndex + (isLast ? 1 : 2)));
 				ulong minRequiredLength = (ulong)(bitIndex + itemLength);
 				return minRequiredLength <= minDataLength;
