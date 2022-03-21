@@ -48,7 +48,7 @@ jobs:
 
   publish:
     needs: test
-    if: ${{ github.ref == 'refs/heads/master' }}
+    # if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -85,10 +85,10 @@ jobs:
       if: ${{ steps.up-to-date.outcome != 'failure' }}
       run: dotnet build --configuration Release --no-restore
 
-    - name: Publish
-      if: ${{ steps.up-to-date.outcome != 'failure' }}
-      uses: alirezanet/publish-nuget@v3.0.0  # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
-      with:
-          PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          INCLUDE_SYMBOLS: true
+    # - name: Publish
+    #   if: ${{ steps.up-to-date.outcome != 'failure' }}
+    #   uses: alirezanet/publish-nuget@v3.0.0  # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
+    #   with:
+    #       PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
+    #       NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+    #       INCLUDE_SYMBOLS: true
