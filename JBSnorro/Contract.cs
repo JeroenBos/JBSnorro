@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -39,9 +40,9 @@ namespace JBSnorro.Diagnostics
 		[DebuggerHidden]
 		[ContractAnnotation("halt <= requirement: false")]
 		[AssertionMethod("requirement")]
-		public static void Requires([DoesNotReturnIf(false)] bool requirement, string message = "Requirement not met")
+		public static void Requires([DoesNotReturnIf(false)] bool requirement, string message = "Precondition failed: '{0}'", [CallerArgumentExpression("requirement")] string callerExpression = "")
 		{
-			if (!requirement) throw new ContractException(message);
+			if (!requirement) throw new ContractException(string.Format(message, callerExpression));
 		}
 
 		[Conditional("DEBUG")]
@@ -62,17 +63,17 @@ namespace JBSnorro.Diagnostics
 		[DebuggerHidden]
 		[ContractAnnotation("halt <= assertion: false")]
 		[AssertionMethod("assertion")]
-		public static void Assert([DoesNotReturnIf(false)] bool assertion, string message = "Assertion failed")
+		public static void Assert([DoesNotReturnIf(false)] bool assertion, string message = "Assertion failed: '{0}'", [CallerArgumentExpression("assertion")] string callerExpression = "")
 		{
-			if (!assertion) throw new ContractException(message);
+			if (!assertion) throw new ContractException(string.Format(message, callerExpression));
 		}
 		[Conditional("DEBUG")]
 		[DebuggerHidden]
 		[ContractAnnotation("halt <= assertion: false")]
 		[AssertionMethod("assertion")]
-		public static void Assert<TException>([DoesNotReturnIf(false)] bool assertion, string message = "Assertion failed") where TException : Exception
+		public static void Assert<TException>([DoesNotReturnIf(false)] bool assertion, string message = "Assertion failed: '{0}'", [CallerArgumentExpression("assertion")] string callerExpression = "") where TException : Exception
 		{
-			if (!assertion) throw Create<TException>(message);
+			if (!assertion) throw Create<TException>(string.Format(message, callerExpression));
 		}
 
 		private static TException Create<TException>(string message)
@@ -80,20 +81,19 @@ namespace JBSnorro.Diagnostics
 			var ctor = typeof(TException).GetConstructor(new[] { typeof(string) });
 			return (TException)ctor.Invoke(new[] { message });
 		}
-		[DebuggerHidden]
-		[ContractAnnotation("halt <= assertion: false")]
-		[AssertionMethod("assertion")]
-		public static void DynamicAssert([DoesNotReturnIf(false)] bool assertion, string message = "Assertion failed")
-		{
-#if DEBUG
-			if (!assertion) throw new ContractException(message);
-#endif
-		}
 		/// <summary> Denotes that the caller shouldn't be possible to reach. </summary>
 		[DebuggerHidden]
 		[ContractAnnotation("=> halt")]
 		[DoesNotReturn]
 		public static void Throw()
+		{
+			throw new ContractException("Shouldn't be possible");
+		}
+		/// <summary> Denotes that the caller shouldn't be possible to reach. </summary>
+		[DebuggerHidden]
+		[ContractAnnotation("=> halt")]
+		[DoesNotReturn]
+		public static void Fail()
 		{
 			throw new ContractException("Shouldn't be possible");
 		}
@@ -105,11 +105,11 @@ namespace JBSnorro.Diagnostics
 		}
 
 		[DebuggerHidden, Conditional("DEBUG"), AssertionMethod("assertion")]
-		public static void Ensures([DoesNotReturnIf(false)] bool postcondition, string message = "Postcondition failed")
+		public static void Ensures([DoesNotReturnIf(false)] bool postcondition, string message = "Postcondition failed: '{0}'", [CallerArgumentExpression("assertion")] string callerExpression = "")
 		{
 			if (!postcondition)
 			{
-				throw new ContractException(message);
+				throw new ContractException(string.Format(message, callerExpression));
 			}
 		}
 
@@ -135,7 +135,7 @@ namespace JBSnorro.Diagnostics
 		}
 
 		[DebuggerHidden, Conditional("DEBUG")]
-		public static void RequiresForAll<T>(IEnumerable<T> elements, Func<T, int, bool> predicate, string message = "The element at index {0} does not meet the requirement")
+		public static void RequiresForAll<T>(IEnumerable<T> elements, Func<T, int, bool> predicate, string message = "Precondition for element at index {0} failed")
 		{
 			Contract.Requires(elements != null);
 			Contract.RequiresIsNotEnumeratorEncapsulate(elements);
