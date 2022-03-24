@@ -68,6 +68,18 @@ namespace JBSnorro.Collections
 		/// <summary> Gets the number of bits in this bit array. </summary>
 		public int Length { get; private set; }
 
+
+		/// <summary>
+		/// Uses the specified array directly as underlying data source.
+		/// </summary>
+		/// <param name="length">The number of bits in <paramref name="data"/>. Defaults to <code>64 * data.Length</code>.</param>
+		public static BitArray FromRef(ulong[] data, ulong? length = null)
+		{
+			length ??= 64 * (ulong)data.Length;
+			Contract.Assert<NotImplementedException>(length <= int.MaxValue);
+
+			return new BitArray(data, (int)length.Value);
+		}
 		/// <summary> Creates a new empty bit array. </summary>
 		public BitArray()
 		{
