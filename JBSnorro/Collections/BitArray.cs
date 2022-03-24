@@ -35,32 +35,44 @@ namespace JBSnorro.Collections
 		}
 
 		private ulong[] data;
-		/// <summary> Gets the whether the flag at the specified index in this array is set. </summary>
+		/// <summary> Gets or sets the flag at the specified index in this array is set. </summary>
 		public bool this[int index]
+		{
+			[DebuggerHidden]
+			get => this[(ulong)index];
+			[DebuggerHidden]
+			set => this[(ulong)index] = value;
+		}
+		/// <summary> Gets or sets the flag at the specified index in this array is set. </summary>
+		public bool this[ulong index]
 		{
 			[DebuggerHidden]
 			get
 			{
 				Contract.Requires<IndexOutOfRangeException>(0 <= index);
-				Contract.Requires<IndexOutOfRangeException>(index < Length);
+				Contract.Requires<NotImplementedException>(index <= int.MaxValue);
+				int i = (int)index;
+				Contract.Requires<IndexOutOfRangeException>(i < Length);
 
 				int bitIndex;
 #if DEBUG
 				int dataIndex;
-				ToInternalAndBitIndex(index, out dataIndex, out bitIndex);
+				ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
 #endif
-				return (data[ToInternalAndBitIndex(index, out bitIndex)] & (1UL << bitIndex)) != 0;
+				return (data[ToInternalAndBitIndex(i, out bitIndex)] & (1UL << bitIndex)) != 0;
 			}
 			[DebuggerHidden]
 			set
 			{
 				Contract.Requires<IndexOutOfRangeException>(0 <= index);
-				Contract.Requires<IndexOutOfRangeException>(index < Length);
+				Contract.Requires<NotImplementedException>(index <= int.MaxValue);
+				int i = (int)index;
+				Contract.Requires<IndexOutOfRangeException>(i < Length);
 
 				if (value)
 				{
 					int dataIndex, bitIndex;
-					ToInternalAndBitIndex(index, out dataIndex, out bitIndex);
+					ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
 					data[dataIndex] |= 1UL << bitIndex;
 				}
 			}
