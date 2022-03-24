@@ -105,7 +105,7 @@ namespace JBSnorro.Diagnostics
 		}
 
 		[DebuggerHidden, Conditional("DEBUG"), AssertionMethod("assertion")]
-		public static void Ensures([DoesNotReturnIf(false)] bool postcondition, string message = "Postcondition failed: '{0}'", [CallerArgumentExpression("assertion")] string callerExpression = "")
+		public static void Ensures([DoesNotReturnIf(false)] bool postcondition, string message = "Postcondition failed: '{0}'", [CallerArgumentExpression("postcondition")] string callerExpression = "")
 		{
 			if (!postcondition)
 			{
