@@ -187,7 +187,8 @@ namespace JBSnorro.Collections
 		[DebuggerHidden]
 		public BitArray Clone()
 		{
-			return new BitArray((IReadOnlyList<bool>)this);
+			var data = (ulong[])this.data.Clone();
+			return BitArray.FromRef(data, (ulong)this.Length);
 		}
 
 		/// <summary> Returns whether no bit is set in both this and the specified array. </summary>
