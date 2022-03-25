@@ -370,7 +370,7 @@ namespace JBSnorro.Tests
                 Contract.Assert(expected == result);
 
                 return result;
-                
+
                 // a dumb equivalent implementation of IndexOfAny:
                 static (long, int) equivalent(BitArray data, IReadOnlyList<ulong> items, int itemLength)
                 {
@@ -380,6 +380,26 @@ namespace JBSnorro.Tests
                 }
 
             }
+        }
+    }
+    [TestClass]
+    public class BitArrayEqualityTests
+    {
+        [TestMethod]
+        public void EmptyEqualsEmpty()
+        {
+            Contract.Assert(new BitArray().Equals(new BitArray()));
+            Contract.Assert(new BitArray(length: 1).Equals(new BitArray(length: 1)));
+            Contract.Assert(!new BitArray(length: 1).Equals(new BitArray(length: 2)));
+        }
+        [TestMethod]
+        public void SimpleEqualityTests()
+        {
+            const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            Contract.Assert(new BitArray(new ulong[] { item, item.Mask(0, 44) }, 128).Equals(new BitArray(new[] { item, item.Mask(0, 44) }, 128)));
+            Contract.Assert(new BitArray(new ulong[] { item, item.Mask(0, 44) }, 100).Equals(new BitArray(new[] { item, item.Mask(0, 44) }, 100)));
+            Contract.Assert(new BitArray(new ulong[] { item, item.Mask(0, 44) }, 65).Equals(new BitArray(new[] { item, item.Mask(0, 44) }, 65)));
+            Contract.Assert(new BitArray(new ulong[] { item.Mask(0, 20), item.Mask(0, 44) }, 128).Equals(new BitArray(new[] { item.Mask(0, 20), item.Mask(0, 44) }, 128)));
         }
     }
 }

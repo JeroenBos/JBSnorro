@@ -528,7 +528,27 @@ namespace JBSnorro.Collections
 			if (ReferenceEquals(other, null))
 				return false;
 
-			return this.data.SequenceEqual(other.data);
+			if (this.Length != other.Length)
+				return false;
+
+			int fullUlongDataLength = this.Length / 64;
+
+			if (!this.data.Take(fullUlongDataLength).SequenceEqual(other.data.Take(fullUlongDataLength)))
+				return false;
+
+			ulong getLast(ulong[] data)
+			{
+				return data[fullUlongDataLength].Mask(0, this.Length % 64);
+			}
+
+			if ((this.Length % 64) != 0)
+			{
+				var thisLast = getLast(this.data);
+				var otherLast = getLast(other.data);
+
+				return thisLast == otherLast;
+			}
+			return true;
 		}
 		public override int GetHashCode()
 		{
