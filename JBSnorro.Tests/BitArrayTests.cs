@@ -402,4 +402,24 @@ namespace JBSnorro.Tests
             Contract.Assert(new BitArray(new ulong[] { item.Mask(0, 20), item.Mask(0, 44) }, 128).Equals(new BitArray(new[] { item.Mask(0, 20), item.Mask(0, 44) }, 128)));
         }
     }
+    [TestClass]
+    public class BitArrayCopyToTests
+    {
+        [TestMethod]
+        public void TestCopyBits()
+        {
+            foreach (var (src, dst, expected, srcIndex, length, dstIndex) in new[] { 
+                (new BitArray(new[] { 0b00001111UL }, 4), new BitArray(length: 8), new BitArray(new[] { 0b00001111UL }, 8), 0UL, 4UL, 0UL),
+                (new BitArray(new[] { 0b00001111UL }, 3), new BitArray(length: 8), new BitArray(new[] { 0b00000111UL }, 8), 0UL, 3UL, 0UL),
+                (new BitArray(new[] { 0b00001111UL }, 3), new BitArray(length: 8), new BitArray(new[] { 0b00001110UL }, 8), 0UL, 3UL, 1UL),
+                (new BitArray(new[] { 0b0001_0110UL }, 8), new BitArray(length: 128), new BitArray(new[] { 0UL, 0b0000_1011UL }, 128), 0UL, 8UL, 63UL),
+                (new BitArray(new[] { 0b00010111UL }, 8), new BitArray(length: 128), new BitArray(new[] { 1UL << 63, 0b001011UL }, 128), 0UL, 8UL, 63UL),
+            })
+            {
+                src.CopyTo(dst, srcIndex, length, dstIndex);
+
+                Contract.Assert(dst.Equals(expected));
+            }
+        }
+    }
 }

@@ -157,7 +157,7 @@ namespace JBSnorro
 
 			foreach (var (startBitIndex, destBitIndex, length, bit) in GetRanges(sortedBitIndices, values, bitCount))
 			{
-				CopyBits(source, dest, startBitIndex, destBitIndex, length);
+				CopyBitsTo(source, dest, startBitIndex, destBitIndex, length);
 				if (bit != null)
 				{
 					SetBit(dest, destBitIndex + length, bit.Value);
@@ -194,64 +194,7 @@ namespace JBSnorro
 				}
 				yield return (previousSourceBitIndex, dest, bitCount - previousSourceBitIndex, null);
 			}
-			static void CopyBits(ulong[] source, ulong[] dest, ulong sourceStart, ulong destStart, ulong length)
-			{
-				if (sourceStart + length > (ulong)source.Length * nLength) throw new ArgumentOutOfRangeException(nameof(sourceStart));
-				if (destStart + length > (ulong)dest.Length * nLength) throw new ArgumentOutOfRangeException(nameof(destStart));
-				if (length > long.MaxValue) throw new ArgumentOutOfRangeException(nameof(length));
-
-				ulong currentSource = sourceStart;
-				ulong currentDest = destStart;
-				long remaining = (long)length;
-				while (remaining > 0)
-				{
-					ulong nextDestUlongBoundary = currentDest + (nLength - (currentDest % nLength));
-					if (nextDestUlongBoundary < currentDest) throw new Exception();
-					int sourceIndex = (int)(currentSource / nLength);
-					ulong source1 = source[sourceIndex];
-					ulong source2 = sourceIndex + 1 == source.Length ? 0UL : source[sourceIndex + 1];
-					uint diff = (uint)(nextDestUlongBoundary - currentDest); // Math.Min((ulong)remaining, nextDestUlongBoundary - currentDest);
-					ref var dst = ref dest[(int)(currentDest / nLength)];
-					Copy(source1, source2, ref dst, (int)(currentSource % nLength), (int)(currentDest % nLength), diff);
-
-					remaining -= diff;
-					currentDest += diff;
-					currentSource += diff;
-				}
-
-
-				static void Copy(ulong source1, ulong source2, ref ulong dest, int index, int destIndex, uint length)
-				{
-					ulong orig1 = source1;
-					ulong orig2 = source2;
-					if (index < 0 || index >= nLength) throw new ArgumentOutOfRangeException(nameof(index));
-					if (length < 0 || length > int.MaxValue || length > 2 * nLength) throw new ArgumentOutOfRangeException(nameof(length));
-					if (destIndex + length > nLength) throw new ArgumentOutOfRangeException(nameof(destIndex));
-					if (index + length > 2 * nLength) throw new ArgumentOutOfRangeException(nameof(index));
-
-					if (index == destIndex)
-					{
-						// this is supposed to result in source2 <<= 64, but that's a no-op (which I didn't expect)
-						source2 = 0;
-					}
-					else if (index >= destIndex)
-					{
-						source1 >>= (index - destIndex);
-						source2 <<= 64 - (index - destIndex);
-					}
-					else
-					{
-						source1 <<= (destIndex - index);
-						source2 >>= 64 - (destIndex - index);
-					}
-					ulong mask = CreateULongMask(destIndex, destIndex + (int)length);
-					ulong newDest = (source1 | source2) & mask;
-
-					dest &= ~mask;
-					dest |= newDest;
-				}
-
-			}
+			
 			static void SetBit(ulong[] dest, ulong bitIndex, bool value)
 			{
 				ulong flag = 1UL << (int)(bitIndex % nLength);
@@ -259,6 +202,64 @@ namespace JBSnorro
 					dest[bitIndex / nLength] |= flag;
 				else
 					dest[bitIndex / nLength] &= ~flag;
+			}
+		}
+		public static void CopyBitsTo(this ulong[] source, ulong[] dest, ulong sourceStart, ulong destStart, ulong length)
+		{
+			const int nLength = 64;
+			if (sourceStart + length > (ulong)source.Length * nLength) throw new ArgumentOutOfRangeException(nameof(sourceStart));
+			if (destStart + length > (ulong)dest.Length * nLength) throw new ArgumentOutOfRangeException(nameof(destStart));
+			if (length > long.MaxValue) throw new ArgumentOutOfRangeException(nameof(length));
+
+			ulong currentSource = sourceStart;
+			ulong currentDest = destStart;
+			long remaining = (long)length;
+			while (remaining > 0)
+			{
+				ulong nextDestUlongBoundary = currentDest + (nLength - (currentDest % nLength));
+				if (nextDestUlongBoundary < currentDest) throw new Exception();
+				int sourceIndex = (int)(currentSource / nLength);
+				ulong source1 = source[sourceIndex];
+				ulong source2 = sourceIndex + 1 == source.Length ? 0UL : source[sourceIndex + 1];
+				uint diff = (uint)(nextDestUlongBoundary - currentDest); // Math.Min((ulong)remaining, nextDestUlongBoundary - currentDest);
+				ref var dst = ref dest[(int)(currentDest / nLength)];
+				Copy(source1, source2, ref dst, (int)(currentSource % nLength), (int)(currentDest % nLength), Math.Min((uint)remaining, diff));
+
+				remaining -= diff;
+				currentDest += diff;
+				currentSource += diff;
+			}
+
+
+			static void Copy(ulong source1, ulong source2, ref ulong dest, int index, int destIndex, uint length)
+			{
+				ulong orig1 = source1;
+				ulong orig2 = source2;
+				if (index < 0 || index >= nLength) throw new ArgumentOutOfRangeException(nameof(index));
+				if (length < 0 || length > int.MaxValue || length > 2 * nLength) throw new ArgumentOutOfRangeException(nameof(length));
+				if (destIndex + length > nLength) throw new ArgumentOutOfRangeException(nameof(destIndex));
+				if (index + length > 2 * nLength) throw new ArgumentOutOfRangeException(nameof(index));
+
+				if (index == destIndex)
+				{
+					// this is supposed to result in source2 <<= 64, but that's a no-op (which I didn't expect)
+					source2 = 0;
+				}
+				else if (index >= destIndex)
+				{
+					source1 >>= (index - destIndex);
+					source2 <<= 64 - (index - destIndex);
+				}
+				else
+				{
+					source1 <<= (destIndex - index);
+					source2 >>= 64 - (destIndex - index);
+				}
+				ulong mask = CreateULongMask(destIndex, destIndex + (int)length);
+				ulong newDest = (source1 | source2) & mask;
+
+				dest &= ~mask;
+				dest |= newDest;
 			}
 		}
 		// I want a remainder that returns the positive remainder
@@ -297,6 +298,9 @@ namespace JBSnorro
 			ulong mask = ulong.MaxValue >> numberOfBitsToClear;
 			return bits & mask;
 		}
+		/// <summary>
+		/// Creates a ulong with bits set to one at indices [from, until).
+		/// </summary>
 		/// <param name="until">exclusive.</param>
 		static ulong CreateULongMask(int from, int until)
 		{
@@ -304,6 +308,15 @@ namespace JBSnorro
 			if (until < from || until > 64) throw new ArgumentOutOfRangeException(nameof(until));
 
 			return ClearHighBits(ClearLowBits(ulong.MaxValue, from), 64 - until);
+		}
+		/// <summary>
+		/// Sets the bits from [0, until) and [from, 64] to zero.
+		/// </summary>
+		public static ulong Mask(this ulong value, int until, int from)
+		{
+			var mask = CreateULongMask(until, from);
+			var result = value & mask;
+			return result;
 		}
 		/// <summary>
 		/// Removes bits at specified indices.

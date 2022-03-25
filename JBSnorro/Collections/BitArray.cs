@@ -431,6 +431,16 @@ namespace JBSnorro.Collections
 				array[^1] &= mask;
 			}
 		}
+		public void CopyTo(BitArray array, ulong sourceStartBitIndex, ulong length, ulong destStartBitIndex)
+		{
+			if (array == null) throw new ArgumentNullException(nameof(array));
+			Contract.Assert<NotImplementedException>(sourceStartBitIndex + length <= int.MaxValue);
+			if (sourceStartBitIndex + length > (ulong)this.Length) throw new ArgumentOutOfRangeException("sourceStartBitIndex + length");
+			Contract.Assert<NotImplementedException>(destStartBitIndex + length <= int.MaxValue);
+			if (destStartBitIndex + length > (ulong)array.Length) throw new ArgumentOutOfRangeException("destStartBitIndex + length");
+
+			BitTwiddling.CopyBitsTo(this.data, array.data, sourceStartBitIndex, destStartBitIndex, length: length);
+		}
 		public IEnumerator<bool> GetEnumerator()
 		{
 			return Enumerable.Range(0, this.Length).Select(i => this[i]).GetEnumerator();
