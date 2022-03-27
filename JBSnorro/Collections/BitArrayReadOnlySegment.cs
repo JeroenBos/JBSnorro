@@ -36,6 +36,10 @@ namespace JBSnorro.Collections
         {
             return GetEnumerator();
         }
+        public BitReader ToBitReader(int startIndex)
+        {
+            return new BitReader(data, start, length);
+        }
     }
 
     public static class BitArraySegmentExtensions

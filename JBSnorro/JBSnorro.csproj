@@ -3,6 +3,7 @@
 	<PropertyGroup>
 	<TargetFrameworks>net6.0</TargetFrameworks>
 	<LangVersion>latest</LangVersion>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<Version>0.0.13</Version>
 	<Authors>JeroenBos</Authors>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>

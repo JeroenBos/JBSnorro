@@ -332,7 +332,7 @@ namespace JBSnorro
 			else
 				bitArray = new BitArray(bytes, bytesLengthInBits.Value);
 			bitArray.RemoveAt(sortedBitIndices);
-			var result = new byte[bitArray.Length / 8 + ((bitArray.Length % 8) == 0 ? 0 : 1)];
+			var result = new byte[checked((int)(bitArray.Length / 8 + ((bitArray.Length % 8) == 0 ? 0UL : 1)))];
 			bitArray.CopyTo(result.AsSpan(), 0);
 			return result;
 		}
@@ -442,7 +442,11 @@ namespace JBSnorro
 
 		}
 
-
+		internal static ulong ToULong( this int i)
+		{
+			if (i < 0) throw new ArgumentOutOfRangeException(nameof(i));
+			return (ulong)i;
+		}
 	}
 
 }

@@ -146,7 +146,7 @@ namespace JBSnorro.Collections
 		public bool IsDisjointFrom(IReadOnlyList<bool> array)
 		{
 			Contract.Requires(array != null);
-			Contract.Requires(array.Count == this.Length);
+			Contract.Requires(array.Count == checked((int)this.Length));
 
 			if (array is ImmutableBitArray iba)
 			{
@@ -186,7 +186,7 @@ namespace JBSnorro.Collections
 			get { return data[index]; }
 		}
 		/// <summary> Gets the number of bits in this collection. </summary>
-		public int Length
+		public ulong Length
 		{
 			get { return data.Length; }
 		}
@@ -194,7 +194,8 @@ namespace JBSnorro.Collections
 		{
 			get
 			{
-				return data.Length;
+				Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
+				return (int)this.Length;
 			}
 		}
 		public IEnumerator<bool> GetEnumerator()
