@@ -36,7 +36,7 @@ namespace JBSnorro.Collections
         {
             return GetEnumerator();
         }
-        public BitReader ToBitReader(ulong startIndex)
+        public BitReader ToBitReader(ulong startIndex = 0)
         {
             return new BitReader(data, startIndex, length);
         }
