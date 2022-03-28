@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 	<TargetFrameworks>net6.0</TargetFrameworks>
-	<LangVersion>latest</LangVersion>
+	<LangVersion>10</LangVersion>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<Version>0.0.13</Version>
 	<Authors>JeroenBos</Authors>
