@@ -4,6 +4,7 @@
 	<TargetFrameworks>net6.0</TargetFrameworks>
 	<LangVersion>10</LangVersion>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<ImplicitUsings>enable</ImplicitUsings>
 	<Version>0.0.13</Version>
 	<Authors>JeroenBos</Authors>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
