@@ -155,7 +155,22 @@ public class BitReader : IBitReader
             return result;
         }
     }
-
+    /// <summary>
+    /// Returns whether this reader still has the specified number of bits to read.
+    /// </summary>
+    public bool CanRead(int bitCount)
+    {
+        if (bitCount < 0 || bitCount > 64) throw new ArgumentOutOfRangeException(nameof(bitCount));
+        return RemainingLength > (ulong)bitCount;
+    }
+    /// <summary>
+    /// Returns whether this reader still has the specified number of bits to read.
+    /// </summary>
+    public bool CanRead(ulong bitCount)
+    {
+        if (bitCount > 64) throw new ArgumentOutOfRangeException(nameof(bitCount));
+        return RemainingLength > (ulong)bitCount;
+    }
 
     public ulong ReadUInt64(int bitCount)
     {
