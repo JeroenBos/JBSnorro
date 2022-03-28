@@ -13,24 +13,23 @@ namespace JBSnorro.Collections
     {
         private readonly BitArray data;
         private readonly ulong start;
-        private readonly ulong length;
 
         public BitArrayReadOnlySegment(BitArray data, ulong start, ulong length)
         {
             this.data = data;
             this.start = start;
-            this.length = length;
+            this.Length = length;
         }
 
         public bool this[int index] => this[(ulong)index];
         public bool this[ulong index] => this.data[start + index];
 
-        public int Count => (int)this.length;
+        public ulong Length { get; private set; }
 
         public IEnumerator<bool> GetEnumerator()
         {
-            Contract.Assert<NotImplementedException>(start + length <= int.MaxValue);
-            return Enumerable.Range(0, this.Count).Select(i => this[i]).GetEnumerator();
+            Contract.Assert<NotImplementedException>(start + this.Length <= int.MaxValue);
+            return Enumerable.Range(0, ((IReadOnlyList<bool>)this).Count).Select(i => this[i]).GetEnumerator();
         }
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -38,9 +37,18 @@ namespace JBSnorro.Collections
         }
         public BitReader ToBitReader(ulong startIndex = 0)
         {
-            return new BitReader(data, startIndex, length);
+            return new BitReader(data, startIndex, this.Length);
         }
-    }
+        int IReadOnlyCollection<bool>.Count
+        {
+            get
+            {
+                Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
+                return (int)this.Length;
+            }
+
+        }
+}
 
     public static class BitArraySegmentExtensions
     {
