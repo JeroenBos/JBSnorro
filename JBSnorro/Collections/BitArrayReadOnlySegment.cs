@@ -23,6 +23,22 @@ namespace JBSnorro.Collections
 
         public bool this[int index] => this[(ulong)index];
         public bool this[ulong index] => this.data[start + index];
+        public BitArrayReadOnlySegment this[Range range]
+        {
+            get
+            {
+                checked
+                {
+                    Contract.Requires<NotImplementedException>(this.Length <= int.MaxValue);
+                    var (start, length) = range.GetOffsetAndLength((int)this.Length);
+                    ulong dataStart = (uint)start + this.start;
+                    Contract.Requires<NotImplementedException>(dataStart <= int.MaxValue);
+
+                    var dataRange = new Range((int)dataStart, (int)dataStart + length);
+                    return this.data[dataRange];
+                }
+            }
+        }
 
         public ulong Length { get; private set; }
 
@@ -47,6 +63,10 @@ namespace JBSnorro.Collections
                 return (int)this.Length;
             }
 
+        }
+        public long IndexOf(ulong item, int? itemLength = null, ulong startBitIndex = 0)
+        {
+            return this.data.IndexOf(item, itemLength, startBitIndex);
         }
     }
 

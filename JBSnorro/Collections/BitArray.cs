@@ -79,6 +79,16 @@ namespace JBSnorro.Collections
                 }
             }
         }
+
+        public BitArrayReadOnlySegment this[Range range]
+        {
+            get
+            {
+                Contract.Requires<NotImplementedException>(this.Length <= int.MaxValue);
+                var (start, length) = range.GetOffsetAndLength((int)this.Length);
+                return new BitArrayReadOnlySegment(this, (ulong)start, (ulong)length);
+            }
+        }
         /// <summary>
         /// Gets the 64 successive bits at the specified bit index.
         /// </summary>
@@ -510,9 +520,9 @@ namespace JBSnorro.Collections
         {
             get { return false; }
         }
-        public long IndexOf(ulong item, int? itemLength = null, ulong startIndex = 0)
+        public long IndexOf(ulong item, int? itemLength = null, ulong startBitIndex = 0)
         {
-            return BitTwiddling.IndexOfBits(this.data, item, itemLength, startIndex, (ulong)this.Length);
+            return BitTwiddling.IndexOfBits(this.data, item, itemLength, startBitIndex, this.Length);
         }
         public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
         {
