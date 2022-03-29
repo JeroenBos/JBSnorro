@@ -121,39 +121,21 @@ public class BitReader : IBitReader
         if (this.RemainingLength < 16)
             throw InsufficientBitsException("Half");
         short i = ReadInt16();
-        unsafe
-        {
-            short* pointer = &i;
-            Half* halfPointer = (Half*)pointer;
-            Half result = *halfPointer;
-            return result;
-        }
+        return BitTwiddling.BitsAsHalf(i);
     }
     public float ReadSingle()
     {
         if (this.RemainingLength < 32)
             throw InsufficientBitsException("Single");
         int i = ReadInt32();
-        unsafe
-        {
-            int* pointer = &i;
-            float* floatPointer = (float*)pointer;
-            float result = *floatPointer;
-            return result;
-        }
+        return BitTwiddling.BitsAsSingle(i);
     }
     public double ReadDouble()
     {
         if (this.RemainingLength < 64)
             throw InsufficientBitsException("Double");
         long i = ReadInt64();
-        unsafe
-        {
-            long* pointer = &i;
-            double* doublePointer = (double*)pointer;
-            double result = *doublePointer;
-            return result;
-        }
+        return BitTwiddling.BitsAsDouble(i);
     }
     /// <summary>
     /// Returns whether this reader still has the specified number of bits to read.

@@ -447,6 +447,37 @@ namespace JBSnorro
 			if (i < 0) throw new ArgumentOutOfRangeException(nameof(i));
 			return (ulong)i;
 		}
+
+		public static Half BitsAsHalf(this short s)
+		{
+			unsafe
+			{
+				short* pointer = &s;
+				Half* halfPointer = (Half*)pointer;
+				Half result = *halfPointer;
+				return result;
+			}
+		}
+		public static float BitsAsSingle(this int i)
+		{
+			unsafe
+			{
+				int* pointer = &i;
+				float* floatPointer = (float*)pointer;
+				float result = *floatPointer;
+				return result;
+			}
+		}
+		public static double BitsAsDouble(this long i)
+		{
+			unsafe
+			{
+				long* pointer = &i;
+				double* doublePointer = (double*)pointer;
+				double result = *doublePointer;
+				return result;
+			}
+		}
 	}
 
 }
