@@ -11,8 +11,8 @@ namespace JBSnorro.Collections
 {
     public class BitArrayReadOnlySegment : IReadOnlyList<bool>
     {
-        private readonly BitArray data;
-        private readonly ulong start;
+        protected readonly BitArray data;
+        protected readonly ulong start;
 
         public BitArrayReadOnlySegment(BitArray data, ulong start, ulong length)
         {
@@ -48,7 +48,7 @@ namespace JBSnorro.Collections
             }
 
         }
-}
+    }
 
     public static class BitArraySegmentExtensions
     {
