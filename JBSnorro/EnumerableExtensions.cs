@@ -3140,5 +3140,24 @@ namespace JBSnorro
 
 			list.Sort(Comparer<T>.Create((Comparison<T>)((x, y) => comparer(x, y))));
 		}
+		/// <summary>
+		/// Gets the standard deviation of the specified numbers.
+		/// </summary>
+		/// <param name="average">Provide the average as performance optimization.</param>
+		public static float StandardDeviation(this IEnumerable<float> numbers, float? average = null)
+		{
+			float μ = average ?? numbers.Average();
+
+			int count = 0;
+			float sum = 0;
+			foreach (var number in numbers)
+			{
+				sum += (number - μ) * (number - μ);
+				count++;
+			}
+			if (count == 0)
+				return 0;
+			return (float)Math.Sqrt(sum / count);
+		}
 	}
 }

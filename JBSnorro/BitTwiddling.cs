@@ -478,6 +478,43 @@ namespace JBSnorro
 				return result;
 			}
 		}
+
+		/// <summary>
+		/// Gets whether a sequence of bits at in two ulong arrays are equal.
+		/// </summary>
+		public static bool BitSequenceEqual(this ulong[] source, ulong[] other, ulong sourceStartBitIndex, ulong otherStartBitIndex, ulong length, ulong? sourceBitLength = null, ulong? otherBitLength = null)
+		{
+			Contract.Requires<NotImplementedException>(length <= 64);
+
+			if(sourceBitLength != null && sourceBitLength > (ulong)source.Length * 64)
+				throw new ArgumentOutOfRangeException(nameof(sourceBitLength));
+			if (otherBitLength != null && otherBitLength > (ulong)source.Length * 64)
+				throw new ArgumentOutOfRangeException(nameof(otherBitLength));
+
+			sourceBitLength ??= (ulong)source.Length * 64;
+			otherBitLength ??= (ulong)other.Length * 64;
+			
+			if (sourceStartBitIndex + length > sourceBitLength)
+				throw new ArgumentOutOfRangeException(nameof(sourceStartBitIndex));
+			if (otherStartBitIndex + length > otherBitLength)
+				throw new ArgumentOutOfRangeException(nameof(otherStartBitIndex));
+
+			var sourceBits = getBits(source, sourceStartBitIndex, length);
+			var otherBits = getBits(other, otherStartBitIndex, length);
+
+			return sourceBits == otherBits;
+
+
+
+			static ulong getBits(ulong[] array, ulong bitIndex, ulong bitCount)
+			{
+				return TakeBits(first: array[bitIndex / 64],
+						        second: (int)(bitIndex / 64) + 1 >= array.Length ? 0 : array[(bitIndex / 64) + 1],
+						        start: (int)(bitIndex % 64),
+						        end: (int)(bitIndex % 64) + checked((int)bitCount));
+			}
+		}
+
 	}
 
 }

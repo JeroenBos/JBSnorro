@@ -1,5 +1,7 @@
-﻿using JBSnorro;
+﻿#nullable enable
+using JBSnorro;
 using JBSnorro.Diagnostics;
+using JBSnorro.Extensions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,6 +36,22 @@ namespace JBSnorro.Collections
             {
                 return (int)(division + (remainder == 0 ? 0UL : 1UL));
             }
+        }
+        /// <summary>
+        /// Creates a new bit array of the specified length populated with random data.
+        /// </summary>
+        /// <param name="length">The number of bits this array is to represent.</param>
+        public static BitArray InitializeRandom(ulong length, Random random)
+        {
+            var data = new ulong[ComputeInternalStructureSize(length)];
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = random.NextUInt64();
+            }
+            // we _could_ clear out the bits after `length` but I don't think it's necessary atm
+            return new BitArray(data, length);
+
+
         }
 
         private ulong[] data;
@@ -89,6 +107,7 @@ namespace JBSnorro.Collections
                 return new BitArrayReadOnlySegment(this, (ulong)start, (ulong)length);
             }
         }
+        
         /// <summary>
         /// Gets the 64 successive bits at the specified bit index.
         /// </summary>
@@ -220,15 +239,18 @@ namespace JBSnorro.Collections
         {
             return Enumerable.Range(0, 8).Select(i => b.HasBit(i));
         }
+        /// <inheritdoc cref="BitArray(ulong[], ulong)"/>
+        public BitArray(ulong[] backingData, int length) : this(backingData, checked((ulong)length))
+        { }
         /// <summary> Creates a new bit array from <param ref="backingData"/>, i.e. no copy is made. </summary>
         /// <param name="backingData"> The indices of bits to set to true. </param>
         /// <param name="length"> The number of bits that are considered to be set in the given data. </param>
-        public BitArray(ulong[] backingData, int length)
+        public BitArray(ulong[] backingData, ulong length)
         {
             Contract.Requires(backingData != null);
-            Contract.Requires(0 <= length && length <= 64 * backingData.Length);
+            Contract.Requires(0 <= length && length <= 64UL * (ulong)backingData.Length);
 
-            this.Length = (ulong)length;
+            this.Length = length;
             this.data = backingData;
         }
 
@@ -506,7 +528,11 @@ namespace JBSnorro.Collections
             Contract.Assert<NotImplementedException>(destStartBitIndex + length <= int.MaxValue);
             if (destStartBitIndex + length > (ulong)array.Length) throw new ArgumentOutOfRangeException("destStartBitIndex + length");
 
-            BitTwiddling.CopyBitsTo(this.data, array.data, sourceStartBitIndex, destStartBitIndex, length: length);
+            CopyTo(array.data, sourceStartBitIndex, length, destStartBitIndex);
+        }
+        internal void CopyTo(ulong[] array, ulong sourceStartBitIndex, ulong length, ulong destStartBitIndex)
+        {
+            BitTwiddling.CopyBitsTo(this.data, array, sourceStartBitIndex, destStartBitIndex, length: length);
         }
         public IEnumerator<bool> GetEnumerator()
         {
@@ -524,6 +550,19 @@ namespace JBSnorro.Collections
         {
             return BitTwiddling.IndexOfBits(this.data, item, itemLength, startBitIndex, this.Length);
         }
+        public bool IsAt(ulong index, ulong item, int? itemLength = null)
+        {
+            var tempWrapper = new BitArray(new ulong[] { item }, length: itemLength ?? 64);
+            return this.BitSequenceEqual(tempWrapper, index);
+        }
+        public bool BitSequenceEqual(BitArray other, ulong sourceStartBitIndex, ulong? sourceBitLength = null)
+        {
+            return this.data.BitSequenceEqual(other.data, sourceStartBitIndex, 0, other.Length, sourceBitLength, other.Length);
+        }
+        public bool BitSequenceEqual(BitArrayReadOnlySegment other, ulong sourceStartBitIndex, ulong? sourceBitLength = null)
+        {
+            return this.data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitLength, other.data.Length);
+        }
         public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
         {
             return BitTwiddling.IndexOfBits(this.data, items, itemLength, startIndex, (ulong)this.Length);
@@ -533,6 +572,14 @@ namespace JBSnorro.Collections
             this.data = BitTwiddling.InsertBits(this.data, new[] { index }, new[] { value }, (ulong)this.Length);
             this.Length++;
         }
+        /// <summary>
+        /// Inserts bits into the specified bit source.
+        /// </summary>
+        /// <param name="source"> The bits to insert in (is left unmodified). </param>
+        /// <param name="sortedBitIndices"> The indices of the bits to insert. Must be non-decreasing. </param>
+        /// <param name="values"> The bits to insert. </param>
+        /// <param name="sourceLengthInBits">The length of the source. Defaults to <code>source * 64.</code></param>
+        /// <returns>a new array with the bits inserted. </returns>
         public void InsertRange(int[] sortedIndices, bool[] values)
         {
             // there's still PERF to be gained by not creating a new array if it would fit, by implementing `ref this.data`
@@ -585,7 +632,7 @@ namespace JBSnorro.Collections
 
         #region Equality Members
 
-        public static bool operator ==(BitArray a, BitArray b)
+        public static bool operator ==(BitArray? a, BitArray? b)
         {
             if (ReferenceEquals(a, null))
             {
@@ -593,15 +640,15 @@ namespace JBSnorro.Collections
             }
             return a.Equals(b);
         }
-        public static bool operator !=(BitArray a, BitArray b)
+        public static bool operator !=(BitArray? a, BitArray? b)
         {
             return !(a == b);
         }
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as BitArray);
         }
-        public bool Equals(BitArray other)
+        public bool Equals(BitArray? other)
         {
             if (ReferenceEquals(other, null))
                 return false;
@@ -687,7 +734,7 @@ namespace JBSnorro.Collections
             Contract.Requires(arrays.Select(array => array.Length).AreEqual());
             Contract.Requires(arrays.Any());
 
-            BitArray result = null;
+            BitArray? result = null;
             foreach (BitArray array in arrays)
             {
                 if (result == null)
@@ -696,7 +743,7 @@ namespace JBSnorro.Collections
                     result.Or(array);
             }
 
-            return result;
+            return result!;
         }
         /// <summary> Performs the OR operation on all specified bit sequences. </summary>
         /// <param name="bitSequences"> The bit sequences to OR together. Must be commensurate. </param>
@@ -707,7 +754,7 @@ namespace JBSnorro.Collections
             Contract.RequiresForAll(bitSequences, NotNull);
             Contract.Requires(bitSequences.Select(array => array.Count).AreEqual());
 
-            BitArray result = null;
+            BitArray? result = null;
             foreach (IReadOnlyList<bool> array in bitSequences)
             {
                 if (result == null)
@@ -716,7 +763,7 @@ namespace JBSnorro.Collections
                     result.Or(array);
             }
 
-            return result;
+            return result!;
         }
 
         /// <summary> Returns <see param="bitCount"/> ones followed by zeroes (least significant to most). </summary>
@@ -738,6 +785,49 @@ namespace JBSnorro.Collections
         internal static ulong UpperBitsUnmask(int bitCount)
         {
             return ulong.MaxValue << bitCount;
+        }
+
+        /// <summary>
+        /// Sets the specified data at the specified index.
+        /// </summary>
+        public static void Set(this BitArray dest, ulong data, int dataLength, ulong insertionIndex)
+        {
+            // easy (but imperformant) way of setting ulong into bitarray:
+            var wrappedData = new BitArray(new ulong[] { data }, length: dataLength);
+            wrappedData.CopyTo(dest, 0, (ulong)dataLength, insertionIndex);
+        }
+        public static BitArray Insert(this BitArray array, ulong data, int dataLength, ulong insertionIndex)
+        {
+            if (array == null!) throw new ArgumentNullException(nameof(array));
+            if (dataLength < 0 || dataLength > 64) throw new ArgumentOutOfRangeException(nameof(dataLength));
+            if (insertionIndex > array.Length) throw new ArgumentOutOfRangeException(nameof(insertionIndex));
+
+            ulong destLength = (ulong)BitArray.ComputeInternalStructureSize(array.Length + (ulong)dataLength);
+            var dest = new ulong[checked((int)destLength)];
+            array.CopyTo(dest, 0UL, insertionIndex, 0);
+            array.CopyTo(dest, insertionIndex, array.Length - insertionIndex, (ulong)dataLength);
+
+            var result = new BitArray(dest, length: array.Length + (ulong)dataLength);
+
+            result.Set(data, dataLength, insertionIndex);
+            return result;
+        }
+        public static BitArray Prepend(this BitArray array, ulong data, int dataLength)
+        {
+            return array.Insert(data, dataLength, 0UL);
+        }
+        public static BitArray Append(this BitArray array, ulong data, int dataLength)
+        {
+            return array.Insert(data, dataLength, array.Length);
+        }
+        /// <summary>
+        /// A perf optimization to prepending and appending.
+        /// </summary>
+        public static BitArray Wrap(this BitArray array, ulong prependData, int prependDataLength, ulong appendData, int appendDataLength)
+        {
+            // TODO: perf
+            return array.Prepend(prependData, prependDataLength)
+                        .Append(appendData, appendDataLength);
         }
     }
 }

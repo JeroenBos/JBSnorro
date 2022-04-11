@@ -1,4 +1,5 @@
-﻿using BitArray = JBSnorro.Collections.BitArray;
+﻿#nullable enable
+using BitArray = JBSnorro.Collections.BitArray;
 
 namespace JBSnorro.Collections;
 
