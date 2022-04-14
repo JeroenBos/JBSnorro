@@ -1,4 +1,5 @@
-﻿using JBSnorro.Diagnostics;
+﻿#nullable enable
+using JBSnorro.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace JBSnorro.Collections
 {
-    public class BitArrayReadOnlySegment : IReadOnlyList<bool>
+    public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     {
         internal protected readonly BitArray data;
         internal protected readonly ulong start;
@@ -145,6 +146,28 @@ namespace JBSnorro.Collections
         {
             return this.Prepend(prependData, prependDataLength)
                        .Append(appendData, appendDataLength);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj switch
+            {
+                BitArrayReadOnlySegment segment => this.Equals(segment),
+                BitArray array => this.Equals(array),
+                _ => false
+            };
+        }
+        public bool Equals(BitArrayReadOnlySegment other)
+        {
+            return this.data.BitSequenceEqual(other, this.start, this.Length);
+        }
+        public bool Equals(BitArray other)
+        {
+            return this.data.BitSequenceEqual(other, this.start, this.Length);
+        }
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
         }
     }
 

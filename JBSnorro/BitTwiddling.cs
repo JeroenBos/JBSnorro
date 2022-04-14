@@ -497,6 +497,9 @@ namespace JBSnorro
 		/// <summary>
 		/// Gets whether a sequence of bits at in two ulong arrays are equal.
 		/// </summary>
+		/// <param name="length">The number of bits to compare for equality.</param>
+		/// <param name="sourceBitLength"> The number of bits in <paramref name="source"/>. </param>
+		/// <param name="otherBitLength"> The number of bits in <paramref name="other"/>. </param>
 		public static bool BitSequenceEqual(this ulong[] source, ulong[] other, ulong sourceStartBitIndex, ulong otherStartBitIndex, ulong length, ulong? sourceBitLength = null, ulong? otherBitLength = null)
 		{
 			Contract.Requires<NotImplementedException>(length <= 64);
@@ -519,8 +522,6 @@ namespace JBSnorro
 
 			return sourceBits == otherBits;
 
-
-
 			static ulong getBits(ulong[] array, ulong bitIndex, ulong bitCount)
 			{
 				return TakeBits(first: array[bitIndex / 64],
@@ -529,7 +530,5 @@ namespace JBSnorro
 						        end: (int)(bitIndex % 64) + checked((int)bitCount));
 			}
 		}
-
 	}
-
 }

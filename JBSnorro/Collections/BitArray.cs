@@ -561,14 +561,23 @@ namespace JBSnorro.Collections
         }
         public bool IsAt(ulong index, ulong item, int? itemLength = null)
         {
-            var tempWrapper = new BitArray(new ulong[] { item }, length: itemLength ?? 64);
-            return this.BitSequenceEqual(tempWrapper, index);
+            ulong length = (ulong)(itemLength ?? 64);
+            var tempWrapper = new BitArray(new ulong[] { item }, length);
+            return this.BitSequenceEqual(tempWrapper, index, length);
         }
-        public bool BitSequenceEqual(BitArray other, ulong sourceStartBitIndex, ulong? sourceBitLength = null)
+        public bool BitSequenceEqual(BitArray other)
+        {
+            return BitSequenceEqual(other, 0, this.Length);
+        }
+        public bool BitSequenceEqual(BitArray other, ulong sourceStartBitIndex, ulong sourceBitLength)
         {
             return this.data.BitSequenceEqual(other.data, sourceStartBitIndex, 0, other.Length, sourceBitLength, other.Length);
         }
-        public bool BitSequenceEqual(BitArrayReadOnlySegment other, ulong sourceStartBitIndex, ulong? sourceBitLength = null)
+        public bool BitSequenceEqual(BitArrayReadOnlySegment other)
+        {
+            return BitSequenceEqual(other, 0, this.Length);
+        }
+        public bool BitSequenceEqual(BitArrayReadOnlySegment other, ulong sourceStartBitIndex, ulong sourceBitLength)
         {
             return this.data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitLength, other.data.Length);
         }
