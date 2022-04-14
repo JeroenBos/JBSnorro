@@ -1,4 +1,5 @@
-﻿using JBSnorro;
+﻿#nullable enable
+using JBSnorro;
 using JBSnorro.Algorithms;
 using JBSnorro.Collections;
 using JBSnorro.Collections.Sorted;
@@ -35,7 +36,7 @@ namespace JBSnorro
 		private sealed class EnumerableWithActionOnDisposal<T> : IEnumerable<T>, IEnumerator<T>
 		{
 			private readonly IEnumerable<T> sequence;
-			private IEnumerator<T> enumerator;
+			private IEnumerator<T>? enumerator;
 			private readonly Action onDisposal;
 
 			public EnumerableWithActionOnDisposal(IEnumerable<T> sequence, Action onDisposal)
@@ -69,7 +70,7 @@ namespace JBSnorro
 			}
 
 
-			object IEnumerator.Current => this.Current;
+			object? IEnumerator.Current => this.Current;
 			public void Reset() => throw new InvalidOperationException();
 			public IEnumerator<T> GetEnumerator() => this;
 			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -122,12 +123,12 @@ namespace JBSnorro
 		/// <param name="source"> The sequence to check whether its starts with <paramref name="startSequence"/>. </param>
 		/// <param name="startSequence"> The sequence to look for in <paramref name="source"/>. </param>
 		/// <param name="equalityComparer"> The equality comparer determinign equality between elements of the two sequences. Specify null to use the default equality comparer. </param>
-		public static bool StartsWith<T>(this IEnumerable<T> source, IEnumerable<T> startSequence, Func<T, T, bool> equalityComparer = null)
+		public static bool StartsWith<T>(this IEnumerable<T> source, IEnumerable<T> startSequence, Func<T, T, bool>? equalityComparer = null)
 		{
 			Contract.Requires(source != null);
 			Contract.Requires(startSequence != null);
 
-			equalityComparer = equalityComparer ?? EqualityComparer<T>.Default.Equals;
+			equalityComparer ??= EqualityComparer<T>.Default.Equals;
 
 			using (var sequenceEnumerator = source.GetEnumerator())
 			{
@@ -250,13 +251,7 @@ namespace JBSnorro
 
 			return Enumerate();
 		}
-		/// <summary>
-		/// Zips the two sequences togethers until it reaches the end of one of them.
-		/// </summary>
-		public static IEnumerable<(T, U)> Zip<T, U>(this IEnumerable<T> firstSequence, IEnumerable<U> secondSequence)
-		{
-			return Enumerable.Zip(firstSequence, secondSequence, (t, u) => (t, u));
-		}
+
 		/// <summary> Applies a specified function the first element of two sequences, and subsequently a function to the remaining corresponding elements of two sequences, producing a sequence of the results.
 		/// This entails that the resulting sequence is commensurate with the smallest specified sequence. </summary>
 		/// <param name="firstSource"> The first sequence to merge. </param>
@@ -292,7 +287,6 @@ namespace JBSnorro
 			return Enumerate();
 		}
 		/// <summary> Creates and populates a dictionary with the specified pairs, and with the default equality comparer. </summary>
-#nullable enable
 		public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> initialCollection) where TKey : notnull
 		{
 			return initialCollection.ToDictionary(equalityComparer: EqualityComparer<TKey>.Default);
@@ -310,9 +304,8 @@ namespace JBSnorro
 			}
 			return result;
 		}
-#nullable restore
 		/// <summary> Creates and populates a dictionary from the specified keys and equality comparer. </summary>
-		public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<TKey> keys, Func<TKey, TValue> valueSelector, IEqualityComparer<TKey> equalityComparer = null)
+		public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<TKey> keys, Func<TKey, TValue> valueSelector, IEqualityComparer<TKey>? equalityComparer = null) where TKey : notnull
 		{
 			Contract.Requires(keys != null);
 			Contract.Requires(valueSelector != null);
@@ -335,12 +328,12 @@ namespace JBSnorro
 			Contract.Requires(0 <= index2 || index2 == -1);
 			Contract.Requires(index1 < index2 || index2 == -1);
 
-			T element1 = default(T);
-			T element2 = default(T);
-
 			//beforehand check of bounds:
-			if ((source as ICollection)?.Count < Math.Max(index1, index2))
+			if (source.TryGetNonEnumeratedCount(out int count) && count < Math.Max(index1, index2))
 				throw new IndexOutOfRangeException();
+
+			T? element1 = default(T);
+			T? element2 = default(T);
 
 			int i = 0;
 			foreach (T element in source)
@@ -360,7 +353,7 @@ namespace JBSnorro
 			if (i < Math.Max(index1, index2))
 				throw new IndexOutOfRangeException();
 
-			return (element1, element2);
+			return (element1, element2)!;
 		}
 		/// <summary> Searches for the specified sequence and returns the indices of all occurrences within the specified source. Can be empty. </summary>
 		/// <param name="source"> A sequence in which to search for the items. </param>
@@ -440,11 +433,11 @@ namespace JBSnorro
 			return source.Concat(element);
 		}
 		/// <summary> Returns the original sequence, appended with the specified item if the original sequence doesn't already end on that item. </summary>
-		public static IEnumerable<T> ConcatIfNotLastElement<T>(this IEnumerable<T> sequence, T item, IEqualityComparer<T> equalityComparer = null)
+		public static IEnumerable<T> ConcatIfNotLastElement<T>(this IEnumerable<T> sequence, T item, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(sequence != null);
 
-			equalityComparer = equalityComparer ?? EqualityComparer<T>.Default;
+			equalityComparer ??= EqualityComparer<T>.Default;
 
 			Option<T> lastElement = Option<T>.None;
 			foreach (T element in sequence)
@@ -523,11 +516,12 @@ namespace JBSnorro
 			return source.WithIndex()
 						 .All(tuple => predicate(tuple.Element, tuple.Index));
 		}
+
 		/// <summary> Gets the first occurrence in the specified sequence that equals the specified	item according to the specified equality comparer. </summary>
 		/// <param name="source"> The sequence to look in for the item. </param>
 		/// <param name="item"> The item to look for. </param>
 		/// <param name="equalityComparer"> The equality comparer to determine equality. Specify null to use the default equality comparer. </param>
-		public static T Find<T>(this IEnumerable<T> source, T item, IEqualityComparer<T> equalityComparer = null)
+		public static T? Find<T>(this IEnumerable<T> source, T item, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(source != null);
 
@@ -631,13 +625,13 @@ namespace JBSnorro
 		public static bool SequenceEqualBy<T, TComparableToken>(this IEnumerable<T> firstSequence,
 																	 IEnumerable<T> secondSequence,
 																	 Func<T, TComparableToken> comparableTokenSelector,
-																	 IEqualityComparer<TComparableToken> equalityComparer = null)
+																	 IEqualityComparer<TComparableToken>? equalityComparer = null)
 		{
 			Contract.Requires(firstSequence != null);
 			Contract.Requires(secondSequence != null);
 			Contract.Requires(comparableTokenSelector != null);
 
-			equalityComparer = equalityComparer ?? EqualityComparer<TComparableToken>.Default;
+			equalityComparer ??= EqualityComparer<TComparableToken>.Default;
 
 			return firstSequence.SequenceEqual(secondSequence, (element1, element2) => equalityComparer.Equals(comparableTokenSelector(element1), comparableTokenSelector(element2)));
 		}
@@ -673,7 +667,11 @@ namespace JBSnorro
 		{
 			return source.AreSequential((a, b) => a <= b);
 		}
-
+		/// <summary> Gets whether the specified sequence is (non-strictly) increasing. </summary>
+		public static bool AreIncreasing(this IEnumerable<ulong> source)
+		{
+			return source.AreSequential((a, b) => a <= b);
+		}
 
 		/// <summary> Determines whether the source and items sequences have the same elements according to a specified equality comparer. 
 		/// This includes the number of their occurrences, and is irrespective of order. </summary>
@@ -681,23 +679,23 @@ namespace JBSnorro
 		/// <param name="items"> The sequence to be compared to <paramref name="source"/>. </param>
 		public static bool ContainsSameElements<T>(this IEnumerable<T> source, params T[] items)
 		{
-			return source.ContainsSameElements(items, (IEqualityComparer<T>)null);
+			return source.ContainsSameElements(items, (IEqualityComparer<T>?)null);
 		}
 		/// <summary> Determines whether the source and items sequences have the same elements according to a specified equality comparer. 
 		/// This includes the number of their occurrences, and is irrespective of order. </summary>
 		/// <param name="source"> The sequence to be compared to <paramref name="items"/>. </param>
 		/// <param name="items"> The sequence to be compared to <paramref name="source"/>. </param>
 		/// <param name="equalityComparer"> The equality comparer determining equality between elements of both sequences. Specify null to use the default equality comparer. </param>
-		public static bool ContainsSameElements<T>(this IEnumerable<T> source, IEnumerable<T> items, IEqualityComparer<T> equalityComparer)
+		public static bool ContainsSameElements<T>(this IEnumerable<T> source, IEnumerable<T> items, IEqualityComparer<T>? equalityComparer)
 		{
-			return ContainsSameElements(source, items, equalityComparer == null ? (Func<T, T, bool>)null : equalityComparer.Equals);
+			return ContainsSameElements(source, items, equalityComparer == null ? (Func<T, T, bool>?)null : equalityComparer.Equals);
 		}
 		/// <summary> Determines whether the source and items sequences have the same elements according to a specified equality comparer. 
 		/// This includes the number of their occurrences, and is irrespective of order. </summary>
 		/// <param name="source"> The sequence to be compared to <paramref name="items"/>. </param>
 		/// <param name="items"> The sequence to be compared to <paramref name="source"/>. </param>
 		/// <param name="equalityComparer"> The equality comparer determining equality between elements of both sequences. Specify null to use <code>T.Equals(object)</code>. </param>
-		public static bool ContainsSameElements<T, U>(this IEnumerable<T> source, IEnumerable<U> items, Func<T, U, bool> equalityComparer = null)
+		public static bool ContainsSameElements<T, U>(this IEnumerable<T> source, IEnumerable<U> items, Func<T, U, bool>? equalityComparer = null)
 		{
 			return containsAll(source, items, equalityComparer, requiresToUseAllItems: true);
 		}
@@ -705,11 +703,11 @@ namespace JBSnorro
 		/// <param name="source"> The sequence to check whether it contains all elements in <paramref name="items"/>. </param>
 		/// <param name="items"> The items to check for presence in the <paramref name="source"/>. </param>
 		/// <param name="equalityComparer"> The function determining if an element equals an item. Specify null to use <code>T.Equals(object)</code>. </param>
-		public static bool ContainsAll<T, U>(this IEnumerable<T> source, IEnumerable<U> items, Func<T, U, bool> equalityComparer = null)
+		public static bool ContainsAll<T, U>(this IEnumerable<T> source, IEnumerable<U> items, Func<T, U, bool>? equalityComparer = null)
 		{
 			return containsAll(source, items, equalityComparer, requiresToUseAllItems: false);
 		}
-		private static bool containsAll<T, U>(this IEnumerable<T> source, IEnumerable<U> items, Func<T, U, bool> equalityComparer, bool requiresToUseAllItems)
+		private static bool containsAll<T, U>(this IEnumerable<T> source, IEnumerable<U> items, Func<T, U, bool>? equalityComparer, bool requiresToUseAllItems)
 		{
 			Contract.Requires(source != null);
 			Contract.Requires(items != null);
@@ -725,7 +723,7 @@ namespace JBSnorro
 				}
 			}
 
-			equalityComparer = equalityComparer ?? ((t, u) => t.Equals(u));
+			equalityComparer ??= equalityComparer ?? ((t, u) => ReferenceEquals(t, null) ? ReferenceEquals(u, null) : t.Equals(u));
 
 			var sourceElements = source.ToList(); //PERFORMANCE: used linked list, and not indices but linked list nodes
 			foreach (U item in items)
@@ -915,7 +913,7 @@ namespace JBSnorro
 			Contract.Requires(source != null);
 			Contract.Requires(comparer != null);
 
-			T minimum = default(T);
+			T? minimum = default(T);
 			List<int> result = new List<int>();
 			int i = 0;
 			foreach (T element in source)
@@ -927,7 +925,7 @@ namespace JBSnorro
 				}
 				else
 				{
-					int comparisonResult = comparer(element, minimum);
+					int comparisonResult = comparer(element, minimum!);
 					if (comparisonResult == 0)
 					{
 						result.Add(i);
@@ -1059,21 +1057,21 @@ namespace JBSnorro
 		/// <summary> Returns all elements in the specified sequence that are minimal according to the specified comparer. </summary>
 		/// <param name="source"> The sequence to find the minimal elements of. Can be empty. </param>
 		/// <param name="comparer"> A function to compare elements. Can be null. </param>
-		public static List<T> FindMinima<T>(this IEnumerable<T> source, Func<T, T, int> comparer = null)
+		public static List<T> FindMinima<T>(this IEnumerable<T> source, Func<T, T, int>? comparer = null)
 		{
 			Contract.Requires(source != null);
 			Contract.Requires(comparer != null
 						   || typeof(T).Implements(typeof(IComparable))
 						   || typeof(T).Implements(typeof(IComparable<T>)), $"A comparer must be specified or {nameof(T)} must implement either {nameof(IComparable)} or {nameof(IComparable<T>)}");
 
-			comparer = comparer ?? Comparer<T>.Default.Compare;
+			comparer ??= Comparer<T>.Default.Compare;
 
 			//finds the minima by finding the maxima of the inverted comparer
 			return FindMaxima(source, (a, b) => comparer(b, a));
 		}
 
 		/// <summary> Gets the minimal element of the specified sequence; or an alternative if is empty. </summary>
-		public static T MinOrDefault<T>(this IEnumerable<T> source, T defaultIfEmpty = default(T))
+		public static T? MinOrDefault<T>(this IEnumerable<T> source, T? defaultIfEmpty = default(T))
 		{
 			Contract.Requires(source != null);
 
@@ -1087,7 +1085,7 @@ namespace JBSnorro
 			}
 		}
 		/// <summary> Gets the maximal element of the specified sequence, or an alternative when it is empty. </summary>
-		public static T MaxOrDefault<T>(this IEnumerable<T> sequence, T defaultIfEmpty = default(T))
+		public static T? MaxOrDefault<T>(this IEnumerable<T> sequence, T? defaultIfEmpty = default(T))
 		{
 			Contract.Requires(sequence != null);
 
@@ -1111,7 +1109,7 @@ namespace JBSnorro
 		/// <param name="sequence"> The sequence to return the minimum of. Must be non-empty. </param>
 		/// <param name="keySelector"> The function that selects the comparable key for each element. </param>
 		/// <param name="comparer"> A comparer determing the order of the keys. </param>
-		public static T MinimumBy<T, TKey>(this IEnumerable<T> sequence, Func<T, TKey> keySelector, Func<TKey, TKey, int> comparer = null)
+		public static T MinimumBy<T, TKey>(this IEnumerable<T> sequence, Func<T, TKey> keySelector, Func<TKey, TKey, int>? comparer = null)
 		{
 			comparer = comparer ?? Comparer<TKey>.Default.Compare;
 			Func<TKey, TKey, int> invertedComparer = (a, b) => comparer(b, a);
@@ -1122,20 +1120,20 @@ namespace JBSnorro
 		/// <param name="sequence"> The sequence to return the maximum of. Must be non-empty. </param>
 		/// <param name="keySelector"> The function that selects the comparable key for each element. </param>
 		/// <param name="comparer"> A comparer determing the order of the keys. </param>
-		public static T MaximumBy<T, TKey>(this IEnumerable<T> sequence, Func<T, TKey> keySelector, Func<TKey, TKey, int> comparer = null)
+		public static T MaximumBy<T, TKey>(this IEnumerable<T> sequence, Func<T, TKey> keySelector, Func<TKey, TKey, int>? comparer = null)
 		{
 			Contract.Requires(sequence != null);
 			Contract.Requires(keySelector != null);
 
 			comparer = comparer ?? Comparer<TKey>.Default.Compare;
 
-			T max = default(T);
-			TKey maxKey = default(TKey);
+			T? max = default(T);
+			TKey? maxKey = default(TKey);
 			bool first = true;
 			foreach (T element in sequence)
 			{
 				var key = keySelector(element);
-				if (first || comparer(maxKey, key) < 0)
+				if (first || comparer(maxKey!, key) < 0)
 				{
 					first = false;
 					max = element;
@@ -1146,15 +1144,16 @@ namespace JBSnorro
 			{
 				throw new ArgumentException("The specified sequence was empty", nameof(sequence));
 			}
-			return max;
+			return max!;
 		}
+
 		/// <summary> Returns the maxima in the specified sequence according to comparable keys. </summary>
 		/// <param name="sequence"> The sequence to return the maxima of. </param>
 		/// <param name="keySelector"> The function that selects the comparable key for each element. </param>
 		public static List<T> MaximaBy<T, TKey>(this IEnumerable<T> sequence, Func<T, TKey> keySelector) where TKey : IComparable<TKey>
 		{
 			List<T> result = new List<T>();
-			TKey max = default(TKey);
+			TKey? max = default(TKey);
 			bool first = true;
 			foreach (T element in sequence)
 			{
@@ -1182,7 +1181,7 @@ namespace JBSnorro
 		public static List<T> MinimaByMany<T, TKey>(this IEnumerable<T> sequence, Func<T, IEnumerable<TKey>> keySelector) where TKey : IComparable<TKey>
 		{
 			List<T> result = new List<T>();
-			TKey min = default(TKey);
+			TKey? min = default(TKey);
 			bool first = true;
 			foreach (T element in sequence)
 			{
@@ -1208,7 +1207,7 @@ namespace JBSnorro
 		public static List<T> MaximaByMany<T, TKey>(this IEnumerable<T> sequence, Func<T, IEnumerable<TKey>> keySelector) where TKey : IComparable<TKey>
 		{
 			List<T> result = new List<T>();
-			TKey max = default(TKey);
+			TKey? max = default(TKey);
 			bool first = true;
 			foreach (T element in sequence)
 			{
@@ -1324,7 +1323,7 @@ namespace JBSnorro
 			//return Enumerable.Range(0, cache.Count).FindMaxima((a, b) => comparer(cache[a], cache[b]));
 
 			SortedList<int> result = new SortedList<int>(); //comparer by normal index order.
-			T cachedElement = default(T);
+			T? cachedElement = default(T);
 			int i = 0;
 
 			foreach (T element in enumerable)
@@ -1336,7 +1335,7 @@ namespace JBSnorro
 				}
 				else
 				{
-					int comparisonResult = comparer(element, cachedElement);
+					int comparisonResult = comparer(element, cachedElement!);
 					if (comparisonResult > 0)
 					{
 						result.Clear();
@@ -1377,12 +1376,12 @@ namespace JBSnorro
 			Contract.Requires(comparer != null);
 
 			const int initialIndexValue = -1;
-			T max = default(T);
+			T? max = default(T);
 			int indexOfMax = initialIndexValue;
 			int i = 0;
 			foreach (T element in enumerable)
 			{
-				if (indexOfMax == initialIndexValue || comparer(element, max) > 0)
+				if (indexOfMax == initialIndexValue || comparer(element, max!) > 0)
 				{
 					max = element;
 					indexOfMax = i;
@@ -1402,7 +1401,7 @@ namespace JBSnorro
 			if (sequence == null) throw new ArgumentNullException(nameof(sequence));
 			if (nodesToInsert == null) throw new ArgumentNullException(nameof(nodesToInsert));
 
-			T last = default(T);
+			T? last = default(T);
 			bool first = true;
 			foreach (T element in sequence)
 			{
@@ -1412,7 +1411,7 @@ namespace JBSnorro
 				}
 				else
 				{
-					foreach (T insertedElement in nodesToInsert(last, element))
+					foreach (T insertedElement in nodesToInsert(last!, element))
 						yield return insertedElement;
 				}
 				last = element;
@@ -1604,7 +1603,7 @@ namespace JBSnorro
 		}
 		/// <summary> Returns the single element in the specified sequence that matches the specified predicate if there is exactly one; otherwise <code>default(<typeparam name="T">T</typeparam>)</code>.
 		/// (Differs from <code>Enumerable.SingleOrDefault</code> in that this method doesn't throw when the argument contains multiple elements). </summary>
-		public static T SingletonOrDefault<T>(this IEnumerable<T> sequence, Func<T, bool> predicate = null)
+		public static T? SingletonOrDefault<T>(this IEnumerable<T> sequence, Func<T, bool>? predicate = null)
 		{
 			Contract.Requires(sequence != null);
 
@@ -1649,12 +1648,12 @@ namespace JBSnorro
 											 .Select(tuple => tuple.Item2 - tuple.Item1);*/
 			int cumulativeIndex = 0;
 			IEnumerable<int> counts = indices.Select(i =>
-													 {
-														 int result = i - cumulativeIndex;
-														 Contract.Assert(result >= 0, "the specified indices aren't sorted");
-														 cumulativeIndex = i;
-														 return result;
-													 });
+			{
+				int result = i - cumulativeIndex;
+				Contract.Assert(result >= 0, "the specified indices aren't sorted");
+				cumulativeIndex = i;
+				return result;
+			});
 			return SplitByCounts(sequence, counts.Concat(appendedRemainingCount));
 		}
 		/// <summary> Splits the elements into multiple sequences, where the number of element per enumerables is specified in a sequence of integers. </summary>
@@ -1725,7 +1724,7 @@ namespace JBSnorro
 					yield break;
 				}
 				int i = 0;
-				WrappedEnumerator<T> lastResult = null;
+				WrappedEnumerator<T>? lastResult = null;
 				do
 				{
 					lastResult = new WrappedEnumerator<T>(enumerator, element => insertInNew(element, i++));
@@ -1840,7 +1839,7 @@ namespace JBSnorro
 			}
 		}
 		/// <summary> Applies the specified selector to the specified sequence while it meets the specified predicate. Returns null otherwise. </summary>
-		public static List<TResult> SelectAllOrNull<T, TResult>(this IEnumerable<T> sequence, Func<T, TResult> selector, Func<T, TResult, bool> predicate)
+		public static List<TResult>? SelectAllOrNull<T, TResult>(this IEnumerable<T> sequence, Func<T, TResult> selector, Func<T, TResult, bool> predicate)
 		{
 			Contract.Requires(sequence != null);
 			Contract.Requires(selector != null);
@@ -1899,7 +1898,7 @@ namespace JBSnorro
 		/// <summary> Gets whether all elements in the specified sequence are unique. The empty sequence is considered unique. </summary>
 		/// <param name="equalityComparer"> The comparer to use to determine uniqueness. Specify null to use the default equality comparer. </param>
 		/// <param name="sequence"> The sequence to determine the uniqueness of each element of. </param>
-		public static bool AreUnique<T>(this IEnumerable<T> sequence, IEqualityComparer<T> equalityComparer = null)
+		public static bool AreUnique<T>(this IEnumerable<T> sequence, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(sequence != null);
 
@@ -1915,10 +1914,9 @@ namespace JBSnorro
 
 		public static bool AreUnique<T>(this IEnumerable<T> sequence, Func<T, T, bool> equalityComparer)
 		{
-			return sequence.AreUnique(equalityComparer?.ToEqualityComparer());
+			return sequence.AreUnique(equalityComparer.ToEqualityComparer());
 		}
 
-#nullable enable
 		/// <summary> Gets all unique elements in the specified sequence. Redirects to the default name in the BLC: Distinct() </summary>
 		/// <typeparam name="T"> The type of the elements in the sequence. </typeparam>
 		/// <param name="sequence"> The sequence to get all unique elements of. </param>
@@ -1938,18 +1936,17 @@ namespace JBSnorro
 
 			return sequence.Distinct(equalityComparer.ToEqualityComparer());
 		}
-#nullable restore
 
 		/// <summary> Gets whether all elements in the specified sequence are the same element. For the empty sequence, true is returned. </summary>
 		/// <param name="equalityComparer"> The comparer to use to determine uniqueness. Specify null to use the default equality comparer. </param>
 		/// <param name="sequence"> The sequence to determine the equality of each element of. If empty, true is returned. </param>
-		public static bool AreEqual<T>(this IEnumerable<T> sequence, IEqualityComparer<T> equalityComparer = null)
+		public static bool AreEqual<T>(this IEnumerable<T> sequence, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(sequence != null);
 			equalityComparer = equalityComparer ?? EqualityComparer<T>.Default;
 
 			bool first = true;
-			T firstElement = default(T);
+			T? firstElement = default(T);
 			foreach (T element in sequence)
 			{
 				if (first)
@@ -1976,13 +1973,13 @@ namespace JBSnorro
 		/// <summary> Gets whether the specified sequence is ordered according to the given comparer. The empty sequence is considered ordered. </summary>
 		/// <param name="sequence"> The sequence to check for being ordered. </param>
 		/// <param name="comparer"> The comparer determining the order to check for. Specify null to use the defautl comparer. </param>
-		public static bool IsOrdered<T>(this IEnumerable<T> sequence, IComparer<T> comparer = null)
+		public static bool IsOrdered<T>(this IEnumerable<T> sequence, IComparer<T>? comparer = null)
 		{
 			Contract.Requires(sequence != null);
 			comparer = comparer.OrDefault();
 
 			bool first = true;
-			T previous = default(T);
+			T? previous = default(T);
 			foreach (T element in sequence)
 			{
 				if (first)
@@ -2134,7 +2131,7 @@ namespace JBSnorro
 		[DebuggerHidden]
 		public static IReadOnlyList<TResult> CastLazily<TSource, TResult>(this IReadOnlyList<TSource> list)
 		{
-			return list.MapLazily(element => (TResult)(object)element);
+			return list.MapLazily(element => (TResult)(object)element!);
 		}
 		/// <summary> Maps a readonly collection into another of the same size using a specified mapping function. </summary>
 		/// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
@@ -2152,7 +2149,7 @@ namespace JBSnorro
 		/// <summary> Maps the specified collection to another by identity conversions of the elements. </summary>
 		public static ReadOnlyCollection<TResult> Map<T, TResult>(this ReadOnlyCollection<T> list)
 		{
-			return list.Map((T t) => (TResult)(object)t);
+			return list.Map((T t) => (TResult)(object)t!);
 		}
 		/// <summary> Maps a readonly collection into another of the same size using a specified mapping function. </summary>
 		/// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
@@ -2175,7 +2172,7 @@ namespace JBSnorro
 		/// <param name="items"> The items to look for in the sequence. </param>
 		/// <param name="equalityComparer"> The equality comparer. When null, the default is used. </param>
 		/// <returns> If items is empty, true is returned. </returns>
-		public static bool ContainsOrdered<T>(this IEnumerable<T> enumerable, IEnumerable<T> items, IEqualityComparer<T> equalityComparer = null)
+		public static bool ContainsOrdered<T>(this IEnumerable<T> enumerable, IEnumerable<T> items, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(enumerable != null);
 			Contract.Requires(items != null);
@@ -2208,7 +2205,7 @@ namespace JBSnorro
 		/// <param name="items"> The items to look for in the sequence. If empty, true is returned. </param>
 		/// <param name="equalityComparer"> The equality comparer. When null, the default is used. </param>
 		/// <returns> If items is empty, true is returned. </returns>
-		public static bool Contains<T>(this IEnumerable<T> enumerable, IEnumerable<T> items, IEqualityComparer<T> equalityComparer = null)
+		public static bool Contains<T>(this IEnumerable<T> enumerable, IEnumerable<T> items, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(enumerable != null);
 			Contract.Requires(items != null);
@@ -2227,7 +2224,7 @@ namespace JBSnorro
 		/// <param name="sequence"> The sequence whose first match is to be returned. </param>
 		/// <param name="predicate"> A delegate determining whether the element and its index in the sequence matches a condition. </param>
 		/// <returns> Returns the first match in the sequence or <code>default(T)</code> if there is no match. </returns>
-		public static T FirstOrDefault<T>(this IEnumerable<T> sequence, Func<T, int, bool> predicate)
+		public static T? FirstOrDefault<T>(this IEnumerable<T> sequence, Func<T, int, bool> predicate)
 		{
 			int i = 0;
 			foreach (var element in sequence)
@@ -2310,10 +2307,12 @@ namespace JBSnorro
 		/// <param name="item"> The item to search for in the specified sequence. </param>
 		/// <param name="equalityComparer"> The object determining whether an element matches the specified item. </param>
 		[DebuggerHidden]
-		public static int IndexOf<T>(this IEnumerable<T> sequence, T item, IEqualityComparer<T> equalityComparer)
+		public static int IndexOf<T>(this IEnumerable<T> sequence, T item, IEqualityComparer<T>? equalityComparer)
 		{
 			Contract.Requires(sequence != null);
-			equalityComparer = equalityComparer ?? EqualityComparer<T>.Default;
+
+			equalityComparer ??= EqualityComparer<T>.Default;
+
 			int i = 0;
 			foreach (T element in sequence)
 				if (equalityComparer.Equals(item, element))
@@ -2360,7 +2359,7 @@ namespace JBSnorro
 		{
 			Contract.Requires(enumerable != null);
 
-			T previous = default(T);
+			T? previous = default(T);
 			bool first = true;
 			foreach (T element in enumerable)
 			{
@@ -2370,9 +2369,8 @@ namespace JBSnorro
 				}
 				else
 				{
-					yield return (previous, element);
+					yield return (previous!, element);
 				}
-
 				previous = element;
 			}
 		}
@@ -2428,7 +2426,7 @@ namespace JBSnorro
 		}
 		/// <summary> Outputs the specified sequence to list, or null if a null element was encountered. </summary>
 		/// <param name="sequence"> The sequence to output to list. </param>
-		public static List<T> ToListNullTerminated<T>(this IEnumerable<T> sequence) where T : class
+		public static List<T>? ToListNullTerminated<T>(this IEnumerable<T> sequence) where T : class
 		{
 			Contract.Requires(sequence != null);
 
@@ -2447,7 +2445,7 @@ namespace JBSnorro
 		/// <param name="sequence"> The sequence to sort and wrap. </param>
 		/// <param name="comparer"> The comparer determing the order to sort in. Specify null to use the default comparer. </param>
 		[DebuggerHidden]
-		public static SortedList<T> ToSortedList<T>(this IEnumerable<T> sequence, Func<T, T, int> comparer = null)
+		public static SortedList<T> ToSortedList<T>(this IEnumerable<T> sequence, Func<T, T, int>? comparer = null)
 		{
 			Contract.Requires(sequence != null);
 			IComparer<T> c = comparer == null ? Comparer<T>.Default : InterfaceWraps.ToComparer(comparer);
@@ -2465,7 +2463,7 @@ namespace JBSnorro
 			return sequence.ToSortedList(comparer == null ? default(Func<T, T, int>) : comparer.Compare);
 		}
 		[DebuggerHidden]
-		public static SortedList<T> ToSingletonSortedList<T>(this T element, Func<T, T, int> comparer = null)
+		public static SortedList<T> ToSingletonSortedList<T>(this T element, Func<T, T, int>? comparer = null)
 		{
 			var list = new T[] { element };
 			return ToSortedList(list, comparer);
@@ -2570,8 +2568,6 @@ namespace JBSnorro
 			return new LazyReadOnlyList<T>(enumerable);
 		}
 
-
-
 		public static void Substitute<T>(this IList<T> list, int index, int removeCount, IEnumerable<T> items)
 		{
 			Contract.Requires(list != null);
@@ -2670,19 +2666,19 @@ namespace JBSnorro
 		/// <param name="sequence"> The sequence that is checked for being sorted. </param>
 		/// <param name="comparer"> A comparer for determining the order checked for. Specifying null will use the default comparer. </param>
 		[DebuggerStepThrough]
-		public static bool IsSorted<T>(this IEnumerable<T> sequence, Func<T, T, int> comparer = null)
+		public static bool IsSorted<T>(this IEnumerable<T> sequence, Func<T, T, int>? comparer = null)
 		{
 			Contract.Requires(sequence != null);
 
 			comparer = comparer.OrDefault();
 
-			T previous = default(T);
+			T? previous = default(T);
 			bool first = true;
 			foreach (T element in sequence)
 			{
 				if (first)
 					first = false;
-				else if (comparer(previous, element) > 0)
+				else if (comparer(previous!, element) > 0)
 					return false;
 				previous = element;
 			}
@@ -2715,7 +2711,7 @@ namespace JBSnorro
 		/// <param name="sequence"> The sequence that is checked for being sorted. </param>
 		/// <param name="comparer"> A comparer for comparing keys to determine the order checked for. Specifying null will throw. </param>
 		[DebuggerHidden]
-		public static bool IsSortedBy<T, TKey>(this IEnumerable<T> sequence, Func<T, TKey> selectKey, Func<TKey, TKey, int> comparer = null)
+		public static bool IsSortedBy<T, TKey>(this IEnumerable<T> sequence, Func<T, TKey> selectKey, Func<TKey, TKey, int>? comparer = null)
 		{
 			Contract.Requires(sequence != null);
 
@@ -2757,7 +2753,7 @@ namespace JBSnorro
 		/// <param name="list"> The list of items to match to the predicate. </param>
 		/// <param name="predicate"> The function determining whether an item is a match. </param>
 		/// <param name="startIndex"> The index (inclusive) of the first item inspected. </param>
-		public static T LastOrDefault<T>(this IList<T> list, Func<T, bool> predicate, int startIndex)
+		public static T? LastOrDefault<T>(this IList<T> list, Func<T, bool> predicate, int startIndex)
 		{
 			for (int i = startIndex; i >= 0; i--)
 				if (predicate(list[i]))
@@ -2826,11 +2822,12 @@ namespace JBSnorro
 			Contract.Requires(end >= start, "end must be larger than or equal to start");
 			return new ReadOnlyCollection<T>(Enumerable.Range(start, end - start).Select(i => t[i]).ToArray(end - start)); //can be optimized by creating a dedicated type
 		}
-		public static IEnumerable<T> Except<T>(this IEnumerable<T> sequence, T item)
+		public static IEnumerable<T> Except<T>(this IEnumerable<T> sequence, T item, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(sequence != null);
+			equalityComparer ??= EqualityComparer<T>.Default;
 			foreach (var element in sequence)
-				if (!element.Equals(item))
+				if (!equalityComparer.Equals(item, element))
 					yield return element;
 		}
 		/// <summary> Replaces the first element in the specified list that matches the specified predicate by the specified element. </summary>
@@ -2884,7 +2881,7 @@ namespace JBSnorro
 		/// <param name="source"> A sequence to apply a predicate to. </param>
 		/// <param name="predicate"> A function to test each source element for a condition. </param>
 		[DebuggerHidden]
-		public static List<T> AllOrNull<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+		public static List<T>? AllOrNull<T>(this IEnumerable<T> source, Func<T, bool> predicate)
 		{
 			Contract.Requires(source != null);
 			Contract.Requires(predicate != null);
@@ -2927,21 +2924,25 @@ namespace JBSnorro
 				yield return @select(element, state);
 			}
 		}
-		public static IEnumerable<TResult> Unfold<TState, TResult>(this TState element, Func<TState, Tuple<TState, Option<TResult>>> selectNext)
+		public static IEnumerable<TResult> Unfold<TState, TResult>(this TState element, Func<TState, (TState, Option<TResult>)> selectNext)
 		{
-			for (Tuple<TState, Option<TResult>> result = new Tuple<TState, Option<TResult>>(element, default(TResult)); result.Item2.HasValue; result = selectNext(result.Item1))
+			// if (andSelf)
+			//     yield return element;
+			(TState state, Option<TResult> result) = selectNext(element);
+			while (result.HasValue)
 			{
-				yield return result.Item2.Value;
+				yield return result.Value;
+				(state, result) = selectNext(state);
 			}
 		}
 		public static IEnumerable<TBase> TransitiveVirtualSelect<TBase, TDerived>(this TBase item, Func<TDerived, IEnumerable<TBase>> elementsSelector) where TDerived : TBase
 		{
 			return item.TransitiveSelect(element =>
-										 {
-											 if (element is TDerived)
-												 return elementsSelector((TDerived)element);
-											 return EmptyCollection<TBase>.Enumerable;
-										 });
+			{
+				if (element is TDerived)
+					return elementsSelector((TDerived)element);
+				return EmptyCollection<TBase>.Enumerable;
+			});
 		}
 		//public static IEnumerable<TBase> TransitiveVirtualSelect<TBase, TDerived1, TDerived2>(this TBase item, Func<TDerived2, IEnumerable<TBase>> selectorForDerivedType2) where TDerived1 : TBase where TDerived2 : TBase
 		//{
@@ -2955,14 +2956,14 @@ namespace JBSnorro
 		{
 			//"virtual" because specifying one function to call per derived type mimicks a vtable
 			return item.TransitiveSelect(element =>
-										 {
-											 if (element is TDerived1)
-												 return selectorForDerivedType1((TDerived1)element);
-											 else if (element is TDerived2)
-												 return selectorForDerivedType2((TDerived2)element);
-											 else
-												 return EmptyCollection<TBase>.Enumerable;
-										 });
+			{
+				if (element is TDerived1)
+					return selectorForDerivedType1((TDerived1)element);
+				else if (element is TDerived2)
+					return selectorForDerivedType2((TDerived2)element);
+				else
+					return EmptyCollection<TBase>.Enumerable;
+			});
 		}
 
 		/// <summary> Selects the specified item, and those selected by a specified function, transitively, and in a depth-first manner. </summary>
@@ -3040,7 +3041,7 @@ namespace JBSnorro
 		}
 
 		/// <summary> Gets the indices of the specified items in the specified sequence. </summary>
-		public static IEnumerable<int> IndicesOf<T>(this IEnumerable<T> sequence, IEnumerable<T> items, IEqualityComparer<T> equalityComparer = null)
+		public static IEnumerable<int> IndicesOf<T>(this IEnumerable<T> sequence, IEnumerable<T> items, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(sequence != null);
 			Contract.Requires(items != null);
@@ -3080,26 +3081,26 @@ namespace JBSnorro
 			using (var enumerators = new DisposablesList<IEnumerator<T>>(sequences.Select(sortedSequence => sortedSequence.GetEnumerator())))
 			{
 				Action<int> moveNext = i =>
-									   {
-										   if (!enumerators[i].MoveNext())
-										   {
-											   enumerators.DisposeAndRemoveAt(i);
-										   }
-									   };
+				{
+					if (!enumerators[i].MoveNext())
+					{
+						enumerators.DisposeAndRemoveAt(i);
+					}
+				};
 
 				Func<int> findNext = () =>
-									 {
-										 Contract.Assert(enumerators.Count >= 1);
-										 int indexOfMinimum = 0;
-										 for (int i = 1; i < enumerators.Count; i++)
-										 {
-											 if (comparer(enumerators[indexOfMinimum].Current, enumerators[i].Current) > 0)
-											 {
-												 indexOfMinimum = i;
-											 }
-										 }
-										 return indexOfMinimum;
-									 };
+				{
+					Contract.Assert(enumerators.Count >= 1);
+					int indexOfMinimum = 0;
+					for (int i = 1; i < enumerators.Count; i++)
+					{
+						if (comparer(enumerators[indexOfMinimum].Current, enumerators[i].Current) > 0)
+						{
+							indexOfMinimum = i;
+						}
+					}
+					return indexOfMinimum;
+				};
 
 
 
