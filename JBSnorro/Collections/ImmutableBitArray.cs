@@ -79,6 +79,8 @@ namespace JBSnorro.Collections
 			Contract.RequiresForAll(bitArrays, NotNull);
 			Contract.Requires(bitArrays.Select(array => array.Length).AreEqual(), "The specified sequences aren't commensurate");
 
+			this.data = default!; // removes warning for this ctor
+
 			bool first = true;
 			foreach (var array in bitArrays)
 			{
@@ -271,7 +273,7 @@ namespace JBSnorro.Collections
 
 		#region Equality Members
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			throw new NotImplementedException();//Depends on whether you want equality to bit array as well. I.e. is immutability equatable?
 		}

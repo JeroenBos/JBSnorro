@@ -1,5 +1,5 @@
 ﻿#nullable enable
-using BitArray = JBSnorro.Collections.BitArray;
+using System.Diagnostics;
 
 namespace JBSnorro.Collections;
 
@@ -18,6 +18,7 @@ public interface IBitReader
     double ReadDouble();
     void Seek(ulong bitIndex);
 }
+[DebuggerDisplay("{ToDebuggerDisplay()}")]
 public class BitReader : IBitReader
 {
     private readonly BitArray data;
@@ -28,13 +29,21 @@ public class BitReader : IBitReader
     private readonly ulong startOffset;
     /// <summary> Gets the length of the stream this bitreader can read, in bits. </summary>
     public ulong Length { get; } // does not count the bits before the startOffset
+    private ulong End => startOffset + Length;
 
     /// <summary> In bits. </summary>
     private ulong current;
     private int ulongIndex => checked((int)(current / 64));
     private int bitIndex => checked((int)(current % 64));
     /// <summary> In bits. </summary>
-    public ulong RemainingLength => this.Length - current;
+    public ulong RemainingLength => this.End - current;
+    /// <summary>
+    /// Gets the remainder of the bits in a segment.
+    /// </summary>
+    public BitArrayReadOnlySegment RemainingSegment
+    {
+        get => this.data[checked((int)this.current)..];
+    }
     public BitReader(BitArray data, ulong startBitIndex = 0)
     {
         if (data == null) throw new ArgumentNullException(nameof(data));
@@ -55,16 +64,17 @@ public class BitReader : IBitReader
         this.current = startBitIndex;
         this.Length = length;
     }
-    /// <param name="length"> The length of the number of bits in <see cref="data"/>, including those to be excluded before <see cref="startBitIndex"/></param>
-    public BitReader(ulong[] data, int length, int startBitIndex = 0)
-        : this(data, length.ToULong(), startBitIndex.ToULong())
+    /// <param name="dataBitCount"> The length of the number of bits in <see cref="data"/>, including those to be excluded before <see cref="startBitIndex"/></param>
+    public BitReader(ulong[] data, int dataBitCount, int startBitIndex = 0)
+        : this(data, dataBitCount.ToULong(), startBitIndex.ToULong())
     {
     }
-    /// <param name="length"> The length of the number of bits in <see cref="data"/>, including those to be excluded before <see cref="startBitIndex"/></param>
-    public BitReader(ulong[] data, ulong length, ulong startBitIndex = 0)
+    /// <param name="dataBitCount"> The length of the number of bits in <see cref="data"/>, including those to be excluded before <see cref="startBitIndex"/></param>
+    public BitReader(ulong[] data, ulong dataBitCount, ulong startBitIndex = 0)
     {
-        this.data = BitArray.FromRef(data, length);
+        this.data = BitArray.FromRef(data, dataBitCount);
         this.current = startBitIndex;
+        this.Length = dataBitCount - startBitIndex;
     }
 
     private static Exception InsufficientBitsException(string elementName)
@@ -89,33 +99,68 @@ public class BitReader : IBitReader
 
         return (byte)ReadUInt64(bitCount);
     }
+    public sbyte ReadSByte(int bitCount = 8)
+    {
+        if (bitCount < 2 || bitCount > 8)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw InsufficientBitsException("sbyte");
+
+        return (sbyte)ReadInt64(bitCount);
+    }
     public short ReadInt16(int bitCount = 16)
     {
-        if (bitCount < 1 || bitCount > 16)
+        if (bitCount < 2 || bitCount > 16)
             throw new ArgumentException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw InsufficientBitsException("short");
 
-        return (short)ReadUInt64(bitCount);
+        return (short)ReadInt64(bitCount);
     }
+    public ushort ReadUInt16(int bitCount = 16)
+    {
+        if (bitCount < 1 || bitCount > 16)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw InsufficientBitsException("ushort");
 
+        return (ushort)ReadInt64(bitCount);
+    }
     public int ReadInt32(int bitCount = 32)
+    {
+        if (bitCount < 2 || bitCount > 32)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw InsufficientBitsException("int");
+
+        return (int)ReadInt64(bitCount);
+    }
+    public uint ReadUInt32(int bitCount = 32)
     {
         if (bitCount < 1 || bitCount > 32)
             throw new ArgumentException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw InsufficientBitsException("int");
 
-        return (int)ReadUInt64(bitCount);
+        return (uint)ReadUInt64(bitCount);
     }
     public long ReadInt64(int bitCount = 64)
     {
-        if (bitCount < 1 || bitCount > 64)
+        if (bitCount < 2 || bitCount > 64)
             throw new ArgumentException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw InsufficientBitsException("long");
 
-        return (long)ReadUInt64(bitCount);
+        bool sign = ReadBit();
+        var magnitude = (long)ReadUInt64(bitCount - 1);
+        if (sign)
+        {
+            return magnitude;
+        }
+        else
+        {
+            return -magnitude - 1; // -1, otherwise 0 is mapped doubly
+        }
     }
     public Half ReadHalf()
     {
@@ -135,7 +180,7 @@ public class BitReader : IBitReader
     {
         if (this.RemainingLength < 64)
             throw InsufficientBitsException("Double");
-        long i = ReadInt64();
+        long i = unchecked((long)ReadUInt64(64));
         return BitTwiddling.BitsAsDouble(i);
     }
     /// <summary>
@@ -155,7 +200,7 @@ public class BitReader : IBitReader
         return RemainingLength > (ulong)bitCount;
     }
 
-    public ulong ReadUInt64(int bitCount)
+    public ulong ReadUInt64(int bitCount = 64)
     {
         if (bitCount < 1 || bitCount > 64)
             throw new ArgumentException(nameof(bitCount));
@@ -234,5 +279,8 @@ public class BitReader : IBitReader
 
     }
 
-
+    private string ToDebuggerDisplay()
+    {
+        return $"BitReader({startOffset}..[|{current}|]..{End}, Length={this.Length}/{this.data.Length}, Remaining={this.RemainingLength})";
+    }
 }

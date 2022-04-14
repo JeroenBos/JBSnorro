@@ -673,7 +673,11 @@ namespace JBSnorro
 		{
 			return source.AreSequential((a, b) => a <= b);
 		}
-
+		/// <summary> Gets whether the specified sequence is (non-strictly) increasing. </summary>
+		public static bool AreIncreasing(this IEnumerable<ulong> source)
+		{
+			return source.AreSequential((a, b) => a <= b);
+		}
 
 		/// <summary> Determines whether the source and items sequences have the same elements according to a specified equality comparer. 
 		/// This includes the number of their occurrences, and is irrespective of order. </summary>
@@ -3158,6 +3162,21 @@ namespace JBSnorro
 			if (count == 0)
 				return 0;
 			return (float)Math.Sqrt(sum / count);
+		}
+		/// <summary>
+		/// Shuffles the specified list.
+		/// </summary>
+		public static void Shuffle<T>(this IList<T> list, Random? random = null)
+		{
+			random ??= new Random(Random.Shared.Next());
+
+			for (int n = list.Count - 1; n > 1; n--)
+			{
+				int k = random.Next(n + 1);
+				T temp = list[k];
+				list[k] = list[n];
+				list[n] = temp;
+			}
 		}
 	}
 }

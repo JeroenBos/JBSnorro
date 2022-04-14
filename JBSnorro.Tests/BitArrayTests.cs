@@ -38,94 +38,94 @@ namespace JBSnorro.Tests
         public void NoBitInsertion()
         {
             var data = Array.Empty<ulong>();
-            var result = data.InsertBits(Array.Empty<int>(), Array.Empty<bool>());
+            var result = data.InsertBits(Array.Empty<ulong>(), Array.Empty<bool>());
             Contract.AssertSequenceEqual(data, result);
 
             data = new ulong[] { 1 };
-            result = data.InsertBits(Array.Empty<int>(), Array.Empty<bool>());
+            result = data.InsertBits(Array.Empty<ulong>(), Array.Empty<bool>());
             Contract.AssertSequenceEqual(data, result);
 
             data = new ulong[] { 1, 255 };
-            result = data.InsertBits(Array.Empty<int>(), Array.Empty<bool>());
+            result = data.InsertBits(Array.Empty<ulong>(), Array.Empty<bool>());
             Contract.AssertSequenceEqual(data, result);
         }
         [TestMethod]
         public void SimpleBitInsertionIntoEmptyList()
         {
             var data = Array.Empty<ulong>();
-            var result = data.InsertBits(new[] { 0 }, new[] { false });
+            var result = data.InsertBits(new[] { 0UL }, new[] { false });
             Contract.AssertSequenceEqual(result, new ulong[] { 0 });
 
-            result = data.InsertBits(new[] { 0 }, new[] { true });
+            result = data.InsertBits(new[] { 0UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { 1 });
         }
         [TestMethod, ExpectedException(typeof(IndexOutOfRangeException))]
         public void SimpleBitInsertionIntoEmptyListGoesOutOfIndex()
         {
             var data = Array.Empty<ulong>();
-            data.InsertBits(new[] { 1 }, new[] { false });
+            data.InsertBits(new[] { 1UL }, new[] { false });
         }
         [TestMethod]
         public void SimpleBitInsertionIntoExistingList()
         {
             var data = new ulong[] { 0b_0001_0010 };
-            var result = data.InsertBits(new[] { 0 }, new[] { true });
+            var result = data.InsertBits(new[] { 0UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { 0b_0010_0101, 0 });
         }
         [TestMethod]
         public void SimpleBitInsertionIntoMiddleOfFirstByte()
         {
             var data = new ulong[] { 0b_0000_0000 };
-            var result = data.InsertBits(new[] { 1 }, new[] { true });
+            var result = data.InsertBits(new[] { 1UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { 0b_0000_0010, 0 });
         }
         [TestMethod]
         public void SimpleAppendBit()
         {
             var data = new ulong[] { 0b_0001_0010 };
-            var result = data.InsertBits(new[] { 64 }, new[] { true });
+            var result = data.InsertBits(new[] { 64UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { 0b_0001_0010, 0b1 });
         }
         [TestMethod]
         public void SimpleBitInsertionIntoExistingListWithCrossoverBit()
         {
             var data = new ulong[] { highestBitSet };
-            var result = data.InsertBits(new[] { 0 }, new[] { true });
+            var result = data.InsertBits(new[] { 0UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { 1, 1 });
         }
         [TestMethod]
         public void SimpleBitInsertionIntoExistingListWithCrossoverBits()
         {
             var data = new ulong[] { highestBitSet | 0b0001 };
-            var result = data.InsertBits(new[] { 0 }, new[] { true });
+            var result = data.InsertBits(new[] { 0UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { 0b0011, 1 });
         }
         [TestMethod]
         public void SimpleBitInsertionWithOnesInNextByte()
         {
             var data = new ulong[] { 0b_1110_0001, 0b_0000_0001 };
-            var result = data.InsertBits(new[] { 0 }, new[] { true });
+            var result = data.InsertBits(new[] { 0UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { 0b_0001_1100_0011, 0b_0000_0010, 0 });
         }
         [TestMethod]
         public void SimpleBitInsertionInMiddleOfFlags()
         {
             var data = new ulong[] { highestBitSet | secondHighestBitSet, 0b_0000_0001 };
-            var result = data.InsertBits(new[] { 63 }, new[] { true });
+            var result = data.InsertBits(new[] { 63UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { highestBitSet | secondHighestBitSet, 0b_00011, 0 });
         }
         [TestMethod]
         public void SimpleBitInsertionInThirdElement()
         {
             var data = new ulong[] { 0, 0, 0 };
-            var result = data.InsertBits(new[] { 128 }, new[] { true });
+            var result = data.InsertBits(new[] { 128UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { 0, 0, 1, 0 });
         }
         [TestMethod]
         public void SimpleBitInsertionAtTheEndOfLastElement()
         {
             var data = new ulong[] { 0, 0, 0 };
-            var result = data.InsertBits(new[] { 64 * 3 }, new[] { true });
+            var result = data.InsertBits(new[] { 64 * 3UL }, new[] { true });
             Contract.AssertSequenceEqual(result, new ulong[] { 0, 0, 0, 1 });
         }
         [TestMethod]
@@ -133,7 +133,7 @@ namespace JBSnorro.Tests
         {
             // now both in one go:
             var input = new ulong[] { 0, 0b1111_1111 };
-            var combined = input.InsertBits(new[] { 4, 64 }, new[] { true, true });
+            var combined = input.InsertBits(new[] { 4UL, 64UL }, new[] { true, true });
             Contract.AssertSequenceEqual(combined, new ulong[] { 0b_0001_0000, 0b0011_1111_1110, 0 });
         }
         [TestMethod]
@@ -141,7 +141,7 @@ namespace JBSnorro.Tests
         {
             // now both in one go:
             var input = new ulong[] { 0, 0b1111_1111 };
-            var combined = input.InsertBits(new[] { 4, 64 }, new[] { true, true });
+            var combined = input.InsertBits(new[] { 4UL, 64UL }, new[] { true, true });
             Contract.AssertSequenceEqual(combined, new ulong[] { 0b_0001_0000, 0b0011_1111_1110, 0 });
         }
 
@@ -150,21 +150,21 @@ namespace JBSnorro.Tests
         public void InsertionsInSameBytes()
         {
             var data = new ulong[] { 0, 0b1111_1111 };
-            var result = data.InsertBits(new[] { 4, 6 }, new[] { true, true });
+            var result = data.InsertBits(new[] { 4UL, 6UL }, new[] { true, true });
             Contract.AssertSequenceEqual(result, new ulong[] { 0b1001_0000, 0b0011_1111_1100, 0 });
         }
         [TestMethod]
         public void InsertionsInSameBytesCloserTogether()
         {
             var data = new ulong[] { 0, 0b1111_1111 };
-            var result = data.InsertBits(new[] { 4, 5 }, new[] { true, true });
+            var result = data.InsertBits(new[] { 4UL, 5UL }, new[] { true, true });
             Contract.AssertSequenceEqual(result, new ulong[] { 0b0101_0000, 0b0011_1111_1100, 0 });
         }
         [TestMethod]
         public void InsertionsAtSameSpot()
         {
             var data = new ulong[] { 0, 0b1111_1111 };
-            var result = data.InsertBits(new[] { 4, 4 }, new[] { true, true });
+            var result = data.InsertBits(new[] { 4UL, 4UL }, new[] { true, true });
             // in light of the two tests above, this must be the result, in order to remain consistent
             Contract.AssertSequenceEqual(result, new ulong[] { 0b0011_0000, 0b0011_1111_1100, 0 });
         }
@@ -172,7 +172,7 @@ namespace JBSnorro.Tests
         public void InsertionsInManyBytes()
         {
             var data = new ulong[] { 0b1111_1111, 0b0111_1111 }; // | highestBitSet | secondHighestBitSet};
-            var result = data.InsertBits(new[] { 4, 64 + 7 }, new[] { false, false });
+            var result = data.InsertBits(new[] { 4UL, 64UL + 7 }, new[] { false, false });
             Contract.AssertSequenceEqual(result, new ulong[] { 0b0001_1110_1111, 0b1111_1110, 0 });
         }
     }

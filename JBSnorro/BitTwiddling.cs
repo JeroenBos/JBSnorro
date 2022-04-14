@@ -3,6 +3,7 @@ using JBSnorro.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -126,7 +127,7 @@ namespace JBSnorro
 		/// <param name="values"> The bits to insert. </param>
 		/// <param name="sourceLengthInBits">The length of the source. Defaults to <code>source * 64.</code></param>
 		/// <returns>a new array with the bits inserted. </returns>
-		public static ulong[] InsertBits(this ulong[] source, int[] sortedBitIndices, bool[] values, ulong? sourceLengthInBits = null)
+		public static ulong[] InsertBits(this ulong[] source, ulong[] sortedBitIndices, bool[] values, ulong? sourceLengthInBits = null)
 		{
 			const int nLength = 64;
 
@@ -138,7 +139,7 @@ namespace JBSnorro
 				throw new IndexOutOfRangeException($"{nameof(sortedBitIndices)} indices must not be negative");
 			if (source is ICollection<ulong> collection)
 			{
-				if (sortedBitIndices[^1] > collection.Count * nLength)
+				if (sortedBitIndices[^1] > (ulong)collection.Count * nLength)
 					throw new IndexOutOfRangeException($"{nameof(sortedBitIndices)} indices must not be after the source length (the very end is allowed)");
 			}
 			else
@@ -175,11 +176,8 @@ namespace JBSnorro
 				var newLength = requiredCount;
 				return new ulong[newLength];
 			}
-			static IEnumerable<(ulong SourceStartBitIndex, ulong DestBitIndex, ulong Length, bool? Value)> GetRanges(IEnumerable<int> sortedBitIndices, bool[] values, ulong bitCount)
+			static IEnumerable<(ulong SourceStartBitIndex, ulong DestBitIndex, ulong Length, bool? Value)> GetRanges(IEnumerable<ulong> sortedSourceBitIndices, bool[] values, ulong bitCount)
 			{
-				// var sortedSourceBitIndices = sortedBitIndices.Select((val, index) => (ulong)(val - index));
-				var sortedSourceBitIndices = sortedBitIndices.Select(i => (ulong)i);
-
 				// destBitIndex is the index at which the bit is to be set start pasting. The bit is to be set at destBitIndex + length
 				ulong previousSourceBitIndex = 0;
 				uint i = 0;
@@ -324,7 +322,7 @@ namespace JBSnorro
 		/// <param name="bytes">The source sequence to remove from.</param>
 		/// <param name="sortedBitIndices"> The indices of the bits to remove. </param>
 		/// <param name="bytesLengthInBits"> The length of the bytes sequence. Defaults to <code>8 * bytes.Count()</code>.</param>
-		public static byte[] RemoveBits(this IEnumerable<byte> bytes, int[] sortedBitIndices, int? bytesLengthInBits = null)
+		public static byte[] RemoveBits(this IEnumerable<byte> bytes, ulong[] sortedBitIndices, int? bytesLengthInBits = null)
 		{
 			BitArray bitArray;
 			if (bytesLengthInBits == null)
@@ -343,7 +341,8 @@ namespace JBSnorro
 			return IndexOfBits(data, new[] { item }, itemLength, startIndex, dataLength).BitIndex;
 		}
 		/// <summary> Gets the first bit index in the specified data of any of the specified equilong items. </summary>
-		public static (long BitIndex, int ItemIndex) IndexOfBits(IEnumerable<ulong> data, IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null)
+		/// <param name="returnLastConsecutive"> When true, and when there's a match, the successive places are also checked and the last consecutive will be selected as the result.</param>
+		public static (long BitIndex, int ItemIndex) IndexOfBits(IEnumerable<ulong> data, IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null, bool returnLastConsecutive = false)
 		{
 			const int N = 64;
 			if (data == null) throw new ArgumentNullException(nameof(data));
@@ -356,21 +355,38 @@ namespace JBSnorro
 			itemLength ??= N;
 			dataLength ??= hasCount ? (ulong)(N * count) : null;
 
-			long bitIndex = 0;
-			int elementIndex = 0;
-			foreach (var ((element, nextElement), isLast) in data.Append(0UL).Windowed2().WithIsLast())
+			long bitIndex = (long)startIndex;
+			int elementIndex = (int)(startIndex / N);
+			const int noMatch = -1;
+			int matchedItemIndex = noMatch;
+			foreach (var ((element, nextElement), isLast) in data.Skip(elementIndex).Append(0UL).Windowed2().WithIsLast())
 			{
 				while (Fits(bitIndex, elementIndex, itemLength.Value, dataLength, isLast))
 				{
 					for (int itemIndex = 0; itemIndex < items.Count; itemIndex++)
 					{
 						if (IsMatch(bitIndex, element, nextElement, elementIndex, items[itemIndex], itemLength.Value))
-							return (bitIndex, itemIndex);
+						{
+							// at this point, a -1 return is impossible
+							if (returnLastConsecutive)
+							{
+								matchedItemIndex = itemIndex;
+								// only the currently matched item will be considered in getting the last consecutive
+								if(items.Count != 1)
+									items = new [] { items[itemIndex] };
+							}
+							else
+								return (bitIndex, itemIndex);
+						}
+						else if(matchedItemIndex != noMatch)
+							return (bitIndex - 1, itemIndex);
 					}
 					bitIndex++;
 				}
 				elementIndex++;
 			}
+			if (matchedItemIndex != noMatch)
+				return (bitIndex - 1, matchedItemIndex);
 			return (-1, -1);
 
 
@@ -441,7 +457,7 @@ namespace JBSnorro
 			}
 
 		}
-
+		[DebuggerHidden]
 		internal static ulong ToULong( this int i)
 		{
 			if (i < 0) throw new ArgumentOutOfRangeException(nameof(i));

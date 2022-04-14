@@ -9,34 +9,6 @@ namespace JBSnorro.Extensions;
 
 public static class RandomExtensions
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="drawCount"></param>
-    /// <param name="max"> Exlusive. </param>
-    /// <exception cref="NotImplementedException"></exception>
-    public static ulong[] GenerateUniqueRandomNumbers(this Random random, int drawCount, int max)
-    {
-        var result = new List<ulong>(capacity: drawCount);
-
-        // this approach is very flawed
-        // int m = max;
-        // for (int i = 0; i < drawCount; i++)
-        // {
-        //     var next = (ulong)random.Next(0, m);
-        //     var offset = (ulong)result.Count(t => t <= next);
-        //     result.Add(next + offset);
-        //     m--;
-        // }
-
-
-        var list = new int[max];
-        for (int i = 0; i < max; i++)
-            list[i] = i;
-        random.Shuffle(list);
-
-        return list.Take(drawCount).Select(i => (ulong)i).ToArray();
-    }
     public static float Normal(this Random random, float average, float standardDevation)
     {
         // from https://stackoverflow.com/a/218600/308451
@@ -79,16 +51,19 @@ public static class RandomExtensions
         Array.Sort(result);
         return result;
     }
-
-    public static void Shuffle<T>(this Random random, IList<T> list)
+    /// <summary>
+    /// Generates many unique random numbers. Returned in random order.
+    /// </summary>
+    public static ulong[] ManyUnique(this Random random, int drawCount, int max)
     {
-        for (int n = list.Count - 1; n > 1; n--)
-        {
-            int k = random.Next(n + 1);
-            T temp = list[k];
-            list[k] = list[n];
-            list[n] = temp;
-        }
+        // TODO: if max is way larger than drawCount, I'm sure there's a more efficient implementation
+
+        var list = new int[max];
+        for (int i = 0; i < max; i++)
+            list[i] = i;
+        list.Shuffle(random);
+
+        return list.Take(drawCount).Select(i => (ulong)i).ToArray();
     }
 
     public static ulong NextUInt64(this Random random)

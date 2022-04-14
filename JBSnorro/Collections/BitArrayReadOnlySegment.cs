@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -53,7 +54,7 @@ namespace JBSnorro.Collections
         }
         public BitReader ToBitReader(ulong startIndex = 0)
         {
-            return new BitReader(data, startIndex, this.Length);
+            return new BitReader(data, this.start + startIndex, this.Length);
         }
         int IReadOnlyCollection<bool>.Count
         {
@@ -149,6 +150,7 @@ namespace JBSnorro.Collections
 
     public static class BitArraySegmentExtensions
     {
+        [DebuggerHidden]
         public static BitArrayReadOnlySegment SelectSegment(this BitArray array, Range range)
         {
             Contract.Assert<NotImplementedException>(array.Length <= int.MaxValue);
