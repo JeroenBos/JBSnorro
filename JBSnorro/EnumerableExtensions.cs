@@ -1911,7 +1911,7 @@ namespace JBSnorro
 
 			return true;
 		}
-
+		[DebuggerHidden]
 		public static bool AreUnique<T>(this IEnumerable<T> sequence, Func<T, T, bool> equalityComparer)
 		{
 			return sequence.AreUnique(equalityComparer.ToEqualityComparer());
@@ -1921,6 +1921,7 @@ namespace JBSnorro
 		/// <typeparam name="T"> The type of the elements in the sequence. </typeparam>
 		/// <param name="sequence"> The sequence to get all unique elements of. </param>
 		/// <param name="equalityComparer"> The comparer determining equality between elements in the sequence. Specify null to use the default comparer. </param>
+		[DebuggerHidden]
 		public static IEnumerable<T?> Unique<T>(this IEnumerable<T> sequence, Func<T?, T?, bool>? equalityComparer = null)
 		{
 			return sequence.Distinct(equalityComparer);
@@ -1929,12 +1930,12 @@ namespace JBSnorro
 		/// <typeparam name="T"> The type of the elements in the sequence. </typeparam>
 		/// <param name="sequence"> The sequence to get all unique elements of. </param>
 		/// <param name="equalityComparer"> The comparer determining equality between elements in the sequence. Specify null to use the default comparer. </param>
+		[DebuggerHidden]
 		public static IEnumerable<T?> Distinct<T>(this IEnumerable<T> sequence, Func<T?, T?, bool>? equalityComparer)
 		{
 			Contract.Requires(sequence != null);
-			equalityComparer = equalityComparer ?? EqualityComparer<T>.Default.Equals;
-
-			return sequence.Distinct(equalityComparer.ToEqualityComparer());
+			
+			return sequence.Distinct(equalityComparer?.ToEqualityComparer() ?? EqualityComparer<T>.Default);
 		}
 
 		/// <summary> Gets whether all elements in the specified sequence are the same element. For the empty sequence, true is returned. </summary>

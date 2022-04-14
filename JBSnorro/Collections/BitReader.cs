@@ -197,7 +197,7 @@ public class BitReader : IBitReader
     public bool CanRead(ulong bitCount)
     {
         if (bitCount > 64) throw new ArgumentOutOfRangeException(nameof(bitCount));
-        return RemainingLength > (ulong)bitCount;
+        return RemainingLength >= bitCount;
     }
 
     public ulong ReadUInt64(int bitCount = 64)
