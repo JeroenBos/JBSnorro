@@ -1654,12 +1654,12 @@ namespace JBSnorro
 											 .Select(tuple => tuple.Item2 - tuple.Item1);*/
 			int cumulativeIndex = 0;
 			IEnumerable<int> counts = indices.Select(i =>
-													 {
-														 int result = i - cumulativeIndex;
-														 Contract.Assert(result >= 0, "the specified indices aren't sorted");
-														 cumulativeIndex = i;
-														 return result;
-													 });
+			{
+				int result = i - cumulativeIndex;
+				Contract.Assert(result >= 0, "the specified indices aren't sorted");
+				cumulativeIndex = i;
+				return result;
+			});
 			return SplitByCounts(sequence, counts.Concat(appendedRemainingCount));
 		}
 		/// <summary> Splits the elements into multiple sequences, where the number of element per enumerables is specified in a sequence of integers. </summary>
@@ -2944,11 +2944,11 @@ namespace JBSnorro
 		public static IEnumerable<TBase> TransitiveVirtualSelect<TBase, TDerived>(this TBase item, Func<TDerived, IEnumerable<TBase>> elementsSelector) where TDerived : TBase
 		{
 			return item.TransitiveSelect(element =>
-										 {
-											 if (element is TDerived)
-												 return elementsSelector((TDerived)element);
-											 return EmptyCollection<TBase>.Enumerable;
-										 });
+			{
+				if (element is TDerived)
+					return elementsSelector((TDerived)element);
+				return EmptyCollection<TBase>.Enumerable;
+			});
 		}
 		//public static IEnumerable<TBase> TransitiveVirtualSelect<TBase, TDerived1, TDerived2>(this TBase item, Func<TDerived2, IEnumerable<TBase>> selectorForDerivedType2) where TDerived1 : TBase where TDerived2 : TBase
 		//{
@@ -2962,14 +2962,14 @@ namespace JBSnorro
 		{
 			//"virtual" because specifying one function to call per derived type mimicks a vtable
 			return item.TransitiveSelect(element =>
-										 {
-											 if (element is TDerived1)
-												 return selectorForDerivedType1((TDerived1)element);
-											 else if (element is TDerived2)
-												 return selectorForDerivedType2((TDerived2)element);
-											 else
-												 return EmptyCollection<TBase>.Enumerable;
-										 });
+			{
+				if (element is TDerived1)
+					return selectorForDerivedType1((TDerived1)element);
+				else if (element is TDerived2)
+					return selectorForDerivedType2((TDerived2)element);
+				else
+					return EmptyCollection<TBase>.Enumerable;
+			});
 		}
 
 		/// <summary> Selects the specified item, and those selected by a specified function, transitively, and in a depth-first manner. </summary>
@@ -3087,26 +3087,26 @@ namespace JBSnorro
 			using (var enumerators = new DisposablesList<IEnumerator<T>>(sequences.Select(sortedSequence => sortedSequence.GetEnumerator())))
 			{
 				Action<int> moveNext = i =>
-									   {
-										   if (!enumerators[i].MoveNext())
-										   {
-											   enumerators.DisposeAndRemoveAt(i);
-										   }
-									   };
+				{
+					if (!enumerators[i].MoveNext())
+					{
+						enumerators.DisposeAndRemoveAt(i);
+					}
+				};
 
 				Func<int> findNext = () =>
-									 {
-										 Contract.Assert(enumerators.Count >= 1);
-										 int indexOfMinimum = 0;
-										 for (int i = 1; i < enumerators.Count; i++)
-										 {
-											 if (comparer(enumerators[indexOfMinimum].Current, enumerators[i].Current) > 0)
-											 {
-												 indexOfMinimum = i;
-											 }
-										 }
-										 return indexOfMinimum;
-									 };
+				{
+					Contract.Assert(enumerators.Count >= 1);
+					int indexOfMinimum = 0;
+					for (int i = 1; i < enumerators.Count; i++)
+					{
+						if (comparer(enumerators[indexOfMinimum].Current, enumerators[i].Current) > 0)
+						{
+							indexOfMinimum = i;
+						}
+					}
+					return indexOfMinimum;
+				};
 
 
 
