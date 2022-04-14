@@ -18,6 +18,7 @@ public static class RandomExtensions
         double result = average + standardDevation * randStdNormal; // random normal(mean,stdDev^2)
         return (float)result;
     }
+    /// <param name="max">Exclusive.</param>
     public static int[] Many(this Random random, int count, int min, int max)
     {
         int[] result = new int[count];
@@ -27,6 +28,7 @@ public static class RandomExtensions
         }
         return result;
     }
+    /// <param name="max">Exclusive.</param>
     public static ulong[] Many(this Random random, int count, ulong min, ulong max)
     {
         ulong[] result = new ulong[count];
@@ -39,12 +41,14 @@ public static class RandomExtensions
         }
         return result;
     }
+    /// <param name="max">Exclusive.</param>
     public static int[] ManySorted(this Random random, int count, int min, int max)
     {
         var result = random.Many(count, min, max);
         Array.Sort(result);
         return result;
     }
+    /// <param name="max">Exclusive.</param>
     public static ulong[] ManySorted(this Random random, int count, ulong min, ulong max)
     {
         var result = random.Many(count, min, max);
@@ -56,7 +60,7 @@ public static class RandomExtensions
     /// </summary>
     public static ulong[] ManyUnique(this Random random, int drawCount, int max)
     {
-        // TODO: if max is way larger than drawCount, I'm sure there's a more efficient implementation
+        // PERF: if max is way larger than drawCount, I'm sure there's a more efficient implementation
 
         var list = new int[max];
         for (int i = 0; i < max; i++)

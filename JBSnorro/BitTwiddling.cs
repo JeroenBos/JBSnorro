@@ -129,7 +129,7 @@ namespace JBSnorro
 		/// <returns>a new array with the bits inserted. </returns>
 		public static ulong[] InsertBits(this ulong[] source, ulong[] sortedBitIndices, bool[] values, ulong? sourceLengthInBits = null)
 		{
-			const int nLength = 64;
+			const int N = 64;
 
 			if (sortedBitIndices.Length == 0)
 				return source;
@@ -139,7 +139,7 @@ namespace JBSnorro
 				throw new IndexOutOfRangeException($"{nameof(sortedBitIndices)} indices must not be negative");
 			if (source is ICollection<ulong> collection)
 			{
-				if (sortedBitIndices[^1] > (ulong)collection.Count * nLength)
+				if (sortedBitIndices[^1] > (ulong)collection.Count * N)
 					throw new IndexOutOfRangeException($"{nameof(sortedBitIndices)} indices must not be after the source length (the very end is allowed)");
 			}
 			else
@@ -148,8 +148,8 @@ namespace JBSnorro
 			if (values.Length != sortedBitIndices.Length)
 				throw new ArgumentException($"{nameof(values)} must contain the same number of elements as {nameof(sortedBitIndices)}");
 
-			ulong sourceBitCount = sourceLengthInBits ?? ((ulong)collection.Count * nLength);
-			if (sourceBitCount > (ulong)collection.Count * nLength)
+			ulong sourceBitCount = sourceLengthInBits ?? ((ulong)collection.Count * N);
+			if (sourceBitCount > (ulong)collection.Count * N)
 				throw new IndexOutOfRangeException(nameof(sourceLengthInBits));
 
 			ulong destBitCount = sourceBitCount + (ulong)values.Length;
@@ -168,10 +168,10 @@ namespace JBSnorro
 
 			static ulong[] CreateDest(ulong bitCount, int sourceCount, int valuesLength)
 			{
-				ulong uselessBitCount = (ulong)sourceCount * nLength - bitCount;
+				ulong uselessBitCount = (ulong)sourceCount * N - bitCount;
 				Contract.Assert(uselessBitCount >= 0);
-				ulong requiredBitCount = (ulong)sourceCount * nLength + (ulong)valuesLength;
-				ulong requiredCount = ((requiredBitCount - uselessBitCount) + (nLength - 1)) / nLength;
+				ulong requiredBitCount = (ulong)sourceCount * N + (ulong)valuesLength;
+				ulong requiredCount = ((requiredBitCount - uselessBitCount) + (N - 1)) / N;
 				var newLength = requiredCount;
 				return new ulong[newLength];
 			}
@@ -194,18 +194,18 @@ namespace JBSnorro
 			
 			static void SetBit(ulong[] dest, ulong bitIndex, bool value)
 			{
-				ulong flag = 1UL << (int)(bitIndex % nLength);
+				ulong flag = 1UL << (int)(bitIndex % N);
 				if (value)
-					dest[bitIndex / nLength] |= flag;
+					dest[bitIndex / N] |= flag;
 				else
-					dest[bitIndex / nLength] &= ~flag;
+					dest[bitIndex / N] &= ~flag;
 			}
 		}
 		public static void CopyBitsTo(this ulong[] source, ulong[] dest, ulong sourceStart, ulong destStart, ulong length)
 		{
-			const int nLength = 64;
-			if (sourceStart + length > (ulong)source.Length * nLength) throw new ArgumentOutOfRangeException(nameof(sourceStart));
-			if (destStart + length > (ulong)dest.Length * nLength) throw new ArgumentOutOfRangeException(nameof(destStart));
+			const int N = 64;
+			if (sourceStart + length > (ulong)source.Length * N) throw new ArgumentOutOfRangeException(nameof(sourceStart));
+			if (destStart + length > (ulong)dest.Length * N) throw new ArgumentOutOfRangeException(nameof(destStart));
 			if (length > long.MaxValue) throw new ArgumentOutOfRangeException(nameof(length));
 
 			ulong currentSource = sourceStart;
@@ -213,14 +213,14 @@ namespace JBSnorro
 			long remaining = (long)length;
 			while (remaining > 0)
 			{
-				ulong nextDestUlongBoundary = currentDest + (nLength - (currentDest % nLength));
+				ulong nextDestUlongBoundary = currentDest + (N - (currentDest % N));
 				if (nextDestUlongBoundary < currentDest) throw new Exception();
-				int sourceIndex = (int)(currentSource / nLength);
+				int sourceIndex = (int)(currentSource / N);
 				ulong source1 = source[sourceIndex];
 				ulong source2 = sourceIndex + 1 == source.Length ? 0UL : source[sourceIndex + 1];
 				uint diff = (uint)(nextDestUlongBoundary - currentDest); // Math.Min((ulong)remaining, nextDestUlongBoundary - currentDest);
-				ref var dst = ref dest[(int)(currentDest / nLength)];
-				Copy(source1, source2, ref dst, (int)(currentSource % nLength), (int)(currentDest % nLength), Math.Min((uint)remaining, diff));
+				ref var dst = ref dest[(int)(currentDest / N)];
+				Copy(source1, source2, ref dst, (int)(currentSource % N), (int)(currentDest % N), Math.Min((uint)remaining, diff));
 
 				remaining -= diff;
 				currentDest += diff;
@@ -232,10 +232,10 @@ namespace JBSnorro
 			{
 				ulong orig1 = source1;
 				ulong orig2 = source2;
-				if (index < 0 || index >= nLength) throw new ArgumentOutOfRangeException(nameof(index));
-				if (length < 0 || length > int.MaxValue || length > 2 * nLength) throw new ArgumentOutOfRangeException(nameof(length));
-				if (destIndex + length > nLength) throw new ArgumentOutOfRangeException(nameof(destIndex));
-				if (index + length > 2 * nLength) throw new ArgumentOutOfRangeException(nameof(index));
+				if (index < 0 || index >= N) throw new ArgumentOutOfRangeException(nameof(index));
+				if (length < 0 || length > int.MaxValue || length > 2 * N) throw new ArgumentOutOfRangeException(nameof(length));
+				if (destIndex + length > N) throw new ArgumentOutOfRangeException(nameof(destIndex));
+				if (index + length > 2 * N) throw new ArgumentOutOfRangeException(nameof(index));
 
 				if (index == destIndex)
 				{

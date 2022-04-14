@@ -29,6 +29,7 @@ namespace JBSnorro.Collections
         }
         /// <summary> Gets the length of the internal data structure given the number of bits it should hold. </summary>
         /// <param name="bitCount"> The number of bits to store in the internal data. </param>
+        [DebuggerHidden]
         internal static int ComputeInternalStructureSize(ulong bitCount)
         {
             var (division, remainder) = Math.DivRem(bitCount, bitCountPerInternalElement);
@@ -50,8 +51,6 @@ namespace JBSnorro.Collections
             }
             // we _could_ clear out the bits after `length` but I don't think it's necessary atm
             return new BitArray(data, length);
-
-
         }
 
         private ulong[] data;
@@ -189,12 +188,13 @@ namespace JBSnorro.Collections
         /// <summary> Creates a new bit array by OR-ing the specified bit sequences together. </summary>
         /// <param name="bitsToOr"> Specify which bits are to be set. Are OR-ed together, so must have equal sizes. </param>
         public BitArray(IEnumerable<IReadOnlyList<bool>> bitsToOr) : this((IList<bool>)bitsToOr.Or()) { }
-        private BitArray(IEnumerable<bool> bits, int count) : this(bits, count.ToULong())
+        [DebuggerHidden]
+         private BitArray(IEnumerable<bool> bits, int count) : this(bits, count.ToULong())
         {
 
         }
         /// <summary> Creates a new bit array from the specified bits with prespecified length. </summary>
-        private BitArray(IEnumerable<bool> bits, ulong count)
+        [DebuggerHidden] private BitArray(IEnumerable<bool> bits, ulong count)
         {
             Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
             Contract.Requires(bits != null);
