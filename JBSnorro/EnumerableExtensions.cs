@@ -251,13 +251,7 @@ namespace JBSnorro
 
 			return Enumerate();
 		}
-		/// <summary>
-		/// Zips the two sequences togethers until it reaches the end of one of them.
-		/// </summary>
-		public static IEnumerable<(T, U)> Zip<T, U>(this IEnumerable<T> firstSequence, IEnumerable<U> secondSequence)
-		{
-			return Enumerable.Zip(firstSequence, secondSequence, (t, u) => (t, u));
-		}
+
 		/// <summary> Applies a specified function the first element of two sequences, and subsequently a function to the remaining corresponding elements of two sequences, producing a sequence of the results.
 		/// This entails that the resulting sequence is commensurate with the smallest specified sequence. </summary>
 		/// <param name="firstSource"> The first sequence to merge. </param>
