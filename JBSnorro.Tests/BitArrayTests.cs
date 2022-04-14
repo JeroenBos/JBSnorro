@@ -129,6 +129,14 @@ namespace JBSnorro.Tests
             Contract.AssertSequenceEqual(result, new ulong[] { 0, 0, 0, 1 });
         }
         [TestMethod]
+        public void SimpleBitInsertionAtTheEndOfNotFullElement()
+        {
+            var data = new ulong[] { 0b_00 };
+            var result = data.InsertBits(new[] { 2UL }, new[] { true }, sourceLengthInBits: 2);
+            Contract.AssertSequenceEqual(result, new ulong[] { 0b_100 });
+        }
+
+        [TestMethod]
         public void InsertionsIn2Bytes()
         {
             // now both in one go:

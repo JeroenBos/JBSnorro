@@ -148,15 +148,14 @@ namespace JBSnorro
 			if (values.Length != sortedBitIndices.Length)
 				throw new ArgumentException($"{nameof(values)} must contain the same number of elements as {nameof(sortedBitIndices)}");
 
-			ulong bitCount = sourceLengthInBits ?? ((ulong)collection.Count * nLength);
-			if (bitCount > (ulong)collection.Count * nLength)
+			ulong sourceBitCount = sourceLengthInBits ?? ((ulong)collection.Count * nLength);
+			if (sourceBitCount > (ulong)collection.Count * nLength)
 				throw new IndexOutOfRangeException(nameof(sourceLengthInBits));
 
+			ulong destBitCount = sourceBitCount + (ulong)values.Length;
+			ulong[] dest = CreateDest(destBitCount, source.Length, values.Length);
 
-
-			ulong[] dest = CreateDest(bitCount, source.Length, values.Length);
-
-			foreach (var (startBitIndex, destBitIndex, length, bit) in GetRanges(sortedBitIndices, values, bitCount))
+			foreach (var (startBitIndex, destBitIndex, length, bit) in GetRanges(sortedBitIndices, values, sourceBitCount))
 			{
 				CopyBitsTo(source, dest, startBitIndex, destBitIndex, length);
 				if (bit != null)
