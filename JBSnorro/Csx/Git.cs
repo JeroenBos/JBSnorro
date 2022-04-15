@@ -428,10 +428,10 @@ fi");
             }
         }
 
-        public static async Task LoginToGitHub(string gitDir)
-        {
-            throw new NotImplementedException("LoginToGitHub");
-        }
+        //public static async Task LoginToGitHub(string gitDir)
+        //{
+        //    throw new NotImplementedException("LoginToGitHub");
+        //}
         public static async Task Automerge(string gitDir, string runId)
         {
             string bash = "gh run list";
