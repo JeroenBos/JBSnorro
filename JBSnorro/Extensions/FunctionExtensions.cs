@@ -28,14 +28,14 @@ public static class FunctionExtensions
 
 
 /// <summary>
-/// Represents a dimensional quantity in one discrete finite-length dimension.
+/// Represents a dimensional quantity in one discrete finite-length dimension. The start of the dimension is closed and the end open.
 /// </summary>
 /// <param name="Value">The position of this quantity in this dimension. </param>
-/// <param name="Length">The length of the dimension. Must be nonnegative. </param>
+/// <param name="Length">The length of the dimension. Must be nonnegative.</param>
 /// <param name="Start">The start of the dimension. </param>
 public record struct OneDimensionalDiscreteQuantity(int Value, int Length, int Start = 0);
 /// <summary>
-/// Represents a dimensional quantity in one continuous dimension.
+/// Represents a dimensional quantity in one continuous dimension. The start of the dimension is closed and the end open (although not very relevant practically for continuous quantities).
 /// </summary>
 /// <param name="Value">The position of this quantity in this dimension. </param>
 /// <param name="Length">The length of the dimension. Must be nonnegative. Can be infinite. </param>

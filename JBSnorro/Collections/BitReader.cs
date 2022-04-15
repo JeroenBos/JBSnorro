@@ -1,6 +1,6 @@
 ﻿#nullable enable
-using System.Diagnostics;
-
+using JBSnorro.Diagnostics;
+using DebuggerDisplayAttribute = System.Diagnostics.DebuggerDisplayAttribute;
 namespace JBSnorro.Collections;
 
 public interface IBitReader
@@ -37,6 +37,11 @@ public class BitReader : IBitReader
     private int bitIndex => checked((int)(current % 64));
     /// <summary> In bits. </summary>
     public ulong RemainingLength => this.End - current;
+    /// <summary>
+    /// Gets the current position of this reader in the bit stream.
+    /// </summary>
+    public ulong Position => current - startOffset;
+
     /// <summary>
     /// Gets the remainder of the bits in a segment.
     /// </summary>
@@ -216,31 +221,30 @@ public class BitReader : IBitReader
 
     public void Seek(ulong bitIndex)
     {
-        if (bitIndex < 0 || bitIndex > this.Length)
-            throw new ArgumentOutOfRangeException(nameof(bitIndex));
+        Contract.Requires<ArgumentOutOfRangeException>(0 <= bitIndex);
+        Contract.Requires<ArgumentOutOfRangeException>(bitIndex <= this.Length);
+
         this.current = bitIndex;
     }
     /// <summary>
     /// Gets the index in the stream the pattern occurs at.
     /// </summary>
-    public long Find(ulong pattern, int patternLength)
+    public long IndexOf(ulong item, int itemLength = 64)
     {
-        if (patternLength < 1)
-            throw new ArgumentOutOfRangeException(nameof(patternLength));
-        if (patternLength > 64)
-            throw new NotSupportedException("patternLength > 64");
+        Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
+        Contract.Requires<ArgumentOutOfRangeException>(itemLength <= 64);
 
         checked
         {
-            ulong mask = BitArrayExtensions.LowerBitsMask(patternLength);
+            ulong mask = BitArrayExtensions.LowerBitsMask(itemLength);
 
-            for (; this.current + (ulong)patternLength < this.Length; this.current -= ((ulong)patternLength - 1))
+            for (; this.current + (ulong)itemLength < this.Length; this.current -= ((ulong)itemLength - 1))
             {
-                ulong value = this.ReadUInt64(patternLength);
-                if (((value ^ pattern) & mask) == mask)
+                ulong value = this.ReadUInt64(itemLength);
+                if (((value ^ item) & mask) == mask)
                 {
                     long currentIndex = (long)this.current;
-                    return currentIndex - patternLength;
+                    return currentIndex - itemLength;
                 }
             }
             this.current = this.Length;
@@ -250,18 +254,17 @@ public class BitReader : IBitReader
     /// <summary>
     /// Gets the index in the stream the pattern occurs at.
     /// </summary>
-    public int Find(ulong pattern, int patternLength, ulong startBitIndex)
+    public int Find(ulong item, int itemLength, ulong startBitIndex)
     {
-        if (startBitIndex < 0 || startBitIndex > this.Length)
-            throw new ArgumentOutOfRangeException(nameof(startBitIndex));
-        if (patternLength < 1)
-            throw new ArgumentOutOfRangeException(nameof(patternLength));
-        if (patternLength > 64)
-            throw new ArgumentOutOfRangeException(nameof(patternLength), "> 64");
+        Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
+        Contract.Requires<ArgumentOutOfRangeException>(itemLength <= 64);
+        Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
+        Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= this.Length);
 
         this.Seek(startBitIndex);
-        return this.Find(pattern, patternLength, startBitIndex);
+        return this.Find(item, itemLength, startBitIndex);
     }
+
 
     /// <param name="length"> In bits. </param>
     public void CopyTo(ulong[] dest, ulong startBitIndex, ulong length, int destBitIndex)
@@ -278,6 +281,14 @@ public class BitReader : IBitReader
         this.data.CopyTo(dest, destBitIndex);
 
     }
+    // mostly you want RemainingSegment anyway...
+    // public BitArrayReadOnlySegment ToBitArraySegment()
+    // {
+    //     checked
+    //     {
+    //         return this.data[new Range((int)this.startOffset, (int)this.startOffset + (int)this.Length)];
+    //     }
+    // }
 
     private string ToDebuggerDisplay()
     {

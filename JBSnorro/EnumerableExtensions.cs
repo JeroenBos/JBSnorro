@@ -3166,6 +3166,8 @@ namespace JBSnorro
 		/// </summary>
 		public static void Shuffle<T>(this IList<T> list, Random? random = null)
 		{
+			Contract.Requires(list != null);
+
 			random ??= new Random(Random.Shared.Next());
 
 			for (int n = list.Count - 1; n > 1; n--)
@@ -3176,5 +3178,19 @@ namespace JBSnorro
 				list[n] = temp;
 			}
 		}
+		/// <inheritdoc cref="System.Linq.Enumerable.Sum{TSource}(IEnumerable{TSource}, Func{TSource, long})"/>
+		public static ulong Sum<T>(this IEnumerable<T> source, Func<T, ulong> selector)
+        {
+			Contract.Requires(source != null);
+			Contract.Requires(selector != null);
+
+			ulong sum = 0;
+			foreach (T t in source)
+            {
+				ulong projected = selector(t);
+				sum = checked(sum + projected);
+            }
+			return sum;
+        }
 	}
 }

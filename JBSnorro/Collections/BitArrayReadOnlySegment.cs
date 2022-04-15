@@ -13,8 +13,8 @@ namespace JBSnorro.Collections
 {
     public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     {
-        internal protected readonly BitArray data;
-        internal protected readonly ulong start;
+        internal readonly BitArray data;
+        internal readonly ulong start;
 
         public BitArrayReadOnlySegment(BitArray data, ulong start, ulong length)
         {
@@ -180,13 +180,32 @@ namespace JBSnorro.Collections
             var (index, length) = range.GetOffsetAndLength((int)array.Length);
             return array.SelectSegment(index, length);
         }
+        [DebuggerHidden]
         public static BitArrayReadOnlySegment SelectSegment(this BitArray array, int start, int length)
         {
             return array.SelectSegment((ulong)start, (ulong)length);
         }
+        [DebuggerHidden]
         public static BitArrayReadOnlySegment SelectSegment(this BitArray array, ulong start, ulong length)
         {
             return new BitArrayReadOnlySegment(array, start, length);
+        }
+        [DebuggerHidden]
+        public static BitReader SelectReader(this BitArray array, Range range)
+        {
+            Contract.Assert<NotImplementedException>(array.Length <= int.MaxValue);
+            var (index, length) = range.GetOffsetAndLength((int)array.Length);
+            return array.SelectReader(index, length);
+        }
+        [DebuggerHidden]
+        public static BitReader SelectReader(this BitArray array, int start, int length)
+        {
+            return array.SelectReader((ulong)start, (ulong)length);
+        }
+        [DebuggerHidden]
+        public static BitReader SelectReader(this BitArray array, ulong start, ulong length)
+        {
+            return new BitReader(array, start, length); 
         }
     }
 }
