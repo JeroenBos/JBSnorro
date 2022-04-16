@@ -169,7 +169,7 @@ public class BitReader : IBitReader
     }
     public Half ReadHalf()
     {
-        if (this.RemainingLength < 16)
+        if (this.RemainingLength < 32)
             throw InsufficientBitsException("Half");
         short i = ReadInt16();
         return BitTwiddling.BitsAsHalf(i);
@@ -177,16 +177,64 @@ public class BitReader : IBitReader
     public float ReadSingle()
     {
         if (this.RemainingLength < 32)
-            throw InsufficientBitsException("Single");
+            throw InsufficientBitsException("float");
         int i = ReadInt32();
         return BitTwiddling.BitsAsSingle(i);
     }
     public double ReadDouble()
     {
         if (this.RemainingLength < 64)
-            throw InsufficientBitsException("Double");
+            throw InsufficientBitsException("double");
         long i = unchecked((long)ReadUInt64(64));
         return BitTwiddling.BitsAsDouble(i);
+    }
+    public Half ReadHalf(int bitCount)
+    {
+        if (bitCount < 2 || bitCount > 32)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw InsufficientBitsException("Half");
+
+        // half has 5 bits exponent
+        return (Half)ReadDouble(bitCount, 5 + 5);
+    }
+    public float ReadSingle(int bitCount)
+    {
+        if (bitCount < 2 || bitCount > 32)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw InsufficientBitsException("float");
+
+        // float has 8 bits exponent
+        return (float)ReadDouble(bitCount, 8 + 5);
+    }
+    public double ReadDouble(int bitCount)
+    {
+        if (bitCount < 2 || bitCount > 32)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw InsufficientBitsException("double");
+
+        // double has 11 bits exponent
+        return ReadDouble(bitCount, 11 + 5);
+    }
+    private double ReadDouble(int bitCount, int exponentCutoff)
+    {
+        // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
+        // but before some bitCount, there simply isn't enough bits to have this strategy. Something more complicated (or simpler) is needed
+
+        if (bitCount < exponentCutoff)
+        {
+            return ReadInt64(bitCount);
+        }
+        else
+        {
+            ulong bits = ReadUInt64(bitCount);
+            ulong shifted = bits << (64 - bitCount);
+
+            var result = BitTwiddling.BitsAsDouble(shifted);
+            return result;
+        }
     }
     /// <summary>
     /// Returns whether this reader still has the specified number of bits to read.

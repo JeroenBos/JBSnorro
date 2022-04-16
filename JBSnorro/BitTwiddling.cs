@@ -493,6 +493,17 @@ namespace JBSnorro
 				return result;
 			}
 		}
+		public static double BitsAsDouble(this ulong i)
+		{
+			unsafe
+			{
+				ulong* pointer = &i;
+				double* doublePointer = (double*)pointer;
+				double result = *doublePointer;
+				return result;
+			}
+		}
+
 
 		/// <summary>
 		/// Gets whether a sequence of bits at in two ulong arrays are equal.

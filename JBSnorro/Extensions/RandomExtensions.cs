@@ -58,7 +58,7 @@ public static class RandomExtensions
     /// <summary>
     /// Generates many unique random numbers. Returned in random order.
     /// </summary>
-    public static ulong[] ManyUnique(this Random random, int drawCount, int max)
+    public static ulong[] ManyUnique(this Random random, int drawCount, int max, int min = 0)
     {
         // PERF: if max is way larger than drawCount, I'm sure there's a more efficient implementation
 
@@ -67,7 +67,7 @@ public static class RandomExtensions
             list[i] = i;
         list.Shuffle(random);
 
-        return list.Take(drawCount).Select(i => (ulong)i).ToArray();
+        return list.Take(drawCount).Select(i => (ulong)(i + min)).ToArray();
     }
 
     public static ulong NextUInt64(this Random random)

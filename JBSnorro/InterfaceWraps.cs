@@ -13,6 +13,11 @@ namespace JBSnorro
 	/// <summary> Contains conversion methods from delegates to some interfaces, effectively wrapping the delegate. </summary>
 	public static class InterfaceWraps
 	{
+		[DebuggerHidden]
+		public static IComparer<T> GetReversedComparer<T>() where T : IComparable<T>
+        {
+			return ToComparer<T>([DebuggerHiddenAttribute] (a, b) => b.CompareTo(a));
+        }
 		/// <summary> Converts the specified delegate to an IComparer&lt;<typeparamref name="T"/>&gt; </summary>
 		/// <typeparam name="T"> The type of the items to compare. </typeparam>
 		/// <param name="comparer"> The delegate to wrap the interface around. </param>
