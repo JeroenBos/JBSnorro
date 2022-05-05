@@ -25,6 +25,10 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
+	  <Watch Remove="Git\PrecommitHooks.cs" />
+	</ItemGroup>
+	
+	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
