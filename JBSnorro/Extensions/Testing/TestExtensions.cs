@@ -21,6 +21,7 @@ public class Test
         if (method == null) throw new ArgumentNullException(nameof(method));
         (this.Type, this.Method) = (type, method);
     }
+    [DebuggerHidden]
     public void Deconstruct(out Type Type, out MethodInfo Method)
     {
         Type = this.Type;
@@ -185,7 +186,7 @@ namespace JBSnorro.Testing
             {
                 return match(predicate, test.Method.Name) || match(predicate, test.Type.FullName);
             }
-
+            [DebuggerHidden]
             static bool match(string pattern, string candidate)
             {
                 var regexString = Regex.Escape(pattern.ToLowerInvariant()).Replace("\\*", ".*").Replace("\\?", ".");

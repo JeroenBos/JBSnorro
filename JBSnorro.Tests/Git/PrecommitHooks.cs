@@ -40,10 +40,17 @@ public class PrecommitHookTests : GitTestsBase
     protected static async Task<string> InitRepoWithStagedFileWithStagedCRLFFile()
     {
         string dir = await InitRepoWithPrecommithook();
-        File.WriteAllText(Path.Combine(dir, "tmp.txt"), "line1\r\nline2\r\n");
+        File.WriteAllText(Path.Combine(dir, "tmp.txt"), "1\r\n2\r\n");
 
         await "git add .".Execute(cwd: dir);
+        Assert.IsTrue(File.ReadAllText(Path.Combine(dir, "tmp.txt")).Contains('\r'));
         return dir;
+    }
+    protected static async Task<IAsyncDisposable> DisableGitConfigAutoCRLF()
+    {
+        var currentValue = (await "git config core.autocrlf".Execute()).StandardOutput.Trim();
+        await $"git config set core.autocrlf false".Execute();
+        return Disposable.Create(async () => await $"git config set core.autocrlf {currentValue}".Execute());
     }
 
     [TestMethod]
@@ -51,7 +58,13 @@ public class PrecommitHookTests : GitTestsBase
     {
         var gitDir = await InitRepoWithStagedFileWithMissingOEFNewLine();
 
-        await "bash ./.git/hooks/pre-commit".Execute(cwd: gitDir);
+        Console.WriteLine("Act");
+        var x = await "bash ./.git/hooks/pre-commit".Execute(cwd: gitDir);
+        Console.WriteLine(x.ErrorOutput);
+
+        Console.WriteLine("----------------");
+        Console.WriteLine("StandardOutput:");
+        Console.WriteLine(x.StandardOutput);
 
         var text = File.ReadAllText(Path.Combine(gitDir, "tmp.txt"));
         Assert.AreEqual(expected: "line without new line\n", text);
@@ -85,10 +98,11 @@ public class PrecommitHookTests : GitTestsBase
     {
         var gitDir = await InitRepoWithStagedFileWithStagedCRLFFile();
 
-        await "bash ./.git/hooks/pre-commit".Execute(cwd: gitDir);
+        var x = await "bash ./.git/hooks/pre-commit".Execute(cwd: gitDir);
+        Console.WriteLine(x.ErrorOutput);
 
         var text = File.ReadAllText(Path.Combine(gitDir, "tmp.txt"));
-        Assert.AreEqual(expected: "line1\nline2\n", text);
+        Assert.AreEqual(expected: "1\n2\n", text);
     }
     [TestMethod]
     public async Task CheckPrecommitHookReplacesCRLFWithLF()
@@ -98,6 +112,6 @@ public class PrecommitHookTests : GitTestsBase
         await "git commit -am 'commit'".Execute(cwd: gitDir);
 
         var text = File.ReadAllText(Path.Combine(gitDir, "tmp.txt"));
-        Assert.AreEqual(expected: "line1\nline2\n", text);
+        Assert.AreEqual(expected: "1\n2\n", text);
     }
 }
