@@ -332,5 +332,25 @@ namespace JBSnorro.Testing
                 throw new ArgumentException(message);
             }
         }
+        /// <summary>
+        /// Compares the specified strings for equality, and if unequal, prints their contents with explicit CRLF characters.
+        /// </summary>
+        public static void AreEqual(string? expected, string? actual)
+        {
+            if (expected != actual)
+            {
+                string expectedFormatted = format(expected);
+                string actualFormatted = format(actual);
+                string message = $"Expected:\n{expectedFormatted}\nActual:\n{actualFormatted}";
+                throw new Exception(message);
+            }
+
+            static string format(string? s)
+            {
+                if (s == null) return "<null>";
+                return s.Replace("\n", "\\n").Replace("\r", "\\r");
+            }
+        }
+
     }
 }
