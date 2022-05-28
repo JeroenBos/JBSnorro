@@ -20,6 +20,11 @@ export -f git_repo_path
 
 function prepare_create_diff_patch() {
     rel_path=$(git_repo_path "$1")
+    if [[ -z "${rel_path}" ]]; then
+        echo not in repo >> $HOME/test.txt
+        echo not in repo
+        exit 1;
+    fi
     repo_dir=$(get_repo_dir)
     tmp_dir="/c/temp"
     dir -p "$tmp_dir"
@@ -32,7 +37,7 @@ function prepare_create_diff_patch() {
     
     # select the first word in the map, which is the relative temp file name
     # tmp_rel_path="$(echo "$tmp_path_map" | sed -e 's/\s.*$//')"
-    echo run "$(date +"%T")"                                  >  $HOME/test.txt
+    echo run "$(date +"%T")"                                  >> $HOME/test.txt
     echo prepare_create_diff_patch: "$PWD"                    >> $HOME/test.txt
     echo prepare_create_diff_patch: "rel_path:$rel_path"      >> $HOME/test.txt
     echo prepare_create_diff_patch: "repo_dir:$repo_dir"      >> $HOME/test.txt
@@ -93,6 +98,8 @@ function create_diff_patch_adding_eof_lf() {
 export -f create_diff_patch_adding_eof_lf
 
 function create_diff_patch_adding_eof_lf_condition() {
+    echo true
+    exit 0;
     path="$1"
     [ "$(tail -c1 $path)" != "$lf" ] && echo true || echo false
 }
@@ -117,14 +124,30 @@ function conditionally_apply() {
 
     condition=$(${F_CONDITION} "$@")
     if [[ "${condition}" == 'true' ]]; then
-        echo 6
-        "${F_ACTION}" "$@"
+        echo 6 "'${F_ACTION}' '$@'" >> $HOME/test.txt
+        eval "${F_ACTION} $@"   # eval'ing to allow currying
+        echo exit code F_ACTION: $# >> $HOME/test.txt
     else
         echo "7: ${condition}"
     fi
+    echo 8
 }
 export -f conditionally_apply
 
+function apply_on_tmp() {
+    if [[ "$#" -ne 2 ]]; then echo "expected 2 arguments"; exit 1; fi
+    F="$1"
+    path="$2"
+
+    # create tmp copy
+    tmp_path=$(prepare_create_diff_patch "$path")
+
+    # do the manipulation
+    $F "$tmp_path"
+
+    # create the patch
+    finalize_create_diff_patch "$path" "$tmp_path"
+}
 function conditionally_apply_on_tmp_path() {
     # parameters:
     # $1: the condition function echoing 'true' or 'false'
@@ -139,26 +162,17 @@ function conditionally_apply_on_tmp_path() {
     shift
     shift
 
-    function CURRIED_F_ACTION() {
-        echo 3
-        path="$1"
-        shift
-        tmp_path=$(prepare_create_diff_patch "$path")
-
-        echo 4
-        "${F_ACTION}" "$tmp_file" "$@"
-
-        finalize_create_diff_patch "$path" "$tmp_path"
-    }
-
+    echo 2 >> $HOME/test.txt
     echo 2
-    x=$(conditionally_apply $F_CONDITION CURRIED_F_ACTION "$@")
+    x=$(conditionally_apply $F_CONDITION "apply_on_tmp $F_ACTION" "$@")
+    echo 5 >> $HOME/test.txt
     echo 5
-    echo $x
+    echo $x >> $HOME/test.txt
 }
 export -f conditionally_apply_on_tmp_path
 
+echo "" > $HOME/test.txt
 # Add a linebreak to the file if it doesn't have one
-conditionally_apply_on_tmp_path create_diff_patch_adding_eof_lf_condition create_diff_patch_adding_eof_lf "$HOME/a.txt"
-
+# conditionally_apply_on_tmp_path create_diff_patch_adding_eof_lf_condition create_diff_patch_adding_eof_lf "$HOME/a.txt"
+apply_on_tmp create_diff_patch_adding_eof_lf '/c/git/JBSnorro/a.txt'
 

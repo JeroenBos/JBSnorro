@@ -4,7 +4,7 @@ echo realStart
 
 cr="$(printf "\r")"  # get \r
 lf="$(printf "\n")"  # get \n
-
+AAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHH JUST NOOOOOOOOOOOOOOOOOOOOOOOO DON'T DO THIS IN BASH PLEEEEEEEEEEAAAAAAAAAAASSSSSSSSSSSSSEEEEEEEEEEEE
 
 function get_repo_dir() {
     # Gets the absolute path of the repo
@@ -151,6 +151,17 @@ function conditionally_apply() {
 }
 export -f conditionally_apply
 
+function apply_on_tmp() {
+    if [[ "$#" -ne 2 ]]; then echo "expected 2 arguments"; exit 1; fi
+    F="$1"
+    path="$2"
+
+
+    # do the manipulation
+    $F "$tmp_path"
+
+    # crete the patch
+}
 function conditionally_apply_on_tmp_path() {
     # parameters:
     # $1: the condition function echoing 'true' or 'false'
