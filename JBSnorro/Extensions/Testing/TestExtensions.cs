@@ -21,6 +21,7 @@ public class Test
         if (method == null) throw new ArgumentNullException(nameof(method));
         (this.Type, this.Method) = (type, method);
     }
+    [DebuggerHidden]
     public void Deconstruct(out Type Type, out MethodInfo Method)
     {
         Type = this.Type;
@@ -185,7 +186,7 @@ namespace JBSnorro.Testing
             {
                 return match(predicate, test.Method.Name) || match(predicate, test.Type.FullName);
             }
-
+            [DebuggerHidden]
             static bool match(string pattern, string candidate)
             {
                 var regexString = Regex.Escape(pattern.ToLowerInvariant()).Replace("\\*", ".*").Replace("\\?", ".");
@@ -331,5 +332,25 @@ namespace JBSnorro.Testing
                 throw new ArgumentException(message);
             }
         }
+        /// <summary>
+        /// Compares the specified strings for equality, and if unequal, prints their contents with explicit CRLF characters.
+        /// </summary>
+        public static void AreEqual(string? expected, string? actual)
+        {
+            if (expected != actual)
+            {
+                string expectedFormatted = format(expected);
+                string actualFormatted = format(actual);
+                string message = $"Expected:\n{expectedFormatted}\nActual:\n{actualFormatted}";
+                throw new Exception(message);
+            }
+
+            static string format(string? s)
+            {
+                if (s == null) return "<null>";
+                return s.Replace("\n", "\\n").Replace("\r", "\\r");
+            }
+        }
+
     }
 }
