@@ -1,8 +1,10 @@
 ﻿#nullable enable
 using JBSnorro.Extensions;
 using JBSnorro.Geometry;
+using JBSnorro.Testing;
 using JBSnorro.Tests.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 
 namespace JBSnorro.Csx.Tests;
 
@@ -21,10 +23,19 @@ public class PrecommitHookTests : GitTestsBase
 
         return dir;
     }
-    protected static async Task<string> InitRepoWithStagedFileWithMissingOEFNewLine()
+    protected static async Task<string> InitRepoWithStagedFileWithMissingOEFNewLine(bool longText = false)
     {
         string dir = await InitRepoWithPrecommithook();
-        File.WriteAllText(Path.Combine(dir, "tmp.txt"), "line without new line");
+        File.WriteAllText(Path.Combine(dir, "tmp.txt"), (longText ? "first line\n\n\n\n\n\n\n\n\n\n" : "" ) + "line without new line");
+
+        await "git add .".Execute(cwd: dir);
+        return dir;
+    }
+
+    protected static async Task<string> InitRepoWithStagedFileWithMissingOEFNewLineAndUnstagedChange(bool longText = false)
+    {
+        string dir = await InitRepoWithStagedFileWithMissingOEFNewLine();
+        File.WriteAllText(Path.Combine(dir, "tmp.txt"), (longText ? "first line\n\n\n\n\n\n\n\n\n\n" : "") + "line without new line");
 
         await "git add .".Execute(cwd: dir);
         return dir;
@@ -37,13 +48,23 @@ public class PrecommitHookTests : GitTestsBase
         await "git add .".Execute(cwd: dir);
         return dir;
     }
-    protected static async Task<string> InitRepoWithStagedFileWithStagedCRLFFile()
+    protected static async Task<string> InitRepoWithStagedFileWithStagedCRLFFile(bool longText = false)
     {
         string dir = await InitRepoWithPrecommithook();
-        File.WriteAllText(Path.Combine(dir, "tmp.txt"), "1\r\n2\r\n");
+        File.WriteAllText(Path.Combine(dir, "tmp.txt"), Enumerable.Range(0, longText ? 10 : 2).Select(i => $"line{i}\r\n").Join(""));
 
         await "git add .".Execute(cwd: dir);
         Assert.IsTrue(File.ReadAllText(Path.Combine(dir, "tmp.txt")).Contains('\r'));
+        return dir;
+    }
+    protected static async Task<string> InitRepoWithStagedFileWithStagedCRLFFileAndUnstagedChange(bool longText = false)
+    {
+        string dir = await InitRepoWithStagedFileWithStagedCRLFFile(longText);
+
+        string file = Path.Combine(dir, "tmp.txt");
+        // add something to working tree that won't result in a merge conflict:
+        File.WriteAllText(file, "zeroth line\n" + File.ReadAllText(file));
+
         return dir;
     }
     protected static async Task<IAsyncDisposable> DisableGitConfigAutoCRLF()
@@ -84,12 +105,31 @@ public class PrecommitHookTests : GitTestsBase
     {
         var gitDir = await InitRepoWithStagedFileWithMissingOEFNewLine();
 
-        await "git commit -am 'commit'".Execute(cwd: gitDir);
+        var x = await "git commit -m 'commit'".Execute(cwd: gitDir);
+        Console.WriteLine(x.ErrorOutput);
 
         var text = File.ReadAllText(Path.Combine(gitDir, "tmp.txt"));
-        Assert.AreEqual(expected: "line without new line\n", text);
+        TestExtensions.AreEqual(expected: "line without new line\n", text);
     }
 
+    [TestMethod]
+    public async Task AddingOEFLFDoesntCommitWorkingTree()
+    {
+        // Arrange
+        var gitDir = await InitRepoWithStagedFileWithMissingOEFNewLine(longText: true);
+        string file = Path.Combine(gitDir, "tmp.txt");
+        // add something to working tree that won't result in a merge conflict:
+        File.WriteAllText(file, "zeroth line\n" + File.ReadAllText(file));
+
+        // Act
+        var x = await "git commit -m 'commit'".Execute(cwd: gitDir);
+        Console.WriteLine(x.ErrorOutput);
+
+        var text = File.ReadAllText(file);
+        Assert.AreEqual(expected: "zeroth line\nfirst line\n\n\n\n\n\n\n\n\n\nline without new line", text);
+        var diff = await "git diff".Execute(cwd: gitDir);
+        Assert.IsTrue(diff.StandardOutput.Contains("+zeroth line"));
+    }
 
 
 
@@ -102,7 +142,7 @@ public class PrecommitHookTests : GitTestsBase
         Console.WriteLine(x.ErrorOutput);
 
         var text = File.ReadAllText(Path.Combine(gitDir, "tmp.txt"));
-        Assert.AreEqual(expected: "1\n2\n", text);
+        Assert.AreEqual(expected: "line0\nline1\n", text);
     }
     [TestMethod]
     public async Task CheckPrecommitHookReplacesCRLFWithLF()
@@ -112,6 +152,23 @@ public class PrecommitHookTests : GitTestsBase
         await "git commit -am 'commit'".Execute(cwd: gitDir);
 
         var text = File.ReadAllText(Path.Combine(gitDir, "tmp.txt"));
-        Assert.AreEqual(expected: "1\n2\n", text);
+        Assert.AreEqual(expected: "line0\nline1\n", text);
     }
+
+    [TestMethod]
+    public async Task ConvertingCRLFDoesntCommitWorkingTree()
+    {
+        // Arrange
+        var gitDir = await InitRepoWithStagedFileWithStagedCRLFFileAndUnstagedChange(longText: true);
+        
+        // Act
+        var x = await "git commit -m 'commit'".Execute(cwd: gitDir);
+        Console.WriteLine(x.ErrorOutput);
+
+        var text = File.ReadAllText(Path.Combine(gitDir, "tmp.txt"));
+        Assert.AreEqual(expected: "zeroth line\nfirst line\n\n\n\n\n\n\n\n\n\nline without new line", text);
+        var diff = await "git diff".Execute(cwd: gitDir);
+        Assert.IsTrue(diff.StandardOutput.Contains("+zeroth line"));
+    }
+
 }
