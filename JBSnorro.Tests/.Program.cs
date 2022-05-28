@@ -5,7 +5,7 @@ namespace JBSnorro.Tests
 {
 	class Program
 	{
-		[DebuggerHidden]
+		// [DebuggerHidden] // Debugging in VS is slow if you do this
 		public static Task Main(string[] args) => Testing.TestExtensions.DefaultMainTestProjectImplementation(args);
 	}
 }
