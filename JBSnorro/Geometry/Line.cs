@@ -12,12 +12,12 @@ namespace JBSnorro.Geometry
 		/// <summary> Gets whether this line is vertical. </summary>
 		public bool IsVertical
 		{
-			get { return FloatingTypeEqualityComparisonHelper.EqualByTolerance(0, 1 / this.LinearCoefficient); }
+			get { return FloatingTypeEqualityComparisonHelper.ApproximatelyEquals(0, 1 / this.LinearCoefficient); }
 		}
 		/// <summary> Gets whether this line is horizontal. </summary>
 		public bool IsHorizontal
 		{
-			get { return FloatingTypeEqualityComparisonHelper.EqualByTolerance(0, this.LinearCoefficient); }
+			get { return FloatingTypeEqualityComparisonHelper.ApproximatelyEquals(0, this.LinearCoefficient); }
 		}
 		/*
 				/// <summary> Returns whether the specified p is to the right of this line (or its extrapolation), from the perspective of one following this line. </summary>
@@ -53,7 +53,7 @@ namespace JBSnorro.Geometry
 		/// <summary> Gets whether the specified line is parallel or antiparallel to this line. </summary>
 		public bool IsParallelTo(Line other)
 		{
-			return FloatingTypeEqualityComparisonHelper.EqualByTolerance(Math.Abs(other.LinearCoefficient), Math.Abs(this.LinearCoefficient));
+			return FloatingTypeEqualityComparisonHelper.ApproximatelyEquals(Math.Abs(other.LinearCoefficient), Math.Abs(this.LinearCoefficient));
 		}
 
 		/// <summary> Determines whether the current line intersects the specified line. </summary>
@@ -70,7 +70,7 @@ namespace JBSnorro.Geometry
 		/// <summary> Returns whether this line contains the specified point. </summary>
 		public virtual bool Contains(Point point)
 		{
-			return FloatingTypeEqualityComparisonHelper.EqualByTolerance(LinearAddend + LinearCoefficient * point.X, point.Y);
+			return FloatingTypeEqualityComparisonHelper.ApproximatelyEquals(LinearAddend + LinearCoefficient * point.X, point.Y);
 		}
 
 		/// <summary> Creates a new infinitely extending line intersecting the two specified points. </summary>
@@ -87,7 +87,7 @@ namespace JBSnorro.Geometry
 		private static Tuple<double, double> GetLinearCoefficientAndAddend(Point a, Point b)
 		{
 			double linearCoefficient, linearAddend;
-			if (FloatingTypeEqualityComparisonHelper.EqualByTolerance(a.X, b.X))
+			if (FloatingTypeEqualityComparisonHelper.ApproximatelyEquals(a.X, b.X))
 			{
 				linearCoefficient = a.Y < b.Y ? float.NegativeInfinity : float.PositiveInfinity;
 				linearAddend = float.NaN;
@@ -111,8 +111,8 @@ namespace JBSnorro.Geometry
 		/// <summary> Determines whether the specified line is equal to the current. </summary>
 		public virtual bool Equals(Line other)
 		{
-			return FloatingTypeEqualityComparisonHelper.EqualByTolerance(this.LinearCoefficient, other.LinearCoefficient)
-				&& FloatingTypeEqualityComparisonHelper.EqualByTolerance(this.LinearAddend, other.LinearAddend);
+			return FloatingTypeEqualityComparisonHelper.ApproximatelyEquals(this.LinearCoefficient, other.LinearCoefficient)
+				&& FloatingTypeEqualityComparisonHelper.ApproximatelyEquals(this.LinearAddend, other.LinearAddend);
 		}
 		/// <summary> Gets the hash code for this line. </summary>
 		public override int GetHashCode()
@@ -129,7 +129,7 @@ namespace JBSnorro.Geometry
 				return new Point(float.NaN, float.NaN);
 
 			var x = (line2.LinearAddend - line1.LinearAddend) / (line1.LinearCoefficient - line2.LinearCoefficient);
-			Contract.Assert(FloatingTypeEqualityComparisonHelper.EqualByTolerance(line1.GetYValueAt(x), line2.GetYValueAt(x)), "bug in line above");
+			Contract.Assert(FloatingTypeEqualityComparisonHelper.ApproximatelyEquals(line1.GetYValueAt(x), line2.GetYValueAt(x)), "bug in line above");
 			return new Point(x, line1.GetYValueAt(x));
 		}
 	}

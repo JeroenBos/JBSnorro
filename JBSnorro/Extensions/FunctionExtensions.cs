@@ -56,6 +56,10 @@ public interface IDimensionfulDiscreteFunction
 {
     float Invoke(OneDimensionalDiscreteQuantity arg);
 
+    public Func<int, float> On(int length, int start = 0)
+    {
+        return [DebuggerHiddenAttribute] (arg) => this.Invoke(new OneDimensionalDiscreteQuantity(arg, length, start));
+    }
 
 
     public static IDimensionfulDiscreteFunction Create(DimensionfulFunction f)
