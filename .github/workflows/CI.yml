@@ -13,7 +13,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     env:
-        SSH_FILE: "$HOME/.ssh/playground"
+        SSH_FILE: "~/.ssh/playground"
     strategy:
       matrix:
         include:
