@@ -9,12 +9,22 @@ if [[ "$#" -ne 1 ]]; then
     exit 1;
 fi
 
-version=$(nuget list "id:$1" | sed "s/$1//" | xargs | tr -d '\n' | tr -d '\r')
-# xargs trims. tr trims newlines
+version=$(nuget list "id:$1"   \
+        | grep -v "$1\."             \
+        | sed "s/$1//"               \
+        | xargs                      \
+        | tr -d '\n'                 \
+        | tr -d '\r'                 )
+# grep tries to exclude other JBSnorro patterns. sed strips 'JBSnorro'. xargs trims. tr trims newlines
 
 if [[ "$version" == "No packages found." ]]; then
     echo "fatal: No version of '$1' found"
     exit 1
 fi
 
+
+if [ -z $(echo "$version" | grep -Pe '[0-9\.]+') ]; then  # -Pe is Perl-regex format
+    echo "fatal: Invalid version found: $version";
+    exit 1;
+fi
 echo "$version"

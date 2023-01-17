@@ -234,4 +234,7 @@ _Pvt_Extensions
 **/launchSettings.json
 **/.vscode/numbered-bookmarks.json
 
-**.vscode
+.vscode
+
+JBSnorro.Tests/Properties/**.runsettings
+!JBSnorro.Tests/Properties/__template__.runsettings

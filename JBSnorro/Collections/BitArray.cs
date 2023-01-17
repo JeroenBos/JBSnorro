@@ -27,47 +27,71 @@ namespace JBSnorro.Collections
 		}
 		/// <summary> Gets the length of the internal data structure given the number of bits it should hold. </summary>
 		/// <param name="bitCount"> The number of bits to store in the internal data. </param>
-		internal static int GetInternalStructureSize(int bitCount)
+		internal static int ComputeInternalStructureSize(int bitCount)
 		{
 			int remainer;
 			int division = Math.DivRem(bitCount, bitCountPerInternalElement, out remainer);
 			return division + (remainer == 0 ? 0 : 1);
 		}
 
-		private readonly ulong[] data;
-		/// <summary> Gets the whether the flag at the specified index in this array is set. </summary>
+		private ulong[] data;
+		/// <summary> Gets or sets the flag at the specified index in this array is set. </summary>
 		public bool this[int index]
+		{
+			[DebuggerHidden]
+			get => this[(ulong)index];
+			[DebuggerHidden]
+			set => this[(ulong)index] = value;
+		}
+		/// <summary> Gets or sets the flag at the specified index in this array is set. </summary>
+		public bool this[ulong index]
 		{
 			[DebuggerHidden]
 			get
 			{
 				Contract.Requires<IndexOutOfRangeException>(0 <= index);
-				Contract.Requires<IndexOutOfRangeException>(index < Length);
+				Contract.Requires<NotImplementedException>(index <= int.MaxValue);
+				int i = (int)index;
+				Contract.Requires<IndexOutOfRangeException>(i < Length);
 
 				int bitIndex;
 #if DEBUG
 				int dataIndex;
-				ToInternalAndBitIndex(index, out dataIndex, out bitIndex);
+				ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
 #endif
-				return (data[ToInternalAndBitIndex(index, out bitIndex)] & (1UL << bitIndex)) != 0;
+				return (data[ToInternalAndBitIndex(i, out bitIndex)] & (1UL << bitIndex)) != 0;
 			}
 			[DebuggerHidden]
 			set
 			{
 				Contract.Requires<IndexOutOfRangeException>(0 <= index);
-				Contract.Requires<IndexOutOfRangeException>(index < Length);
+				Contract.Requires<NotImplementedException>(index <= int.MaxValue);
+				int i = (int)index;
+				Contract.Requires<IndexOutOfRangeException>(i < Length);
 
 				if (value)
 				{
 					int dataIndex, bitIndex;
-					ToInternalAndBitIndex(index, out dataIndex, out bitIndex);
+					ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
 					data[dataIndex] |= 1UL << bitIndex;
 				}
 			}
 		}
 		/// <summary> Gets the number of bits in this bit array. </summary>
-		public int Length { get; }
+		public int Length { get; private set; }
 
+
+		/// <summary>
+		/// Uses the specified array directly as underlying data source.
+		/// </summary>
+		/// <param name="length">The number of bits in <paramref name="data"/>. Defaults to <code>64 * data.Length</code>.</param>
+		public static BitArray FromRef(ulong[] data, ulong? length = null)
+		{
+			length ??= 64 * (ulong)data.Length;
+			Contract.Assert<NotImplementedException>(length <= int.MaxValue);
+
+			return new BitArray(data, (int)length.Value);
+		}
 		/// <summary> Creates a new empty bit array. </summary>
 		public BitArray()
 		{
@@ -77,7 +101,7 @@ namespace JBSnorro.Collections
 		[DebuggerHidden]
 		public BitArray(int length, bool defaultValue = false)
 		{
-			data = new ulong[GetInternalStructureSize(length)];
+			data = new ulong[ComputeInternalStructureSize(length)];
 			Length = length;
 			if (defaultValue)
 			{
@@ -108,7 +132,7 @@ namespace JBSnorro.Collections
 			Contract.LazilyAssertCount(ref bits, count);
 
 			this.Length = count;
-			this.data = new ulong[GetInternalStructureSize(count)];
+			this.data = new ulong[ComputeInternalStructureSize(count)];
 			int i = 0;
 			foreach (bool bit in bits)
 			{
@@ -135,7 +159,29 @@ namespace JBSnorro.Collections
 			foreach (int index in indicesOfTrueBits)
 				this[index] = true;
 		}
+		/// <summary> Creates a new bit array from the specified bytes (i.e. concat all bytes, each representing 8 bits). </summary>
+		public BitArray(IEnumerable<byte> bytes) : this(bytes.SelectMany(b => ToBits(b)))
+		{
+		}
+		/// <summary> Creates a new bit array from the specified bytes (i.e. concat all bytes, each representing 8 bits), with prescribed length. </summary>
+		public BitArray(IEnumerable<byte> bytes, int bitCount) : this(bytes.SelectMany(b => ToBits(b)), count: bitCount)
+		{
+		}
+		private static IEnumerable<bool> ToBits(byte b)
+		{
+			return Enumerable.Range(0, 8).Select(i => b.HasBit(i));
+		}
+		/// <summary> Creates a new bit array from <param ref="backingData"/>, i.e. no copy is made. </summary>
+		/// <param name="backingData"> The indices of bits to set to true. </param>
+		/// <param name="length"> The number of bits that are considered to be set in the given data. </param>
+		public BitArray(ulong[] backingData, int length)
+		{
+			Contract.Requires(backingData != null);
+			Contract.Requires(0 <= length && length <= 64 * backingData.Length);
 
+			this.Length = length;
+			this.data = backingData;
+		}
 
 		/// <summary> Gets a clone of this bit array. </summary>
 		[DebuggerHidden]
@@ -352,6 +398,39 @@ namespace JBSnorro.Collections
 		{
 			this.data.CopyTo(array, arrayIndex);
 		}
+		public void CopyTo(Span<byte> array, int arrayIndex)
+		{
+			const int bytesPerULong = 8;
+			const int bitsPerULong = 64;
+			const int bitsPerByte = 8;
+
+			if (this.Length == 0)
+				return;
+			int neededNumberOfBytes = this.Length == 0 ? 0 : ((this.Length - 1) / bitsPerByte);
+			if (array.Length < arrayIndex + neededNumberOfBytes)
+				throw new IndexOutOfRangeException("Specified array too small");
+
+			int i;
+			for (i = 0; i < this.Length / bitsPerULong; i++)
+			{
+				for (int j = 0; j < bytesPerULong; j++)
+				{
+					array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> (j * bitsPerByte));
+				}
+			}
+			for (int j = 0; j < (this.Length % bitsPerULong) / bytesPerULong; j++)
+			{
+				array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> (j * bitsPerByte));
+			}
+			// << shifts to higher order bits
+			// mask the last byte that may contain unzeroed data:
+			int extraBits = this.Length % bitsPerByte;
+			if (extraBits != 0)
+			{
+				byte mask = (byte)-(byte.MaxValue >> extraBits);
+				array[^1] &= mask;
+			}
+		}
 		public IEnumerator<bool> GetEnumerator()
 		{
 			return Enumerable.Range(0, this.Length).Select(i => this[i]).GetEnumerator();
@@ -364,7 +443,41 @@ namespace JBSnorro.Collections
 		{
 			get { return false; }
 		}
-
+		public long IndexOf(ulong item, int? itemLength = null, ulong startIndex = 0)
+		{
+			return BitTwiddling.IndexOfBits(this.data, item, itemLength, startIndex, (ulong)this.Length);
+		}
+		public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
+		{
+			return BitTwiddling.IndexOfBits(this.data, items, itemLength, startIndex, (ulong)this.Length);
+		}
+		public void Insert(int index, bool value)
+		{
+			this.data = BitTwiddling.InsertBits(this.data, new[] { index }, new[] { value }, (ulong)this.Length);
+			this.Length++;
+		}
+		public void InsertRange(int[] sortedIndices, bool[] values)
+		{
+			// there's still PERF to be gained by not creating a new array if it would fit, by implementing `ref this.data`
+			this.data = BitTwiddling.InsertBits(this.data, sortedIndices, values, (ulong)this.Length);
+			this.Length += sortedIndices.Length;
+		}
+		public void RemoveAt(int index)
+		{
+			this.RemoveAt(new int[] { index });
+		}
+		public void RemoveAt(params int[] indices)
+		{
+			if (indices.Length == 0)
+				return;
+			if (indices.Length > this.Length)
+				throw new ArgumentOutOfRangeException(nameof(indices), "More indices specified than bits");
+			// this is a very inefficient implementation
+			// use constructor to convert to ulong[]
+			var bitArray = new BitArray(this.AsEnumerable().ExceptAt(indices), this.Length - indices.Length);
+			bitArray.CopyTo(this.data, 0); // overwrite current; will always fit
+			this.Length -= indices.Length;
+		}
 		#endregion
 
 		#region Not supported IList<bool> Members
@@ -385,15 +498,7 @@ namespace JBSnorro.Collections
 		{
 			throw new NotSupportedException();
 		}
-		void IList<bool>.Insert(int index, bool item)
-		{
-			throw new NotSupportedException();
-		}
 		bool ICollection<bool>.Remove(bool item)
-		{
-			throw new NotSupportedException();
-		}
-		public void RemoveAt(int index)
 		{
 			throw new NotSupportedException();
 		}
