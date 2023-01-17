@@ -7,7 +7,8 @@ function start_ssh_agent_if_necessary() {
         (umask 077; ssh-agent >| "$env")
         . "$env" >| /dev/null ; }
 
-    agent_load_env
+    agent_load_env  # I've verified it works even with this commented out (meaning a new ssh-agent per command).
+    # TODO: technically, even though I'm only creating one and reusing it between test runs, I should terminate the ssh-agent after testing
 
     # agent_run_state: 0=agent running w/ key; 1=agent w/o key; 2= agent not running
     agent_run_state=$(ssh-add -l >| /dev/null 2>&1; echo $?)
