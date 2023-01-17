@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- This file is to be duplicated per developer/machine and populated. -->
+<!-- This file is to be duplicated per developer/machine and populated. Remove '.example' suffix. -->
 <RunSettings>
 	<RunConfiguration>
 		<EnvironmentVariables>
