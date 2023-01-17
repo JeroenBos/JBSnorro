@@ -27,7 +27,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.201  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
-    - name: build
+    - name: Build
       run: dotnet build JBSnorro/JBSnorro.csproj
     - name: Create ssh access file
       shell: bash
@@ -39,7 +39,7 @@ jobs:
     - name: Give access to ssh key (Linux)
       if: ${{ matrix.runtime == 'linux-x64' }} 
       run: sudo chmod 600 "$SSH_FILE"
-    - name: test
+    - name: Test
       shell: bash
       run: |
           dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj \
