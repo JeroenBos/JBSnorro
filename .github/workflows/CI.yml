@@ -12,6 +12,8 @@ on:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    env:
+        SSH_FILE: "$HOME/.ssh/playground"
     strategy:
       matrix:
         include:
@@ -31,17 +33,18 @@ jobs:
       shell: bash
       run: |
         mkdir ~/.ssh
-        echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
+        echo "${{secrets.PLAYGROUND_SSH_KEY}}" > "$SSH_FILE"
         ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
     - name: Give access to ssh key (Linux)
       if: ${{ matrix.runtime == 'linux-x64' }} 
-      run: sudo chmod 600 ~/.ssh/playground
+      run: sudo chmod 600 "$SSH_FILE"
     - name: test
       shell: bash
-      run: | 
-          export SSH_FILE="$HOME/.ssh/playground"
-          dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime ${{ matrix.runtime }} --framework net6.0
+      run: |
+          dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj \
+                      --runtime ${{ matrix.runtime }}      \
+                      --framework net6.0
       timeout-minutes: 5
 
 
