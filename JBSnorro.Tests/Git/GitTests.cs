@@ -24,8 +24,9 @@ namespace JBSnorro.Csx.Tests
         // if SSH_FILE cannot be found, consider adding JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
         protected static string ssh_file => Environment.GetEnvironmentVariable("SSH_FILE") ?? throw new Exception("Env var 'SSH_FILE' not found");
         protected static string ssh_key_path => Path.GetFullPath(ssh_file.ExpandTildeAsHomeDir()).ToBashPath(false);
-        protected static string init_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/../.github/init-ssh-agent.sh";
-        protected static string SSH_SCRIPT => $"source {init_ssh_agent_path} && ssh-add {ssh_key_path}";
+        protected static string init_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/init-ssh-agent.sh";
+        private static string GIT_SSH_COMMAND => $"GIT_SSH_COMMAND=\"ssh -i {ssh_key_path} -F /dev/null\"";
+        protected static string SSH_SCRIPT => $"source {init_ssh_agent_path} && ssh-add {ssh_key_path} && export {GIT_SSH_COMMAND}";
 
         protected static async Task<string> InitEmptyRepo()
         {
@@ -130,7 +131,16 @@ namespace JBSnorro.Csx.Tests
             (exitCode, stdOut, stdErr) = await "git remote add origin git@github.com:JeroenBos/TestPlayground.git".Execute(cwd: dir);
             Assert.AreEqual((exitCode, stdOut, stdErr), (0, "", ""));
 
-            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git fetch".Execute(cwd: dir);
+            try
+            {
+                (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git fetch".Execute(cwd: dir, cancellationToken: new CancellationTokenSource(10_000).Token);
+            }
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("Some ssh-agent config is probably interfering with the ssh being used under test.");
+                Console.WriteLine("Most likely the script is waiting for the ssh passphrase");
+                throw;
+            }
             Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr);
             //Console.WriteLine(stdOut);
             //Assert.AreEqual(stdErr.Split('\n').Length, 3, message: stdOut);
@@ -464,7 +474,6 @@ namespace JBSnorro.Csx.Tests
             await Git.New(dir, "newbranch");
 
             Assert.AreEqual(await Git.GetCurrentHash(dir), commitHash.Value);
-
         }
         [TestClass]
         public class TestGHGetPrName
