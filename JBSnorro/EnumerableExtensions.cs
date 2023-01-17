@@ -2012,12 +2012,20 @@ namespace JBSnorro
 			Contract.Ensures(result.Length == array.Length);
 			return result;
 		}
-		/// <summary> Maps an array into another array of the same size using a specified mapping function depending also on the elements index. </summary>
-		/// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
-		/// <typeparam name="TResult"> The type of the elements in the resulting array.</typeparam>
-		/// <param name="array"> The array to map. </param>
-		/// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
-		public static TResult[] Map<T, TResult>(this T[] array, Func<T, int, TResult> resultSelector)
+		/// <summary>
+		/// Casts the entire array from <typeparamref name="T"/> to <typeparamref name="TResult"/>.
+		/// </summary>
+		/// <param name="array">The source array.</param>
+        public static TResult[] CastAll<T, TResult>(this T[] array) where TResult : class
+        {
+			return Array.ConvertAll<T, TResult>(array, element => (TResult)(object)element);
+        }
+        /// <summary> Maps an array into another array of the same size using a specified mapping function depending also on the elements index. </summary>
+        /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+        /// <typeparam name="TResult"> The type of the elements in the resulting array.</typeparam>
+        /// <param name="array"> The array to map. </param>
+        /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
+        public static TResult[] Map<T, TResult>(this T[] array, Func<T, int, TResult> resultSelector)
 		{
 			Contract.Requires(array != null);
 			Contract.Requires(resultSelector != null);

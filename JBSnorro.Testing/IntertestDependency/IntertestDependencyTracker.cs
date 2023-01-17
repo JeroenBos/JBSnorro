@@ -83,7 +83,7 @@ internal class IntertestDependencyTracker : IIntertestDependencyTracker
             Skip.If(testRunInDict.CompletedUnsuccessfully);
         }
     }
-    Task IIntertestDependencyTracker.DependsOn(ITestIdentifier[] testsIdentifiers) => this.DependsOn(testsIdentifiers.Cast<TestIdentifier>().ToArray());
+    Task IIntertestDependencyTracker.DependsOn(ITestIdentifier[] testsIdentifiers) => this.DependsOn(testsIdentifiers.CastAll<ITestIdentifier, TestIdentifier>());
     void IIntertestDependencyTracker.FindCircularDependencies(ITestIdentifier node, ITestIdentifier[] dependencies) => FindCircularDependencies((TestIdentifier)node, dependencies.Cast<TestIdentifier>().ToArray());
 
 
