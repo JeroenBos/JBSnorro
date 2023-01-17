@@ -30,7 +30,7 @@ jobs:
       run: dotnet build JBSnorro/JBSnorro.csproj
 
     - name: Configure ssh access file location
-      run: echo "$SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
+      run: echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
     - name: Create ssh access file
       shell: bash
       run: |
