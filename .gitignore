@@ -235,3 +235,6 @@ _Pvt_Extensions
 **/.vscode/numbered-bookmarks.json
 
 .vscode
+
+JBSnorro.Tests/Properties/**.runsettings
+!JBSnorro.Tests/Properties/__template__.runsettings

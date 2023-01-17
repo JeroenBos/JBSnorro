@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is to be duplicated per developer/machine and populated. -->
+<RunSettings>
+	<RunConfiguration>
+		<EnvironmentVariables>
+			<SSH_FILE>~/.ssh/playground</SSH_FILE>  <!-- The path to a ssh key that has access granted here: https://github.com/JeroenBos/JBSnorro/settings/secrets/actions-->
+		</EnvironmentVariables>
+	</RunConfiguration>
+</RunSettings>
