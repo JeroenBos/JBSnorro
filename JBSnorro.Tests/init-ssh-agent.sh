@@ -10,8 +10,6 @@ function start_ssh_agent_if_necessary() {
     agent_load_env
 
     # agent_run_state: 0=agent running w/ key; 1=agent w/o key; 2= agent not running
-    # echo "after loading env file: SSH_AUTH_SOCK = '$SSH_AUTH_SOCK'"
-
     agent_run_state=$(ssh-add -l >| /dev/null 2>&1; echo $?)
 
     if [ ! "$SSH_AUTH_SOCK" ]; then
@@ -25,8 +23,6 @@ function start_ssh_agent_if_necessary() {
     else
         : # echo "ssh-agent already up with key";
     fi
-
-    export SSH_AUTH_SOCK
 
     unset env
 }
