@@ -8,21 +8,26 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using static JBSnorro.Diagnostics.Contract;
 
-namespace JBSnorro.Tests
+namespace JBSnorro.JS.Tests
 {
-    [TestClass]
-    public class JSInteropTests
+    public class JSTestsBase
     {
-        private static readonly IEnumerable<JSString> NO_IMPORTS = Array.Empty<JSString>();
+        protected static readonly IEnumerable<JSString> NO_IMPORTS = Array.Empty<JSString>();
         protected static string? NodePath => EnvironmentExtensions.GetRequiredEnvironmentVariable("NODE_PATH");
-        private readonly INodePathResolver nodePathResolver;
-        public JSInteropTests()
+        protected readonly INodePathResolver nodePathResolver;
+        protected readonly IJSRunner jsRunner;
+        public JSTestsBase()
         {
             if (NodePath is null)
                 this.nodePathResolver = INodePathResolver.FromCommand(); // through DI maybe?
             else
                 this.nodePathResolver = INodePathResolver.FromPath(NodePath);
+            this.jsRunner = IJSRunner.Create(this.nodePathResolver);
         }
+    }
+    [TestClass]
+    public class JSInteropTests : JSTestsBase
+    {
         [TestMethod]
         public async Task CanResolveNodeExecutable()
         {
@@ -32,17 +37,17 @@ namespace JBSnorro.Tests
             Assert(new Regex("[0-9][0-9]\\..*").IsMatch(process.StandardOutput));
         }
 
-        private static async Task<string> executeJS(string js)
+        private async Task<string> executeJS(string js)
         {
-            var (exitcode, stdout, stderr, debugOutput) = await ProcessExtensions.ExecuteJS(js);
+            var (exitcode, stdout, stderr, debugOutput) = await this.jsRunner.ExecuteJS(js);
             Console.WriteLine(stderr);
             Console.WriteLine(debugOutput);
             return stdout;
         }
 
-        private static async Task<string> executeJS(object arg, JsonSerializerOptions? options = null)
+        private async Task<string> executeJS(object arg, JsonSerializerOptions? options = null)
         {
-            var (exitcode, stdout, stderr, debugOutput) = await ProcessExtensions.ExecuteJS(NO_IMPORTS, arg, options: options);
+            var (exitcode, stdout, stderr, debugOutput) = await this.jsRunner.ExecuteJS(NO_IMPORTS, arg, options: options);
             Console.WriteLine(stderr);
             Console.WriteLine(debugOutput);
             return stdout;
@@ -146,7 +151,7 @@ namespace JBSnorro.Tests
             const string correct_js = "\nvar result = \"\\t\";\n\nconsole.log('__DEBUG__');\nconsole.log(JSON.stringify(result));\n";
             async Task preTest()
             {
-                var (_, stdOut, _, _) = await ProcessExtensions.ExecuteJSViaTempFile(correct_js);
+                var (_, stdOut, _, _) = await this.jsRunner.ExecuteJSViaTempFile(correct_js);
                 Assert(stdOut == deserializesToTab + "\n");
             }
 
@@ -160,7 +165,7 @@ namespace JBSnorro.Tests
             const string input = "\t";
 
             // test the built JS:
-            string js = ProcessExtensions.ExecuteJS_Builder(NO_IMPORTS, input);
+            string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, input);
             Assert(correct_js == js);
 
             // test the built JS, escaping to bash and executing: 
@@ -180,8 +185,8 @@ namespace JBSnorro.Tests
 				"\\n" })       // literal js: console.log("\n")
             {
                 string js = $"console.log(\"{s}\")";
-                var (_, stdOutViaFile, fileErr, _) = await ProcessExtensions.ExecuteJSViaTempFile(js);
-                var (_, stdOutViaBash, bashErr, _) = await ProcessExtensions.ExecuteJS(js);
+                var (_, stdOutViaFile, fileErr, _) = await this.jsRunner.ExecuteJSViaTempFile(js);
+                var (_, stdOutViaBash, bashErr, _) = await this.jsRunner.ExecuteJS(js);
 
 
                 Assert(fileErr == "");
@@ -219,88 +224,88 @@ namespace JBSnorro.Tests
         {
             {
                 string arg = new string(Array.Empty<char>());
-                var a = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var a = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(a.StandardOutput == "\n");
-                Assert(ProcessExtensions.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { a.StandardOutput }).Contains(arg));
+                Assert(this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { a.StandardOutput }).Contains(arg));
             }
             {
                 string arg = new string(new char[] { '\'', '\'' });
-                var b = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var b = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(b.StandardOutput == "\n");
-                // Assert(ProcessExtensions.ExecuteJS_Builder(new string[0], "", new object[] { b.StandardOutput }).Contains(arg));
+                // Assert(this.jsRunner.ExecuteJS_Builder(new string[0], "", new object[] { b.StandardOutput }).Contains(arg));
             }
             {
                 string arg = new string(new char[] { '"', '"', '"', '"' });
-                var b2 = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var b2 = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(b2.StandardOutput == "\n");
-                // Assert(ProcessExtensions.ExecuteJS_Builder(new string[0], "", new object[] { b2.StandardOutput }).Contains(arg));
+                // Assert(this.jsRunner.ExecuteJS_Builder(new string[0], "", new object[] { b2.StandardOutput }).Contains(arg));
             }
             {
                 string arg = new string(new char[] { '"', 'a', '"' });
-                var c = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var c = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(c.ErrorOutput.Contains("ReferenceError: a is not defined"));
             }
             {
                 // literal JS:
                 // console.log("a");
                 string arg = new string(new char[] { '\\', '"', 'a', '\\', '"' });
-                var d = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var d = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(d.StandardOutput == "a\n");
-                string js = ProcessExtensions.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { d.StandardOutput[..^1] });
+                string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { d.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
             }
             {
                 // literal JS:
                 // console.log("\"");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '"', '\\', '"' });
-                var e = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var e = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(e.StandardOutput == "\"\n");
-                string js = ProcessExtensions.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { e.StandardOutput[..^1] });
+                string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { e.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
             }
             {
                 // literal JS:
                 // console.log("\\");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '\\', '\\', '"' });
-                var f = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var f = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(f.StandardOutput == "\\\n");
-                string js = ProcessExtensions.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { f.StandardOutput[..^1] });
+                string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { f.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
             }
             {
                 // literal JS:
                 // console.log("\"hi");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '"', 'h', 'i', '\\', '"' });
-                var g = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var g = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(g.StandardOutput == "\"hi\n");
-                string js = ProcessExtensions.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { g.StandardOutput[..^1] });
+                string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { g.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
             }
             {
                 // literal JS:
                 // console.log("\"\"");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '"', '\\', '\\', '\\', '"', '\\', '"' });
-                var h = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var h = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(h.StandardOutput == "\"\"\n");
-                string js = ProcessExtensions.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { h.StandardOutput[..^1] });
+                string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { h.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
             }
             {
                 // literal JS:
                 // console.log("\\");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '\\', '\\', '"' });
-                var i = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var i = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(i.StandardOutput == "\\\n");
-                string js = ProcessExtensions.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { i.StandardOutput[..^1] });
+                string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { i.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
             }
             {
                 // literal JS:
                 // console.log("\\\\");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '"' });
-                var j = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var j = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(j.StandardOutput == "\\\\\n");
-                string js = ProcessExtensions.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { j.StandardOutput[..^1] });
+                string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { j.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
             }
         }
@@ -310,19 +315,19 @@ namespace JBSnorro.Tests
             // literal JS:
             // console.log("\t");
             string arg = new string(new char[] { '\\', '"', '\\', 't', '\\', '"' });
-            var t = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+            var t = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(t.StandardOutput == "\t\n");
-            string js = ProcessExtensions.ExecuteJS_Builder(identifier: t.StandardOutput[..^1], imports: NO_IMPORTS);
+            string js = this.jsRunner.ExecuteJS_Builder(identifier: t.StandardOutput[..^1], imports: NO_IMPORTS);
             Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
         }
         [TestMethod]
         public async Task TestTabViaFileIsSameAsViaDashE()
         {
             const string input = "console.log('\\t')";
-            var (_, stdout, _, _) = await JBSnorro.ProcessExtensions.ExecuteJSViaTempFile(input);
+            var (_, stdout, _, _) = await this.jsRunner.ExecuteJSViaTempFile(input);
             Assert(stdout == "\t\n");
 
-            (_, stdout, _, _) = await JBSnorro.ProcessExtensions.ExecuteJS(input);
+            (_, stdout, _, _) = await this.jsRunner.ExecuteJS(input);
             Assert(stdout == "\t\n");
         }
 
@@ -338,13 +343,12 @@ namespace JBSnorro.Tests
         }
     }
     [TestClass]
-    public class JSSerializationIdTests
+    public class JSSerializationIdTests : JSTestsBase
     {
-        private static readonly IEnumerable<JSString> NO_IMPORTS = Array.Empty<JSString>();
         [TestMethod]
         public async Task PlainJSRuns()
         {
-            var (exitcode, stdout, stderr, debugOutput) = await ProcessExtensions.ExecuteJS(
+            var (exitcode, stdout, stderr, debugOutput) = await this.jsRunner.ExecuteJS(
                 imports: NO_IMPORTS,
                 identifier: "\"\"",
                 jsIdentifiers: Array.Empty<KeyValuePair<Type, string>>(),
@@ -363,7 +367,7 @@ namespace JBSnorro.Tests
         {
             string field_name = "FFF";
             var fakeImport = new JSString("var X; class TestObject { A = 'b' }");
-            var (exitcode, stdout, stderr, debugOutput) = await ProcessExtensions.ExecuteJS(
+            var (exitcode, stdout, stderr, debugOutput) = await this.jsRunner.ExecuteJS(
                 imports: new[] { fakeImport },
                 identifier: new JSSourceCode("TestObject." + field_name),
                 jsIdentifiers: new[] { TestObject.Identifier },
@@ -376,7 +380,7 @@ namespace JBSnorro.Tests
         [TestMethod]
         public void SerializesWithTypeId()
         {
-            var options = ProcessExtensions.CreateExtraPropertyJsonConverter(
+            var options = JSProcessRunner.CreateExtraPropertyJsonConverter(
                 jsIdentifiers: new[] { TestObject.Identifier },
                 options: null,
                 typeIdPropertyName: "FFF"
@@ -389,7 +393,7 @@ namespace JBSnorro.Tests
         [TestMethod]
         public async Task JSDoesNotSerializeStaticAttributes()
         {
-            var (exitcode, stdout, stderr, debugOutput) = await ProcessExtensions.ExecuteJS(
+            var (exitcode, stdout, stderr, debugOutput) = await this.jsRunner.ExecuteJS(
                 @"
 				class TestObject
 				{
@@ -404,7 +408,7 @@ namespace JBSnorro.Tests
         [TestMethod]
         public async Task JSDoesNotSerializePrototypeAttributes()
         {
-            var (exitcode, stdout, stderr, debugOutput) = await ProcessExtensions.ExecuteJS(
+            var (exitcode, stdout, stderr, debugOutput) = await this.jsRunner.ExecuteJS(
                 @"
 				class TestObject
 				{
@@ -422,7 +426,7 @@ namespace JBSnorro.Tests
         {
             var typeIdPropertyName = "FFF";
             var fakeImport = new JSString("var X; class TestObject { A = 'b' }; const f = function(a) { return a.constructor.name; }");
-            var js = ProcessExtensions.ExecuteJS_Builder(
+            var js = this.jsRunner.ExecuteJS_Builder(
                 imports: new[] { fakeImport },
                 identifier: new JSSourceCode("f"),
                 jsIdentifiers: new[] { TestObject.Identifier },
@@ -441,7 +445,7 @@ namespace JBSnorro.Tests
         {
             var typeIdPropertyName = "FFF";
             var fakeImport = new JSString("var X; class TestObject { A = 'b' }; const f = function(a) { return a.constructor.name; }");
-            var js = ProcessExtensions.ExecuteJS_Builder(
+            var js = this.jsRunner.ExecuteJS_Builder(
                 imports: new[] { fakeImport },
                 identifier: new JSSourceCode("f"),
                 jsIdentifiers: new[] { TestObject.Identifier },
@@ -463,7 +467,7 @@ namespace JBSnorro.Tests
 			f(TestObject)
 			TestObject.myfunction()
 			";
-            var (exitcode, stdout, stderr, debugOutput) = await ProcessExtensions.ExecuteJS(js);
+            var (exitcode, stdout, stderr, debugOutput) = await this.jsRunner.ExecuteJS(js);
 
             Assert(stderr == "");
             Assert(stdout == "ok\n");
@@ -474,7 +478,7 @@ namespace JBSnorro.Tests
         {
             var typeIdPropertyName = "FFF";
             var fakeImport = new JSString("var X; class TestObject { A = 'b' }; const f = function(a) { return null; }");
-            var (exitcode, stdout, stderr, debugOutput) = await ProcessExtensions.ExecuteJS(
+            var (exitcode, stdout, stderr, debugOutput) = await this.jsRunner.ExecuteJS(
                 imports: new[] { fakeImport },
                 identifier: new JSSourceCode("TestObject.deserialize(TestObject, {\"FFF\":\"TestObject\"});"),
                 jsIdentifiers: new[] { TestObject.Identifier },
@@ -492,7 +496,7 @@ namespace JBSnorro.Tests
         {
             var typeIdPropertyName = "FFF";
             var fakeImport = new JSString("var X; class TestObject { A = 'b' }; const f = function(a) { return a; }");
-            var (exitcode, stdout, stderr, debugOutput) = await ProcessExtensions.ExecuteJS(
+            var (exitcode, stdout, stderr, debugOutput) = await this.jsRunner.ExecuteJS(
                 imports: new[] { fakeImport },
                 identifier: new JSSourceCode("f"),
                 jsIdentifiers: new[] { TestObject.Identifier },
