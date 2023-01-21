@@ -1,4 +1,5 @@
 ﻿#nullable enable
+#pragma warning disable CS1066
 using JBSnorro;
 using JBSnorro.Csx;
 using JBSnorro.Diagnostics;
@@ -11,12 +12,11 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JBSnorro;
+namespace JBSnorro.JS;
 
-public static partial class ProcessExtensions
+public class JSProcessRunner : IJSRunner
 {
-
-    internal static async Task<DebugProcessOutput> ExecuteJSViaTempFile(string js)
+    async Task<DebugProcessOutput> IJSRunner.ExecuteJSViaTempFile(string js)
     {
         string path = Path.GetTempFileName();
         await File.AppendAllTextAsync(path, js);
@@ -24,7 +24,7 @@ public static partial class ProcessExtensions
         var result = ExtractDebugOutput(output);
         return result;
     }
-    public static Task<DebugProcessOutput> ExecuteJS(JSSourceCode sourceCode, IEnumerable<JSString> imports)
+    public Task<DebugProcessOutput> ExecuteJS(JSSourceCode sourceCode, IEnumerable<JSString> imports)
     {
         var jsBuilder = new ConfigurableStringBuilder();
         foreach (var import in imports)
@@ -36,11 +36,11 @@ public static partial class ProcessExtensions
         Global.AddDebugObject(js);
         return ExecuteJS(js);
     }
-    public static Task<DebugProcessOutput> ExecuteJS(JSSourceCode js)
+    public Task<DebugProcessOutput> ExecuteJS(JSSourceCode js)
     {
         return ExecuteJS(js.Value);
     }
-    public static async Task<DebugProcessOutput> ExecuteJS(string js)
+    public async Task<DebugProcessOutput> ExecuteJS(string js)
     {
         string escapedJs = BashEscape(js);
         var output = await new ProcessStartInfo("node", $"-e \"{escapedJs}\"").WaitForExitAndReadOutputAsync();
@@ -50,7 +50,7 @@ public static partial class ProcessExtensions
         Global.AddDebugObject(result.DebugOutput);
         return result;
     }
-    private static DebugProcessOutput ExtractDebugOutput(ProcessOutput output)
+    private DebugProcessOutput ExtractDebugOutput(ProcessOutput output)
     {
         return (output.ExitCode,
                 output.StandardOutput.SubstringAfter("__DEBUG__\n"),
@@ -112,14 +112,14 @@ public static partial class ProcessExtensions
     /// Specify null if the member access is attribute access. 
     /// To treat a string argument as raw JS, wrap it in a JSString. 
     /// </param>
-    public static Task<DebugProcessOutput> ExecuteJS(
+    public Task<DebugProcessOutput> ExecuteJS(
         IEnumerable<JSString> imports,
         object identifier,
         IReadOnlyList<object>? arguments = null,
         string? intermediateJS = null,
         JsonSerializerOptions? options = null)
     {
-        string js = ExecuteJS_Builder(imports, identifier, arguments, intermediateJS, options);
+        string js = ((IJSRunner)this).ExecuteJS_Builder(imports, identifier, arguments, intermediateJS, options);
         Global.AddDebugObject(js);
 
         return ExecuteJS(js);
@@ -154,11 +154,11 @@ public static partial class ProcessExtensions
         return options;
     }
     // internal for testing
-    internal static string ExecuteJS_Builder(IEnumerable<JSString> imports,
-                                             object identifier,
-                                             IReadOnlyList<object>? arguments = null,
-                                             string? intermediateJS = null,
-                                             JsonSerializerOptions? options = null)
+    string IJSRunner.ExecuteJS_Builder(IEnumerable<JSString> imports,
+                                       object identifier,
+                                       IReadOnlyList<object>? arguments = null,
+                                       string? intermediateJS = null,
+                                       JsonSerializerOptions? options = null)
     {
         options = CreateNewAndAssertValid(options);
         var jsBuilder = new ConfigurableStringBuilder();
@@ -202,7 +202,6 @@ public static partial class ProcessExtensions
             type = typeof(object[]);
 
         return JsonSerializer.Serialize(arg, type, options);
-
     }
 
     internal static JsonSerializerOptions CreateExtraPropertyJsonConverter(
@@ -213,14 +212,14 @@ public static partial class ProcessExtensions
         options = CreateNewAndAssertValid(options);
 
         var extraPropOptions = new JsonSerializerOptions() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-        var converter = new ExtraPropertyJsonConverter(typeIdPropertyName, obj => jsIdentifiers.getTypeIdentifierValue(obj), options);
+        var converter = new ExtraPropertyJsonConverter(typeIdPropertyName, obj => getTypeIdentifierValue(jsIdentifiers, obj), options);
         extraPropOptions.Converters.Add(converter);
 #if NET6_0_OR_GREATER
         extraPropOptions.Converters.Add(new IEnumerableJsonConverter<IEnumerable>());
 #endif
         return extraPropOptions;
     }
-    private static object? getTypeIdentifierValue(this IReadOnlyList<KeyValuePair<Type, string>> jsIdentifiers, object? obj)
+    private static object? getTypeIdentifierValue(IReadOnlyList<KeyValuePair<Type, string>> jsIdentifiers, object? obj)
     {
         if (obj == null)
         {
@@ -232,8 +231,9 @@ public static partial class ProcessExtensions
         // 0 is skipped in JS.
         return 1 + typeIndex;
     }
+
     /// <param name="jsIdentifiers"> The JS identifiers must be imported by imports. Order matters! </param>
-    public static Task<DebugProcessOutput> ExecuteJS(
+    public Task<DebugProcessOutput> ExecuteJS(
         IEnumerable<JSString> imports,
         object identifier,
         IReadOnlyList<KeyValuePair<Type, string>> jsIdentifiers,
@@ -241,12 +241,12 @@ public static partial class ProcessExtensions
         JsonSerializerOptions? options = null,
         string typeIdPropertyName = "SERIALIZATION_TYPE_ID")
     {
-        string js = ExecuteJS_Builder(imports, identifier, jsIdentifiers, arguments, options, typeIdPropertyName);
+        string js = ((IJSRunner)this).ExecuteJS_Builder(imports, identifier, jsIdentifiers, arguments, options, typeIdPropertyName);
         Global.AddDebugObject(js);
         return ExecuteJS(js);
     }
 
-    internal static string ExecuteJS_Builder(IEnumerable<JSString> imports,
+    string IJSRunner.ExecuteJS_Builder(IEnumerable<JSString> imports,
                                              object identifier,
                                              IReadOnlyList<KeyValuePair<Type, string>> jsIdentifiers,
                                              IReadOnlyList<object>? arguments,
@@ -339,7 +339,7 @@ const reviver = function (key, value) {
             }
         }
 
-        return ExecuteJS_Builder(imports, serializedIdentifier, serializedArguments, intermediateJs, options);
+        return ((IJSRunner)this).ExecuteJS_Builder(imports, serializedIdentifier, serializedArguments, intermediateJs, options);
     }
 
 

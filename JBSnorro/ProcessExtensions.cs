@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace JBSnorro;
 
-public static partial class ProcessExtensions
+public static class ProcessExtensions
 {
     // see https://stackoverflow.com/a/2374560/308451
     /// <summary> Gets whether the calling method is on the main thread. </summary>
