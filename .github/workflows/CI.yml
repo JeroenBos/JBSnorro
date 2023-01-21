@@ -9,6 +9,9 @@ on:
     paths-ignore:
     - '**.md'
 
+env:
+    DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -24,7 +27,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Build
       run: dotnet build JBSnorro/JBSnorro.csproj
@@ -81,7 +84,7 @@ jobs:
       if: ${{ steps.up-to-date.outcome != 'failure' }}
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 7.0.102
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Install dependencies
       if: ${{ steps.up-to-date.outcome != 'failure' }}
