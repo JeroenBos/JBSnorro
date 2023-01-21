@@ -8,7 +8,7 @@ namespace JBSnorro.JS;
 
 public interface IJSRunner
 {
-    static IJSRunner Create() => new JSProcessRunner();
+    static IJSRunner Create(INodePathResolver nodePathResolver) => new JSProcessRunner(nodePathResolver);
 
     Task<DebugProcessOutput> ExecuteJS(string js);
     public Task<DebugProcessOutput> ExecuteJS(

@@ -2,6 +2,7 @@
 #pragma warning disable CS1066
 using JBSnorro;
 using JBSnorro.Csx;
+using JBSnorro.Csx.Node;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using JBSnorro.Text;
@@ -16,11 +17,18 @@ namespace JBSnorro.JS;
 
 public class JSProcessRunner : IJSRunner
 {
+    private readonly INodePathResolver nodePathResolver;
+    private string nodePath => this.nodePathResolver.Path;
+    public JSProcessRunner(INodePathResolver nodePathResolver)
+    {
+        this.nodePathResolver = nodePathResolver;
+    }
+
     async Task<DebugProcessOutput> IJSRunner.ExecuteJSViaTempFile(string js)
     {
         string path = Path.GetTempFileName();
         await File.AppendAllTextAsync(path, js);
-        var output = await new ProcessStartInfo("node", $"\"{path}\"").WaitForExitAndReadOutputAsync();
+        var output = await new ProcessStartInfo(this.nodePath, $"\"{path}\"").WaitForExitAndReadOutputAsync();
         var result = ExtractDebugOutput(output);
         return result;
     }
@@ -43,7 +51,7 @@ public class JSProcessRunner : IJSRunner
     public async Task<DebugProcessOutput> ExecuteJS(string js)
     {
         string escapedJs = BashEscape(js);
-        var output = await new ProcessStartInfo("node", $"-e \"{escapedJs}\"").WaitForExitAndReadOutputAsync();
+        var output = await new ProcessStartInfo(this.nodePath, $"-e \"{escapedJs}\"").WaitForExitAndReadOutputAsync();
 
         var result = ExtractDebugOutput(output);
 

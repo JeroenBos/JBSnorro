@@ -22,7 +22,7 @@ namespace JBSnorro.JS.Tests
                 this.nodePathResolver = INodePathResolver.FromCommand(); // through DI maybe?
             else
                 this.nodePathResolver = INodePathResolver.FromPath(NodePath);
-            this.jsRunner = IJSRunner.Create();
+            this.jsRunner = IJSRunner.Create(this.nodePathResolver);
         }
     }
     [TestClass]
@@ -224,32 +224,32 @@ namespace JBSnorro.JS.Tests
         {
             {
                 string arg = new string(Array.Empty<char>());
-                var a = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var a = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(a.StandardOutput == "\n");
                 Assert(this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { a.StandardOutput }).Contains(arg));
             }
             {
                 string arg = new string(new char[] { '\'', '\'' });
-                var b = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var b = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(b.StandardOutput == "\n");
                 // Assert(this.jsRunner.ExecuteJS_Builder(new string[0], "", new object[] { b.StandardOutput }).Contains(arg));
             }
             {
                 string arg = new string(new char[] { '"', '"', '"', '"' });
-                var b2 = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var b2 = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(b2.StandardOutput == "\n");
                 // Assert(this.jsRunner.ExecuteJS_Builder(new string[0], "", new object[] { b2.StandardOutput }).Contains(arg));
             }
             {
                 string arg = new string(new char[] { '"', 'a', '"' });
-                var c = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var c = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(c.ErrorOutput.Contains("ReferenceError: a is not defined"));
             }
             {
                 // literal JS:
                 // console.log("a");
                 string arg = new string(new char[] { '\\', '"', 'a', '\\', '"' });
-                var d = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var d = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(d.StandardOutput == "a\n");
                 string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { d.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
@@ -258,7 +258,7 @@ namespace JBSnorro.JS.Tests
                 // literal JS:
                 // console.log("\"");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '"', '\\', '"' });
-                var e = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var e = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(e.StandardOutput == "\"\n");
                 string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { e.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
@@ -267,7 +267,7 @@ namespace JBSnorro.JS.Tests
                 // literal JS:
                 // console.log("\\");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '\\', '\\', '"' });
-                var f = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var f = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(f.StandardOutput == "\\\n");
                 string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { f.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
@@ -276,7 +276,7 @@ namespace JBSnorro.JS.Tests
                 // literal JS:
                 // console.log("\"hi");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '"', 'h', 'i', '\\', '"' });
-                var g = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var g = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(g.StandardOutput == "\"hi\n");
                 string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { g.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
@@ -285,7 +285,7 @@ namespace JBSnorro.JS.Tests
                 // literal JS:
                 // console.log("\"\"");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '"', '\\', '\\', '\\', '"', '\\', '"' });
-                var h = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var h = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(h.StandardOutput == "\"\"\n");
                 string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { h.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
@@ -294,7 +294,7 @@ namespace JBSnorro.JS.Tests
                 // literal JS:
                 // console.log("\\");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '\\', '\\', '"' });
-                var i = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var i = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(i.StandardOutput == "\\\n");
                 string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { i.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
@@ -303,7 +303,7 @@ namespace JBSnorro.JS.Tests
                 // literal JS:
                 // console.log("\\\\");
                 string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '"' });
-                var j = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+                var j = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
                 Assert(j.StandardOutput == "\\\\\n");
                 string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { j.StandardOutput[..^1] });
                 Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
@@ -315,7 +315,7 @@ namespace JBSnorro.JS.Tests
             // literal JS:
             // console.log("\t");
             string arg = new string(new char[] { '\\', '"', '\\', 't', '\\', '"' });
-            var t = await new System.Diagnostics.ProcessStartInfo("node", $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
+            var t = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(t.StandardOutput == "\t\n");
             string js = this.jsRunner.ExecuteJS_Builder(identifier: t.StandardOutput[..^1], imports: NO_IMPORTS);
             Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
