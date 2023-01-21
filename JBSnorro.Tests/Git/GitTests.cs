@@ -22,7 +22,7 @@ namespace JBSnorro.Csx.Tests
         protected const string ROOT_HASH = "818c7ad1722e9c4fe682b30ade4413bf1e36c542";
 
         // if SSH_FILE cannot be found, consider adding JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
-        protected static string ssh_file => Environment.GetEnvironmentVariable("SSH_FILE") ?? throw new Exception("Env var 'SSH_FILE' not found");
+        protected static string ssh_file => EnvironmentExtensions.GetRequiredEnvironmentVariable("SSH_FILE");
         protected static string ssh_key_path => Path.GetFullPath(ssh_file.ExpandTildeAsHomeDir()).ToBashPath(false);
         protected static string init_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/init-ssh-agent.sh";
         private static string GIT_SSH_COMMAND => $"GIT_SSH_COMMAND=\"ssh -i {ssh_key_path} -F /dev/null\"";
