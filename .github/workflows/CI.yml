@@ -24,7 +24,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.201  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
+        dotnet-version: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
 
     - name: Build
       run: dotnet build JBSnorro/JBSnorro.csproj
@@ -81,7 +81,7 @@ jobs:
       if: ${{ steps.up-to-date.outcome != 'failure' }}
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.101
+        dotnet-version: 7.0.102
 
     - name: Install dependencies
       if: ${{ steps.up-to-date.outcome != 'failure' }}
