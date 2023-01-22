@@ -101,7 +101,7 @@ fi");
             }
             throw GitUtilities.NotImplementedException(exitCode, std_out, std_err);
         }
-        public async Task<string> GetMainBranchName()
+        public async Task<string> GetDefaultBranchName()
         {
             var masterExists = await GetBranchExists("master");
             var mainExists = GetBranchExists("main");
@@ -341,7 +341,7 @@ fi");
 
             var branchAlreadyExists = GetBranchExists(branchName);
             Task<bool> isDirty = IsDirty();
-            var mainBranchName = GetMainBranchName();
+            var mainBranchName = GetDefaultBranchName();
             var currentBranchName = GetCurrentBranch();
 
             if (await branchAlreadyExists)
