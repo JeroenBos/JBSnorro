@@ -30,23 +30,23 @@ namespace JBSnorro.Csx.Tests
         private static string GIT_SSH_COMMAND => $"GIT_SSH_COMMAND=\"ssh -i {ssh_key_path} -F /dev/null\"";
         protected static string SSH_SCRIPT => $"source {init_ssh_agent_path} && ssh-add {ssh_key_path} && export {GIT_SSH_COMMAND}";
 
-        protected static async Task<Git> InitEmptyRepo(string? ssh_script = null)
+        protected static async Task<GitRepo> InitEmptyRepo(string? ssh_script = null)
         {
             string dir = IOExtensions.CreateTemporaryDirectory();
             var result = await "git init; git config user.name 'tester'; git config user.email 'tester@test.com'".Execute(cwd: dir);
 
             Assert.AreEqual(result.ExitCode, 0, result.ErrorOutput);
             Assert.IsTrue(result.StandardOutput.StartsWith("Initialized empty Git repository"));
-            return new Git(dir, ssh_script);
+            return new GitRepo(dir, ssh_script);
         }
-        protected static async Task<Git> InitRepo(string? ssh_script = null)
+        protected static async Task<GitRepo> InitRepo(string? ssh_script = null)
         {
             var git = await InitEmptyRepo(ssh_script);
             var result = await "git commit --allow-empty -m 'First commit'".Execute(cwd: git.Dir);
             Assert.IsTrue(result.StandardOutput.EndsWith("First commit"));
             return git;
         }
-        protected static async Task<Git> InitRepoWithUntrackedFile()
+        protected static async Task<GitRepo> InitRepoWithUntrackedFile()
         {
             var git = await InitRepo();
             using (File.Create(Path.Combine(git.Dir, "tmp"))) { }
@@ -54,7 +54,7 @@ namespace JBSnorro.Csx.Tests
             return git;
         }
         /// <summary> Tracked means not untracked, but not staged either.  </summary>
-        protected static async Task<Git> InitRepoWithTrackedFile()
+        protected static async Task<GitRepo> InitRepoWithTrackedFile()
         {
             var git = await InitRepoWithStagedFile();
             var result = await "git reset -- tmp".Execute(cwd: git.Dir);
@@ -62,7 +62,7 @@ namespace JBSnorro.Csx.Tests
 
             return git;
         }
-        protected static async Task<Git> InitRepoWithStagedFile()
+        protected static async Task<GitRepo> InitRepoWithStagedFile()
         {
             var git = await InitRepoWithUntrackedFile();
             var result = await "git add tmp".Execute(cwd: git.Dir);
@@ -70,7 +70,7 @@ namespace JBSnorro.Csx.Tests
 
             return git;
         }
-        protected static async Task<Git> InitRepoWithTrackedUntrackedAndStagedFiles(string? newBranchName = "new_branch")
+        protected static async Task<GitRepo> InitRepoWithTrackedUntrackedAndStagedFiles(string? newBranchName = "new_branch")
         {
             var git = await InitRepo();
 
@@ -91,7 +91,7 @@ namespace JBSnorro.Csx.Tests
             Assert.AreEqual(result.ExitCode, 0);
             return git;
         }
-        protected static async Task<Git> InitRepoWithStash()
+        protected static async Task<GitRepo> InitRepoWithStash()
         {
             var git = await InitRepoWithUntrackedFile();
             var result = await "git stash -u".Execute(cwd: git.Dir);
@@ -99,7 +99,7 @@ namespace JBSnorro.Csx.Tests
 
             return git;
         }
-        protected static async Task<Git> InitDetachedState()
+        protected static async Task<GitRepo> InitDetachedState()
         {
             var git = await InitRepo();
             var result = await "git commit --allow-empty -m 'Second commit'; git checkout HEAD~".Execute(cwd: git.Dir);
@@ -107,14 +107,14 @@ namespace JBSnorro.Csx.Tests
 
             return git;
         }
-        protected static async Task<Git> InitRepoWithCommit()
+        protected static async Task<GitRepo> InitRepoWithCommit()
         {
             var git = await InitRepoWithStagedFile();
             await "git commit -m 'contains file'".Execute(cwd: git.Dir);
 
             return git;
         }
-        protected static async Task<Git> InitRemoteRepo()
+        protected static async Task<GitRepo> InitRemoteRepo()
         {
             var git = await InitRepo(SSH_SCRIPT);
 
@@ -173,7 +173,7 @@ namespace JBSnorro.Csx.Tests
             // Assert.IsTrue(stdErr.Split('\n')[1].StartsWith("Everything up-to-date"));
             return git;
         }
-        protected static async Task<Git> InitRemoteRepoWithCommit(Reference<string>? commitHash = null)
+        protected static async Task<GitRepo> InitRemoteRepoWithCommit(Reference<string>? commitHash = null)
         {
             var git = await InitRemoteRepo();
             using (File.Create(Path.Combine(git.Dir, "tmp"))) { }
@@ -190,7 +190,7 @@ namespace JBSnorro.Csx.Tests
             }
             return git;
         }
-        protected static async Task<Git> InitRemoteRepoWithRemoteCommit(Reference<string>? remoteCommitHash = null)
+        protected static async Task<GitRepo> InitRemoteRepoWithRemoteCommit(Reference<string>? remoteCommitHash = null)
         {
             var git = await InitRemoteRepoWithCommit(remoteCommitHash);
 
@@ -363,7 +363,7 @@ namespace JBSnorro.Csx.Tests
         {
             string dir = IOExtensions.CreateTemporaryDirectory();
 
-            bool isGitRepo = await new Git(dir).IsGitRepo();
+            bool isGitRepo = await new GitRepo(dir).IsGitRepo();
 
             Assert.IsFalse(isGitRepo);
         }

@@ -14,12 +14,12 @@ using System.Text.Json;
 
 namespace JBSnorro.Csx
 {
-    public class Git
+    public class GitRepo
     {
         public string SSH_SCRIPT { get; }
         public string Dir { get; }
 
-        public Git(string directory, string? ssh_script = null)
+        public GitRepo(string directory, string? ssh_script = null)
         {
             this.Dir = directory;
             this.SSH_SCRIPT = ssh_script ?? "echo '' ";
