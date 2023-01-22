@@ -113,37 +113,7 @@ fi");
             throw new InvalidOperationException("No master nor main branch found");
 
         }
-        public bool IsValidBranchName(string name)
-        {
-            // following the spec from https://stackoverflow.com/a/3651867/308451
-            if (string.IsNullOrEmpty(name))
-                return false;
-
-            if (name.Contains("/."))
-                return false;
-            if (name.EndsWith(".lock"))
-                return false;
-            if (name.Contains(".."))
-                return false;
-            if (name.Any(c => c < 32)) // '\040' in the SPEC is octal for 32
-                return false;
-            if (name.Any(" \t\u007F~^:?*[\\".Contains))
-                return false;
-            if (name.StartsWith('/') || name.EndsWith('/'))
-                return false;
-            if (name.Contains("//"))
-                return false;
-            if (name.EndsWith('.'))
-                return false;
-            if (name.Contains("@{"))
-                return false;
-            if (name == "@")
-                return false;
-            if (name.StartsWith('-'))
-                return false;
-
-            return true;
-        }
+        
         public async Task<bool> Stash(bool indexOnly = false)
         {
             string? bash = null;
@@ -336,7 +306,7 @@ fi");
         }
         public async Task New(string branchName, bool bringIndexOnly = false)
         {
-            if (!IsValidBranchName(branchName))
+            if (!GitUtilities.IsValidBranchName(branchName))
                 throw new ArgumentException($"'{branchName}' is not a valid branch name");
 
             var branchAlreadyExists = GetBranchExists(branchName);
@@ -489,7 +459,7 @@ fi");
                 if (response != null)
                 {
                     var result = response.baseRefName;
-                    if (this.IsValidBranchName(result))
+                    if (GitUtilities.IsValidBranchName(result))
                         return "origin/" + result;
                     else if (GitUtilities.IsGitHash(result))
                         return result;
@@ -621,6 +591,38 @@ fi");
         {
             string message = $"{callerName}: The string '{s}' is not a git hash";
             Contract.Assert(IsGitHash(s), message);
+        }
+
+        public static bool IsValidBranchName(string name)
+        {
+            // following the spec from https://stackoverflow.com/a/3651867/308451
+            if (string.IsNullOrEmpty(name))
+                return false;
+
+            if (name.Contains("/."))
+                return false;
+            if (name.EndsWith(".lock"))
+                return false;
+            if (name.Contains(".."))
+                return false;
+            if (name.Any(c => c < 32)) // '\040' in the SPEC is octal for 32
+                return false;
+            if (name.Any(" \t\u007F~^:?*[\\".Contains))
+                return false;
+            if (name.StartsWith('/') || name.EndsWith('/'))
+                return false;
+            if (name.Contains("//"))
+                return false;
+            if (name.EndsWith('.'))
+                return false;
+            if (name.Contains("@{"))
+                return false;
+            if (name == "@")
+                return false;
+            if (name.StartsWith('-'))
+                return false;
+
+            return true;
         }
     }
     [Serializable]
