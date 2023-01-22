@@ -21,7 +21,9 @@ namespace JBSnorro.Csx.Tests
     {
         protected const string ROOT_HASH = "818c7ad1722e9c4fe682b30ade4413bf1e36c542";
 
-        // if SSH_FILE cannot be found, consider adding JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
+        // if SSH_FILE cannot be found
+        // - in testing, add JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
+        // - in debugging, add the path to the runSettings as debug env var RUNSETTINGS_PATH
         protected static string ssh_file => EnvironmentExtensions.GetRequiredEnvironmentVariable("SSH_FILE");
         protected static string ssh_key_path => Path.GetFullPath(ssh_file.ExpandTildeAsHomeDir()).ToBashPath(false);
         protected static string init_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/init-ssh-agent.sh";
@@ -445,6 +447,8 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task Test_New_Only_Takes_Staged_With_Option_Index()
         {
+            // but in CI this test succeed :S :S
+            // that means it's flaky tests. They depend on order of execution. Probably the SSH_SCRIPT bug
             string dir = await InitRepoWithTrackedUntrackedAndStagedFiles("first_branch");
 
             await Git.New(dir, "newBranch", bringIndexOnly: true);

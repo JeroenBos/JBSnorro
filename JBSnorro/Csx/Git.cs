@@ -304,8 +304,6 @@ fi");
             if (exitCode == 0 && stdOut == "")
                 return; // the case where there's no upstream
 
-            // TODO: if remote branches were deleted, check if they exist locally and point to the exact same commit, and delete them if so. 
-            // if that's the current branch, then checkout the main branch first
             if (exitCode != 0)
                 throw new BashNonzeroExitCodeException(exitCode, stdErr);
             throw NotImplementedException(exitCode, stdOut, stdErr, "git remote update");
