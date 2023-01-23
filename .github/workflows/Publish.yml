@@ -48,24 +48,26 @@ jobs:
 
       - name: Wait for ubuntu CI
         uses: fountainhead/action-wait-for-check@v1.1.0
+        if: ${{ env.PUBLISH == 'true' }}
         id: wait-for-test-ubuntu
         with:
           checkName: test (ubuntu-latest)
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fail if ubuntu CI failed
-        if: ${{ steps.wait-for-test-ubuntu.outputs.conclusion != 'success' }}
+        if: ${{ env.PUBLISH == 'true' && steps.wait-for-test-ubuntu.outputs.conclusion != 'success' }}
         run: echo "Conclusion=${{ steps.wait-for-ubuntu-test.outputs.conclusion }}" && exit 1
 
       - name: Wait for windows CI
         uses: fountainhead/action-wait-for-check@v1.1.0
+        if: ${{ env.PUBLISH == 'true' }}
         id: wait-for-test-windows
         with:
           checkName: test (windows-latest)
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fail if windows CI failed
-        if: ${{ steps.wait-for-test-windows.outputs.conclusion != 'success' }}
+        if: ${{ env.PUBLISH == 'true' && steps.wait-for-test-windows.outputs.conclusion != 'success' }}
         run: echo "Conclusion=${{ steps.wait-for-windows-test.outputs.conclusion }}" && exit 1
 
       - name: Publish
