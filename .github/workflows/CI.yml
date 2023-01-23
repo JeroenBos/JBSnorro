@@ -31,14 +31,19 @@ jobs:
     - name: Build
       run: dotnet build JBSnorro/JBSnorro.csproj
 
-    - name: Create env vars
+    - name: Create SSH_FILE env var 
+      run: echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
+
+    - name: Create NODE_PATH env var (ubuntu)
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: echo "NODE_PATH=$(which node)" >> $GITHUB_ENV 
+
+    - name: Create NODE_PATH env var (ubuntu)
+      if: ${{ matrix.os == 'windows-latest' }}
+      shell: pwsh
       run: |
-          echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
-          NODE_PATH="$(which node)"
-          if [[ ${{ matrix.os }} == 'windows-latest' ]]; then 
-              NODE_PATH="$(wslpath -w "$NODE_PATH")"
-          fi
-          echo "NODE_PATH=$NODE_PATH" >> $GITHUB_ENV
+        "NODE_PATH=C:/Program Files/nodejs/node" >> $env:GITHUB_ENV
+          
 
     - name: Create ssh access file
       run: |
