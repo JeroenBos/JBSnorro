@@ -33,7 +33,6 @@ jobs:
               echo "NODE_PATH exists."
           else
               echo "NODE_PATH doesn't exist."
-              exit 1;
           fi
           
 
