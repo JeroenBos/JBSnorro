@@ -7,7 +7,7 @@ on:
       - "**.md"
   pull_request:
     paths:
-      - ".github/workflows.Publish.yml"
+      - ".github/workflows/Publish.yml"
 
 jobs:
   publish:
