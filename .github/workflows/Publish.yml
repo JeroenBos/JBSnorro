@@ -55,7 +55,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fail if ubuntu CI failed
         if: ${{ steps.wait-for-ubuntu-test.outputs.conclusion != 'success' }}
-        run: echo "Conclusion=${{ steps.wait-for-ubuntu-test.outputs.conclusion }} && exit 1
+        run: echo "Conclusion=${{ steps.wait-for-ubuntu-test.outputs.conclusion }}" && exit 1
 
       - name: Wait for windows CI
         uses: fountainhead/action-wait-for-check@v1.1.0
@@ -66,7 +66,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fail if windows CI failed
         if: ${{ steps.wait-for-ubuntu-test.outputs.conclusion != 'success' }}
-        run: echo "Conclusion=${{ steps.wait-for-windows-test.outputs.conclusion }} && exit 1
+        run: echo "Conclusion=${{ steps.wait-for-windows-test.outputs.conclusion }}" && exit 1
 
       - name: Publish
         if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
