@@ -23,7 +23,6 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - run: which node
     - uses: actions/checkout@v2
     - uses: actions/setup-dotnet@v1
       with:
@@ -37,9 +36,11 @@ jobs:
         mkdir ~/.ssh
         echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
         ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-    - name: Give access to ssh key (Linux)
-      if: ${{ matrix.os == 'ubuntu-latest' }} 
-      run: sudo chmod 600 ~/.ssh/playground
+        
+        # Give access to ssh key (Linux)
+        if [[ '${{ matrix.os }}' == 'ubuntu-latest' }}; then
+            sudo chmod 600 ~/.ssh/playground
+        fi
 
     - name: Point to `node`
       run: echo "NODE_PATH=$(which node)" >> $GITHUB_ENV
