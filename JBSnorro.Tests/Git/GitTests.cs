@@ -41,100 +41,100 @@ namespace JBSnorro.Csx.Tests
         }
         protected static async Task<GitRepo> InitRepo(string? ssh_script = null)
         {
-            var git = await InitEmptyRepo(ssh_script);
-            var result = await "git commit --allow-empty -m 'First commit'".Execute(cwd: git.Dir);
+            var repo = await InitEmptyRepo(ssh_script);
+            var result = await "git commit --allow-empty -m 'First commit'".Execute(cwd: repo.Dir);
             Assert.IsTrue(result.StandardOutput.EndsWith("First commit"));
-            return git;
+            return repo;
         }
         protected static async Task<GitRepo> InitRepoWithUntrackedFile()
         {
-            var git = await InitRepo();
-            using (File.Create(Path.Combine(git.Dir, "tmp"))) { }
+            var repo = await InitRepo();
+            using (File.Create(Path.Combine(repo.Dir, "tmp"))) { }
 
-            return git;
+            return repo;
         }
         /// <summary> Tracked means not untracked, but not staged either.  </summary>
         protected static async Task<GitRepo> InitRepoWithTrackedFile()
         {
-            var git = await InitRepoWithStagedFile();
-            var result = await "git reset -- tmp".Execute(cwd: git.Dir);
+            var repo = await InitRepoWithStagedFile();
+            var result = await "git reset -- tmp".Execute(cwd: repo.Dir);
             Assert.AreEqual(result.ExitCode, 0);
 
-            return git;
+            return repo;
         }
         protected static async Task<GitRepo> InitRepoWithStagedFile()
         {
-            var git = await InitRepoWithUntrackedFile();
-            var result = await "git add tmp".Execute(cwd: git.Dir);
+            var repo = await InitRepoWithUntrackedFile();
+            var result = await "git add tmp".Execute(cwd: repo.Dir);
             Assert.AreEqual(result.ExitCode, 0);
 
-            return git;
+            return repo;
         }
         protected static async Task<GitRepo> InitRepoWithTrackedUntrackedAndStagedFiles(string? newBranchName = "new_branch")
         {
-            var git = await InitRepo();
+            var repo = await InitRepo();
 
             if (newBranchName is not null)
-                await git.Checkout(newBranchName, @new: true);
+                await repo.Checkout(newBranchName, @new: true);
 
-            File.WriteAllText(Path.Combine(git.Dir, "a"), "contents"); // a for added
-            File.WriteAllText(Path.Combine(git.Dir, "m"), "contents"); // m for modified
-            File.WriteAllText(Path.Combine(git.Dir, "u"), "contents"); // u for untracked
+            File.WriteAllText(Path.Combine(repo.Dir, "a"), "contents"); // a for added
+            File.WriteAllText(Path.Combine(repo.Dir, "m"), "contents"); // m for modified
+            File.WriteAllText(Path.Combine(repo.Dir, "u"), "contents"); // u for untracked
 
             var result = await @"
             git add m;
             git commit -m 'add m';
             git add a;
             echo 'contents_of_m' >> m;   # modify t
-            ".Dedent().Execute(cwd: git.Dir);
+            ".Dedent().Execute(cwd: repo.Dir);
 
             Assert.AreEqual(result.ExitCode, 0);
-            return git;
+            return repo;
         }
         protected static async Task<GitRepo> InitRepoWithStash()
         {
-            var git = await InitRepoWithUntrackedFile();
-            var result = await "git stash -u".Execute(cwd: git.Dir);
+            var repo = await InitRepoWithUntrackedFile();
+            var result = await "git stash -u".Execute(cwd: repo.Dir);
             Assert.AreEqual(result.ExitCode, 0);
 
-            return git;
+            return repo;
         }
         protected static async Task<GitRepo> InitDetachedState()
         {
-            var git = await InitRepo();
-            var result = await "git commit --allow-empty -m 'Second commit'; git checkout HEAD~".Execute(cwd: git.Dir);
+            var repo = await InitRepo();
+            var result = await "git commit --allow-empty -m 'Second commit'; git checkout HEAD~".Execute(cwd: repo.Dir);
             Assert.IsTrue(result.StandardOutput.EndsWith("Second commit"));
 
-            return git;
+            return repo;
         }
         protected static async Task<GitRepo> InitRepoWithCommit()
         {
-            var git = await InitRepoWithStagedFile();
-            await "git commit -m 'contains file'".Execute(cwd: git.Dir);
+            var repo = await InitRepoWithStagedFile();
+            await "git commit -m 'contains file'".Execute(cwd: repo.Dir);
 
-            return git;
+            return repo;
         }
         protected static async Task<GitRepo> InitRemoteRepo()
         {
-            var git = await InitRepo(SSH_SCRIPT);
+            var repo = await InitRepo(SSH_SCRIPT);
 
             var sshKey = File.ReadAllLines(ssh_file.ToWindowsPath());
             Assert.AreEqual(27, sshKey.Length, delta: 1);
 
             // var (exitCode, stdOut, stdErr) = await $"source ../startup.sh".Execute(cwd: git.Dir);
-            var (exitCode, stdOut, stdErr) = await SSH_SCRIPT.Execute(cwd: git.Dir);
+            var (exitCode, stdOut, stdErr) = await SSH_SCRIPT.Execute(cwd: repo.Dir);
             // (exitCode, stdOut, stdErr) = await $"source ../startup.sh  && echo '{pass}' | SSH_ASKPASS=./ap.sh ssh-add".Execute(cwd: git.Dir);
             if (stdErr.StartsWith("@@@@@@"))
             {
-                await $"sudo chmod 600 {ssh_file}".Execute(cwd: git.Dir); // or just execute manually if I ever reinstalled Windows or something
-                (exitCode, stdOut, stdErr) = await $"source ../startup.sh && ssh-add {ssh_file}".Execute(cwd: git.Dir);
+                await $"sudo chmod 600 {ssh_file}".Execute(cwd: repo.Dir); // or just execute manually if I ever reinstalled Windows or something
+                (exitCode, stdOut, stdErr) = await $"source ../startup.sh && ssh-add {ssh_file}".Execute(cwd: repo.Dir);
             }
-            (exitCode, stdOut, stdErr) = await "git remote add origin git@github.com:JeroenBos/TestPlayground.git".Execute(cwd: git.Dir);
+            (exitCode, stdOut, stdErr) = await "git remote add origin git@github.com:JeroenBos/TestPlayground.git".Execute(cwd: repo.Dir);
             Assert.AreEqual((exitCode, stdOut, stdErr), (0, "", ""));
 
             try
             {
-                (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git fetch".Execute(cwd: git.Dir, cancellationToken: new CancellationTokenSource(10_000).Token);
+                (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git fetch".Execute(cwd: repo.Dir, cancellationToken: new CancellationTokenSource(10_000).Token);
             }
             catch (TaskCanceledException)
             {
@@ -152,7 +152,7 @@ namespace JBSnorro.Csx.Tests
             Assert.IsTrue(stdErrLines[1].StartsWith("From github.com:JeroenBos/TestPlayground"), stdErrLines[1]);
             Assert.IsTrue(stdErrLines[2].StartsWith(" * [new branch]      master     -> origin/master"), stdErrLines[2]);
 
-            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git branch --set-upstream-to=origin/master master".Execute(cwd: git.Dir);
+            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git branch --set-upstream-to=origin/master master".Execute(cwd: repo.Dir);
             Assert.AreEqual(exitCode, 0);
             // the following depends on git version or something:
             Assert.IsTrue(stdOut.IsAnyOf("Branch 'master' set up to track remote branch 'master' from 'origin'.", 
@@ -160,44 +160,44 @@ namespace JBSnorro.Csx.Tests
             Assert.AreEqual(stdErr.Split('\n').Length, 1);
             Assert.IsTrue(stdErr.StartsWith("Identity added"));
 
-            (exitCode, stdOut, stdErr) = await $"git reset --hard {ROOT_HASH}".Execute(cwd: git.Dir);
+            (exitCode, stdOut, stdErr) = await $"git reset --hard {ROOT_HASH}".Execute(cwd: repo.Dir);
             Assert.AreEqual((exitCode, stdErr), (0, ""));
             Assert.AreEqual(stdOut.Split('\n').Length, 1);
             Assert.IsTrue(stdOut.StartsWith("HEAD is now at"));
 
             // this can throw with error containing "! [remote rejected] master -> master (cannot lock ref 'refs/heads/master'"
             // it's presumably due to parallelism, but that shouldn't be there :/
-            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git fetch && git push --force-with-lease".Execute(cwd: git.Dir);
+            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git fetch && git push --force-with-lease".Execute(cwd: repo.Dir);
             Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr);
             // Assert.AreEqual(stdErr.Split('\n').Length, 2); // 3 with when (forced-updated)
             // Assert.IsTrue(stdErr.Split('\n')[1].StartsWith("Everything up-to-date"));
-            return git;
+            return repo;
         }
         protected static async Task<GitRepo> InitRemoteRepoWithCommit(Reference<string>? commitHash = null)
         {
-            var git = await InitRemoteRepo();
-            using (File.Create(Path.Combine(git.Dir, "tmp"))) { }
+            var repo = await InitRemoteRepo();
+            using (File.Create(Path.Combine(repo.Dir, "tmp"))) { }
 
-            var (exitCode, stdOut, stdErr) = await "git add . && git commit -m 'first pushed file'".Execute(cwd: git.Dir);
+            var (exitCode, stdOut, stdErr) = await "git add . && git commit -m 'first pushed file'".Execute(cwd: repo.Dir);
             Assert.AreEqual((exitCode, stdErr), (0, ""));
-            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git push".Execute(cwd: git.Dir);
+            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git push".Execute(cwd: repo.Dir);
             Assert.AreEqual(exitCode, 0);
             Assert.AreEqual(stdOut, "");
 
             if (commitHash != null)
             {
-                commitHash.Value = await git.GetCurrentHash();
+                commitHash.Value = await repo.GetCurrentHash();
             }
-            return git;
+            return repo;
         }
         protected static async Task<GitRepo> InitRemoteRepoWithRemoteCommit(Reference<string>? remoteCommitHash = null)
         {
-            var git = await InitRemoteRepoWithCommit(remoteCommitHash);
+            var repo = await InitRemoteRepoWithCommit(remoteCommitHash);
 
             // remove commit locally
-            await "git reset --hard @~".Execute(cwd: git.Dir);
+            await "git reset --hard @~".Execute(cwd: repo.Dir);
 
-            return git;
+            return repo;
         }
     }
 
@@ -220,18 +220,18 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task TestEmptyRepoIsNotIsDirty()
         {
-            var git = await InitEmptyRepo();
+            var repo = await InitEmptyRepo();
 
-            bool dirty = await git.IsDirty();
+            bool dirty = await repo.IsDirty();
 
             Assert.IsFalse(dirty);
         }
         [TestMethod]
         public async Task TestEmptyWithUntrackedFileIsDirty()
         {
-            var git = await InitRepoWithUntrackedFile();
+            var repo = await InitRepoWithUntrackedFile();
 
-            bool dirty = await git.IsDirty();
+            bool dirty = await repo.IsDirty();
 
             Assert.IsTrue(dirty);
         }
@@ -244,27 +244,27 @@ namespace JBSnorro.Csx.Tests
         public async Task Test_Get_Current_Branch_On_Empty_Repo()
         {
             // empty repo is the weird state before any commit has ever happened
-            var git = await InitEmptyRepo();
+            var repo = await InitEmptyRepo();
 
-            string? branchName = await git.GetCurrentBranch();
+            string? branchName = await repo.GetCurrentBranch();
 
             Assert.IsTrue(branchName is null);
         }
         [TestMethod]
         public async Task Test_Get_Current_Branch()
         {
-            var git = await InitRepo();
+            var repo = await InitRepo();
 
-            string? branchName = await git.GetCurrentBranch();
+            string? branchName = await repo.GetCurrentBranch();
 
             Assert.IsTrue(branchName == "master" || branchName == "main");
         }
         [TestMethod]
         public async Task Test_Current_Branch_Is_None_When_In_Detached_State()
         {
-            var git = await InitDetachedState();
+            var repo = await InitDetachedState();
 
-            string? branchName = await git.GetCurrentBranch();
+            string? branchName = await repo.GetCurrentBranch();
 
             Assert.IsNull(branchName);
         }
@@ -275,19 +275,19 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task Test_Get_Non_Existing_Branch_Does_Not_Exit()
         {
-            var git = await InitRepo();
+            var repo = await InitRepo();
 
-            bool exists = await git.GetBranchExists("doesntexist");
+            bool exists = await repo.GetBranchExists("doesntexist");
 
             Assert.IsFalse(exists);
         }
         [TestMethod]
         public async Task Test_Current_Branch_Exists()
         {
-            var git = await InitRepo();
-            string currentBranchName = (await git.GetCurrentBranch())!;
+            var repo = await InitRepo();
+            string currentBranchName = (await repo.GetCurrentBranch())!;
 
-            bool exists = await git.GetBranchExists(currentBranchName);
+            bool exists = await repo.GetBranchExists(currentBranchName);
 
             Assert.IsTrue(exists);
         }
@@ -298,32 +298,32 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task Test_Stash_Without_Anything_To_Stash()
         {
-            var git = await InitRepo();
+            var repo = await InitRepo();
 
-            bool stashed = await git.Stash();
+            bool stashed = await repo.Stash();
 
             Assert.IsFalse(stashed);
         }
         // TODO: [TestMethod]
         public async Task Test_Stash_With_Untracked_File_Stashes()
         {
-            var git = await InitRepoWithUntrackedFile();
+            var repo = await InitRepoWithUntrackedFile();
 
-            bool stashed = await git.Stash();
+            bool stashed = await repo.Stash();
 
             Assert.IsTrue(stashed);
-            Assert.IsFalse(await git.IsDirty());
+            Assert.IsFalse(await repo.IsDirty());
         }
 
         // TODO: [TestMethod]
         public async Task Test_Stash_With_Tracked_File_Stashes()
         {
-            var git = await InitRepoWithStagedFile();
+            var repo = await InitRepoWithStagedFile();
 
-            bool stashed = await git.Stash();
+            bool stashed = await repo.Stash();
 
             Assert.IsTrue(stashed);
-            Assert.IsFalse(await git.IsDirty());
+            Assert.IsFalse(await repo.IsDirty());
         }
     }
     [TestClass]
@@ -332,18 +332,18 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task Test_Pop_Stash_Without_Stash_Throws()
         {
-            var git = await InitRepo();
+            var repo = await InitRepo();
 
-            await Assert.ThrowsExceptionAsync<StashEmptyGitException>(async () => await git.PopStash());
+            await Assert.ThrowsExceptionAsync<StashEmptyGitException>(async () => await repo.PopStash());
         }
         [TestMethod]
         public async Task Test_Pop_Stash_Pops()
         {
-            var git = await InitRepoWithStash();
+            var repo = await InitRepoWithStash();
 
-            await git.PopStash();
+            await repo.PopStash();
 
-            Assert.IsTrue(await git.IsDirty());
+            Assert.IsTrue(await repo.IsDirty());
         }
     }
     [TestClass]
@@ -352,9 +352,9 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task Test_Git_Repo_Repository_Is_Repo()
         {
-            var git = await InitRepo();
+            var repo = await InitRepo();
 
-            bool isGitRepo = await git.IsGitRepo();
+            bool isGitRepo = await repo.IsGitRepo();
 
             Assert.IsTrue(isGitRepo);
         }
@@ -374,9 +374,9 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task Test_Untracked_File_Is_Listed()
         {
-            var git = await InitRepoWithUntrackedFile();
+            var repo = await InitRepoWithUntrackedFile();
 
-            var untrackedFiles = await git.GetUntrackedFiles();
+            var untrackedFiles = await repo.GetUntrackedFiles();
 
             Assert.AreEqual(1, untrackedFiles.Count);
             Assert.AreEqual("tmp", untrackedFiles[0]);
@@ -384,9 +384,9 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task Test_Modified_Files_Is_Not_Listed()
         {
-            var git = await InitRepoWithStagedFile();
+            var repo = await InitRepoWithStagedFile();
 
-            var untrackedFiles = await git.GetUntrackedFiles();
+            var untrackedFiles = await repo.GetUntrackedFiles();
 
             Assert.AreEqual(0, untrackedFiles.Count);
         }
@@ -398,14 +398,14 @@ namespace JBSnorro.Csx.Tests
         // TODO: [TestMethod]
         public async Task Test_Track_Untracked_File()
         {
-            var git = await InitRepoWithUntrackedFile();
+            var repo = await InitRepoWithUntrackedFile();
 
             // Act
-            await git.TrackAllUntrackedFiles();
+            await repo.TrackAllUntrackedFiles();
 
             // Assert
-            var untrackedFiles = await git.GetUntrackedFiles();
-            var stagedFiles = await git.GetStagedFiles();
+            var untrackedFiles = await repo.GetUntrackedFiles();
+            var stagedFiles = await repo.GetStagedFiles();
 
             Assert.AreEqual(0, untrackedFiles.Count);
             Assert.AreEqual(0, stagedFiles.Count);
@@ -414,14 +414,14 @@ namespace JBSnorro.Csx.Tests
         // TODO: [TestMethod]
         public async Task Test_Tracking_Tracked_File_Is_Noop()
         {
-            var git = await InitRepoWithTrackedFile();
+            var repo = await InitRepoWithTrackedFile();
 
             // Act
-            await git.TrackAllUntrackedFiles();
+            await repo.TrackAllUntrackedFiles();
 
             // Assert
-            var untrackedFiles = await git.GetUntrackedFiles();
-            var stagedFiles = await git.GetStagedFiles();
+            var untrackedFiles = await repo.GetUntrackedFiles();
+            var stagedFiles = await repo.GetStagedFiles();
 
             Assert.AreEqual(0, untrackedFiles.Count);
             Assert.AreEqual(0, stagedFiles.Count);
@@ -434,13 +434,13 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task Test_New_Takes_Untracked_tracked_and_staged()
         {
-            var git = await InitRepoWithTrackedUntrackedAndStagedFiles();
+            var repo = await InitRepoWithTrackedUntrackedAndStagedFiles();
 
-            await git.New("a", bringIndexOnly: false);
+            await repo.New("a", bringIndexOnly: false);
 
-            Assert.IsTrue(File.Exists(Path.Combine(git.Dir, "a")));
-            Assert.IsTrue(File.Exists(Path.Combine(git.Dir, "m")));
-            Assert.IsTrue(File.Exists(Path.Combine(git.Dir, "u")));
+            Assert.IsTrue(File.Exists(Path.Combine(repo.Dir, "a")));
+            Assert.IsTrue(File.Exists(Path.Combine(repo.Dir, "m")));
+            Assert.IsTrue(File.Exists(Path.Combine(repo.Dir, "u")));
         }
 
         [TestMethod]
@@ -448,35 +448,35 @@ namespace JBSnorro.Csx.Tests
         {
             // but in CI this test succeed :S :S
             // that means it's flaky tests. They depend on order of execution. Probably the SSH_SCRIPT bug
-            var git = await InitRepoWithTrackedUntrackedAndStagedFiles("first_branch");
+            var repo = await InitRepoWithTrackedUntrackedAndStagedFiles("first_branch");
 
-            await git.New("newBranch", bringIndexOnly: true);
+            await repo.New("newBranch", bringIndexOnly: true);
 
-            Assert.IsTrue(File.Exists(Path.Combine(git.Dir, "a")));
-            Assert.IsFalse(File.Exists(Path.Combine(git.Dir, "m")));
-            Assert.IsFalse(File.Exists(Path.Combine(git.Dir, "u")));
+            Assert.IsTrue(File.Exists(Path.Combine(repo.Dir, "a")));
+            Assert.IsFalse(File.Exists(Path.Combine(repo.Dir, "m")));
+            Assert.IsFalse(File.Exists(Path.Combine(repo.Dir, "u")));
 
             // destroy state to inspect other branch state
-            var (exitCode, std, err) = await @"git add . && git reset --hard && git checkout first_branch".Execute(cwd: git.Dir);
+            var (exitCode, std, err) = await @"git add . && git reset --hard && git checkout first_branch".Execute(cwd: repo.Dir);
             Assert.AreEqual(exitCode, 0);
 
 
-            Assert.IsFalse(File.Exists(Path.Combine(git.Dir, "a")));
-            Assert.IsTrue(File.Exists(Path.Combine(git.Dir, "m")));
-            Assert.IsTrue(File.Exists(Path.Combine(git.Dir, "u")));
+            Assert.IsFalse(File.Exists(Path.Combine(repo.Dir, "a")));
+            Assert.IsTrue(File.Exists(Path.Combine(repo.Dir, "m")));
+            Assert.IsTrue(File.Exists(Path.Combine(repo.Dir, "u")));
         }
 
         [TestMethod]
         public async Task Test_New_Pulls_Remote()
         {
             var commitHash = new Reference<string>();
-            var git = await InitRemoteRepoWithRemoteCommit(commitHash);
-            await "git checkout -b somebranch".Execute(cwd: git.Dir);
-            Assert.AreEqual(await git.GetCurrentHash(), ROOT_HASH);
+            var repo = await InitRemoteRepoWithRemoteCommit(commitHash);
+            await "git checkout -b somebranch".Execute(cwd: repo.Dir);
+            Assert.AreEqual(await repo.GetCurrentHash(), ROOT_HASH);
 
-            await git.New("newbranch");
+            await repo.New("newbranch");
 
-            Assert.AreEqual(await git.GetCurrentHash(), commitHash.Value);
+            Assert.AreEqual(await repo.GetCurrentHash(), commitHash.Value);
         }
         [TestClass]
         public class TestGHGetPrName
@@ -484,9 +484,9 @@ namespace JBSnorro.Csx.Tests
             // [TestMethod] // reimplement when GH login works from CI
             public async Task Test_Get_Pr_Name()
             {
-                var git = await InitRemoteRepoWithRemoteCommit();
+                var repo = await InitRemoteRepoWithRemoteCommit();
 
-                var branchName = await git.GetPRBranchName("1");
+                var branchName = await repo.GetPRBranchName("1");
 
                 Assert.AreEqual("patch-1", branchName); 
             }
@@ -497,9 +497,9 @@ namespace JBSnorro.Csx.Tests
             // [TestMethod] // reimplement when GH login works from CI
             public async Task Test_Get_Pr_CommitHash()
             {
-                var git = await InitRemoteRepoWithRemoteCommit();
+                var repo = await InitRemoteRepoWithRemoteCommit();
 
-                var branchName = await git.GetPRBranchCommitHash("1");
+                var branchName = await repo.GetPRBranchCommitHash("1");
 
                 Assert.AreEqual("0b439655789e463e598535fb619a43b8bb1af8e1", branchName);
             }
@@ -510,20 +510,12 @@ namespace JBSnorro.Csx.Tests
             // [TestMethod] // reimplement when GH login works from CI
             public async Task Test_Get_Pr_BaseName()
             {
-                var git = await InitRemoteRepoWithRemoteCommit();
+                var repo = await InitRemoteRepoWithRemoteCommit();
 
-                var branchName = await git.GetPRBaseBranch("1");
+                var branchName = await repo.GetPRBaseBranch("1");
 
                 Assert.AreEqual("origin/master", branchName);
             }
         }
     }
-    //[TestClass]
-    //public class CheckoutTests : GitTestsBase
-    //{
-    //	[TestMethod]
-    //	public async Task Test_Simple_Checkout()
-    //	{
-    //	}
-    //}
 }
