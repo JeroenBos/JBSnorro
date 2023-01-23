@@ -30,7 +30,7 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Build
-      run: dotnet build JBSnorro/JBSnorro.csproj --runtime ${{ matrix.runtime }}
+      run: dotnet build JBSnorro/JBSnorro.csproj
 
     - name: Create ssh access file
       shell: bash
@@ -46,7 +46,7 @@ jobs:
       shell: bash
       run: | 
           export SSH_FILE="$HOME/.ssh/playground"
-          dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --runtime ${{ matrix.runtime }} --no-build
+          dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --no-build
           # --no-build would be a nice optimization but skips testing all together!
       timeout-minutes: 5
 
