@@ -34,7 +34,7 @@ jobs:
     - name: Create env vars
       run: |
           echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
-          echo "NODE_PATH=$(which node)" >> $GITHUB_ENV
+          echo "NODE_PATH=$(wslpath -w "$(which node)")" >> $GITHUB_ENV
 
     - name: Create ssh access file
       run: |
