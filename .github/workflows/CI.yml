@@ -40,10 +40,14 @@ jobs:
       run: |
           mkdir "$(dirname "$SSH_FILE")"
           echo "${{secrets.PLAYGROUND_SSH_KEY}}" > "$SSH_FILE"
-          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
           
           # Give access to ssh key (Linux)
-          [[ '${{ matrix.os }}' == 'ubuntu-latest' ]] && sudo chmod 600 "$SSH_FILE"
+          if [[ '${{ matrix.os }}' == 'ubuntu-latest' ]]; then
+              sudo chmod 600 "$SSH_FILE"
+          fi
+
+    - name: Append GitHub ssh host
+      run: ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
     - name: Test
       run: | 
