@@ -51,7 +51,8 @@ jobs:
             echo "NODE_PATH=$(where node)" >> GITHUB_ENV
         fi
 
-    - run: echo "$NODE_PATH"
+    - run: echo "GITHUB_ENV=$GITHUB_ENV"
+    - run: echo "NODE_PATH=$NODE_PATH"
 
     - name: Test
       shell: bash
