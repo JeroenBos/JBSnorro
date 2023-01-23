@@ -62,7 +62,7 @@ jobs:
 
   publish:
     needs: test
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/refactor-ci' }}  # run this publication step in dry-run
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -98,7 +98,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Publish
-      if: ${{ env.PUBLISH == 'true' }}
+      if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
       uses: alirezanet/publish-nuget@v3.0.0  # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
       with:
           PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
