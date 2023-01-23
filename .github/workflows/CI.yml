@@ -46,10 +46,7 @@ jobs:
       shell: bash
       run: | 
           export SSH_FILE="$HOME/.ssh/playground"
-          dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj \
-                      --runtime ${{ matrix.runtime }}      \
-                      --no-build
-          # --no-build is an optimization
+          dotnet test
       timeout-minutes: 5
 
 
