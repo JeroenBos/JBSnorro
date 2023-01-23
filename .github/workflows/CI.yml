@@ -21,11 +21,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+
     runs-on: ${{ matrix.os }}
     steps:
           
-
-
     - uses: actions/checkout@v2
     - uses: actions/setup-dotnet@v1
       with:
@@ -38,9 +37,7 @@ jobs:
       run: echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
 
     - name: Create NODE_PATH env var
-      run: |
-          [[ '${{ matrix.os }}' == 'windows-latest' ]] && extension='.exe'
-          echo "NODE_PATH=$(which node)${extension:-}" >> $GITHUB_ENV 
+      run: echo "NODE_PATH=$(which node)$([[ '${{ matrix.os }}' == 'windows-latest' ]] && echo -n '.exe')" >> $GITHUB_ENV 
 
     - name: Create ssh access file
       run: |
@@ -60,7 +57,6 @@ jobs:
           dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
           # Can't add '--no-build' as optimization because the test project hasn't been built yet
       timeout-minutes: 5
-
 
 
   publish:
