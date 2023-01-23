@@ -27,7 +27,7 @@ jobs:
       if: ${{ matrix.os == 'windows-latest' }}
       shell: pwsh
       run: |
-        "NODE_PATH=C:\\Program Files\\nodejs\\node.exe" >> $env:GITHUB_ENV
+        "NODE_PATH=C:\Program Files\nodejs\node.exe" >> $env:GITHUB_ENV
     - name: test node exists
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
