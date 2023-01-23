@@ -34,7 +34,11 @@ jobs:
     - name: Create env vars
       run: |
           echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
-          echo "NODE_PATH=$(wslpath -w "$(which node)")" >> $GITHUB_ENV
+          NODE_PATH="$(which node)"
+          if [[ ${{ matrix.os }} == 'windows-latest' ]]; then 
+              NODE_PATH="$(wslpath -w "$NODE_PATH")"
+          fi
+          echo "NODE_PATH=$NODE_PATH" >> $GITHUB_ENV
 
     - name: Create ssh access file
       run: |
