@@ -27,6 +27,8 @@ jobs:
     - name: Build
       run: dotnet build JBSnorro/JBSnorro.csproj
 
+    - run: where node && exit 1
+
     - name: Create ssh access file
       shell: bash
       run: |
