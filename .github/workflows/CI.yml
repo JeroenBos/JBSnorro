@@ -38,13 +38,21 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: echo "NODE_PATH=$(which node)" >> $GITHUB_ENV 
 
-    - name: Create NODE_PATH env var (ubuntu)
+    - name: Create NODE_PATH env var (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
       shell: pwsh
       run: |
         "NODE_PATH=/c/Program Files/nodejs/node" >> $env:GITHUB_ENV
           
-
+    - name: test node exists
+      run: |
+          if [ -f "NODE_PATH" ]; then
+              echo "NODE_PATH exists."
+          else
+              echo "NODE_PATH doesn't exist."
+          fi
+          cd "$(dirname "$NODE_PATH")"
+          ls
     - name: Create ssh access file
       run: |
           mkdir "$(dirname "$SSH_FILE")"
