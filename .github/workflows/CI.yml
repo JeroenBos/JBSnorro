@@ -17,11 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - os: windows-latest
-            runtime: win10-x64
-          - os: ubuntu-latest
-            runtime: linux-x64
+        os: [windows-latest, ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
@@ -39,7 +35,7 @@ jobs:
         echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
         ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
     - name: Give access to ssh key (Linux)
-      if: ${{ matrix.runtime == 'linux-x64' }} 
+      if: ${{ matrix.os == 'ubuntu-latest' }} 
       run: sudo chmod 600 ~/.ssh/playground
 
     - name: Test
