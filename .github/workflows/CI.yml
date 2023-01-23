@@ -25,7 +25,7 @@ jobs:
     steps:
     - name: Create NODE_PATH env var (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
-      run: echo "NODE_PATH=C:\\Program Files\\nodejs\\node.exe" >> $GITHUB_ENV
+      run: echo "NODE_PATH=/c/Program Files/nodejs/node.exe" >> $GITHUB_ENV
     - name: test node exists
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
