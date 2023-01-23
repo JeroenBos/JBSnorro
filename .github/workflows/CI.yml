@@ -42,7 +42,7 @@ jobs:
       if: ${{ matrix.os == 'windows-latest' }}
       shell: pwsh
       run: |
-        "NODE_PATH=C:/Program Files/nodejs/node" >> $env:GITHUB_ENV
+        "NODE_PATH=/c/Program Files/nodejs/node" >> $env:GITHUB_ENV
           
 
     - name: Create ssh access file
