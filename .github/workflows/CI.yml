@@ -13,13 +13,19 @@ env:
     DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
     DOTNET_CLI_TELEMETRY_OPTOUT: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
+
     runs-on: ${{ matrix.os }}
     steps:
+          
     - uses: actions/checkout@v2
     - uses: actions/setup-dotnet@v1
       with:
@@ -28,24 +34,30 @@ jobs:
     - name: Build
       run: dotnet build JBSnorro/JBSnorro.csproj
 
+    - name: Create SSH_FILE env var 
+      run: echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
+
+    - name: Create NODE_PATH env var
+      run: echo "NODE_PATH=$(which node)$([[ '${{ matrix.os }}' == 'windows-latest' ]] && echo -n '.exe')" >> $GITHUB_ENV 
+
     - name: Create ssh access file
-      shell: bash
       run: |
-        mkdir ~/.ssh
-        echo "${{secrets.PLAYGROUND_SSH_KEY}}" > ~/.ssh/playground
-        ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-    - name: Give access to ssh key (Linux)
-      if: ${{ matrix.os == 'ubuntu-latest' }} 
-      run: sudo chmod 600 ~/.ssh/playground
+          mkdir "$(dirname "$SSH_FILE")"
+          echo "${{secrets.PLAYGROUND_SSH_KEY}}" > "$SSH_FILE"
+          
+          # Give access to ssh key (Linux)
+          if [[ '${{ matrix.os }}' == 'ubuntu-latest' ]]; then
+              sudo chmod 600 "$SSH_FILE"
+          fi
+
+    - name: Append GitHub ssh host
+      run: ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
     - name: Test
-      shell: bash
       run: | 
-          export SSH_FILE="$HOME/.ssh/playground"
           dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
           # Can't add '--no-build' as optimization because the test project hasn't been built yet
       timeout-minutes: 5
-
 
 
   publish:
@@ -58,20 +70,20 @@ jobs:
       continue-on-error: true
       id: up-to-date
       run: | 
-        current_version=$(bash .github/get_current_version.sh | xargs)
-        published_version=$(bash .github/get_published_version.sh | xargs)
-        echo "current_version: \"$current_version\""
-        echo "published_version: \"$published_version\""
-
-        is_up_to_date=$([[ "$current_version" == "$published_version" ]] && echo true || echo false)
-        echo "is_up_to_date: $is_up_to_date"
-
-        if [[ "$(is_up_to_date)" == "true" ]]; then
-            echo "Up-to-date"
-            exit 1
-        else
-            echo "Publishing"
-        fi
+          current_version=$(bash .github/get_current_version.sh | xargs)
+          published_version=$(bash .github/get_published_version.sh | xargs)
+          echo "current_version: \"$current_version\""
+          echo "published_version: \"$published_version\""
+      
+          is_up_to_date=$([[ "$current_version" == "$published_version" ]] && echo true || echo false)
+          echo "is_up_to_date: $is_up_to_date"
+      
+          if [[ "$(is_up_to_date)" == "true" ]]; then
+              echo "Up-to-date"
+              exit 1
+          else
+              echo "Publishing"
+          fi
 
     - name: Setup .NET Core
       if: ${{ steps.up-to-date.outcome != 'failure' }}

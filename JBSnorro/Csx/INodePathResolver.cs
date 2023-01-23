@@ -37,7 +37,7 @@ public interface INodePathResolver
         var expandedPath = Environment.ExpandEnvironmentVariables(path);
         if (verifyPathExists && !File.Exists(expandedPath))
         {
-            throw new FileNotFoundException("Resolving node failed", fileName: expandedPath);
+            throw new FileNotFoundException($"Resolving node failed. Not found at '{expandedPath}'", fileName: expandedPath);
         }
 
         return new NodePathResolverFromPath { Path = expandedPath };
