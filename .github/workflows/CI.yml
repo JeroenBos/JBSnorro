@@ -46,7 +46,8 @@ jobs:
       shell: bash
       run: | 
           export SSH_FILE="$HOME/.ssh/playground"
-          dotnet test
+          dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
+          # --no-build is an optimization
       timeout-minutes: 5
 
 
