@@ -46,9 +46,9 @@ jobs:
     - name: Locate node
       run: |
         if [[ "${{ matrix.os == 'ubuntu-latest' }}" == true ]]; then
-            "NODE_PATH=$(which node)" >> GITHUB_ENV
+            echo "NODE_PATH=$(which node)" >> GITHUB_ENV
         else
-            "NODE_PATH=$(where node)" >> GITHUB_ENV
+            echo "NODE_PATH=$(where node)" >> GITHUB_ENV
         fi
 
     - name: Test
