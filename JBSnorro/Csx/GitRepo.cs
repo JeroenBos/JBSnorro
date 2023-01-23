@@ -261,7 +261,7 @@ fi");
         {
             if (!checkout) throw new NotImplementedException("bool checkout == false");
 
-            return Checkout(branchName);
+            return Checkout(branchName, @new: true);
         }
         public async Task<bool> HasUnpushedCommits()
         {

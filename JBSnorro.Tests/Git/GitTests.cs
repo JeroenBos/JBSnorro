@@ -21,7 +21,7 @@ namespace JBSnorro.Csx.Tests
     {
         protected const string ROOT_HASH = "818c7ad1722e9c4fe682b30ade4413bf1e36c542";
 
-        // if SSH_FILE cannot be found
+        // if SSH_FILE cannot be found:
         // - in testing, add JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
         // - in debugging, add the path to the runSettings as debug env var RUNSETTINGS_PATH
         protected static string ssh_file => EnvironmentExtensions.GetRequiredEnvironmentVariable("SSH_FILE");
@@ -75,7 +75,7 @@ namespace JBSnorro.Csx.Tests
             var git = await InitRepo();
 
             if (newBranchName is not null)
-                await git.Checkout(newBranchName);
+                await git.Checkout(newBranchName, @new: true);
 
             File.WriteAllText(Path.Combine(git.Dir, "a"), "contents"); // a for added
             File.WriteAllText(Path.Combine(git.Dir, "m"), "contents"); // m for modified
