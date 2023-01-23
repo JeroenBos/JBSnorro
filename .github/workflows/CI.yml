@@ -67,8 +67,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Detect if version changed
-      continue-on-error: true
-      id: up-to-date
       run: | 
           current_version=$(bash .github/get_current_version.sh | xargs)
           published_version=$(bash .github/get_published_version.sh | xargs)
@@ -80,27 +78,27 @@ jobs:
       
           if [[ "$(is_up_to_date)" == "true" ]]; then
               echo "Up-to-date"
-              exit 1
           else
+              echo "PUBLISH=true" >> $GITHUB_ENV
               echo "Publishing"
           fi
 
     - name: Setup .NET Core
-      if: ${{ steps.up-to-date.outcome != 'failure' }}
+      if: ${{ env.PUBLISH == 'true' }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Install dependencies
-      if: ${{ steps.up-to-date.outcome != 'failure' }}
+      if: ${{ env.PUBLISH == 'true' }}
       run: dotnet restore
 
     - name: Build
-      if: ${{ steps.up-to-date.outcome != 'failure' }}
+      if: ${{ env.PUBLISH == 'true' }}
       run: dotnet build --configuration Release --no-restore
 
     - name: Publish
-      if: ${{ steps.up-to-date.outcome != 'failure' }}
+      if: ${{ env.PUBLISH == 'true' }}
       uses: alirezanet/publish-nuget@v3.0.0  # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
       with:
           PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
