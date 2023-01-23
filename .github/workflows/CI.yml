@@ -18,7 +18,7 @@ defaults:
     shell: bash
 
 jobs:
-  test:
+  build:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -58,6 +58,16 @@ jobs:
           dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
           # Can't add '--no-build' as optimization because the test project hasn't been built yet
       timeout-minutes: 5
+  
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    needs: "build (${{ matrix.os }})"
+    steps:
+    - run: echo hi
 
 
   publish:
