@@ -28,10 +28,10 @@ jobs:
       run: dotnet build JBSnorro/JBSnorro.csproj
 
     - if: ${{ matrix.os == 'ubuntu-latest' }} 
-      run: which node && exit 1
+      run: which node
 
     - if: ${{ matrix.os != 'ubuntu-latest' }} 
-      run: where node && exit 1
+      run: where node
 
     - name: Create ssh access file
       shell: bash
@@ -42,6 +42,14 @@ jobs:
     - name: Give access to ssh key (Linux)
       if: ${{ matrix.os == 'ubuntu-latest' }} 
       run: sudo chmod 600 ~/.ssh/playground
+
+    - name: Locate node
+      run: |
+        if [[ "${{ matrix.os == 'ubuntu-latest' }}" == true ]]; then
+            "NODE_PATH=$(which node)" >> GITHUB_ENV
+        else
+            "NODE_PATH=$(where node)" >> GITHUB_ENV
+        fi
 
     - name: Test
       shell: bash
