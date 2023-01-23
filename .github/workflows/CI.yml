@@ -30,7 +30,7 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Build
-      run: dotnet build JBSnorro/JBSnorro.csproj && cat ./JBSnorro/JBSnorro.Tests/obj/project.assets.json
+      run: dotnet build JBSnorro/JBSnorro.csproj && cd ./JBSnorro/JBSnorro.Tests/obj
 
     - name: Create ssh access file
       shell: bash
