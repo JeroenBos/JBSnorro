@@ -19,6 +19,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
+    - shell: bash
+      run: which node
     - uses: actions/checkout@v2
     - uses: actions/setup-dotnet@v1
       with:
@@ -26,12 +28,6 @@ jobs:
 
     - name: Build
       run: dotnet build JBSnorro/JBSnorro.csproj
-
-    - if: ${{ matrix.os == 'ubuntu-latest' }} 
-      run: which node
-
-    - if: ${{ matrix.os != 'ubuntu-latest' }} 
-      run: where node
 
     - name: Create ssh access file
       shell: bash
@@ -44,8 +40,9 @@ jobs:
       run: sudo chmod 600 ~/.ssh/playground
 
     - name: Locate node
+      shell: bash
       run: |
-        if [[ "${{ matrix.os == 'ubuntu-latest' }}" == true ]]; then
+        if [[ "${{ matrix.os == 'ubuntu-latest' }}" == "true" ]]; then
             echo "NODE_PATH=$(which node)" >> $GITHUB_ENV
         else
             echo "NODE_PATH=$(where node)" >> $GITHUB_ENV
