@@ -10,7 +10,7 @@ on:
     - '**.md'
 
 env:
-    DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
+    DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
 
 jobs:
   test:
@@ -48,7 +48,6 @@ jobs:
           export SSH_FILE="$HOME/.ssh/playground"
           dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj \
                       --runtime ${{ matrix.runtime }}      \
-                      --framework net6.0                   \
                       --no-build
           # --no-build is an optimization
       timeout-minutes: 5
@@ -73,7 +72,7 @@ jobs:
         is_up_to_date=$([[ "$current_version" == "$published_version" ]] && echo true || echo false)
         echo "is_up_to_date: $is_up_to_date"
 
-        if [ "$is_up_to_date" = "true" ]; then
+        if [[ "$(is_up_to_date)" == "true" ]]; then
             echo "Up-to-date"
             exit 1
         else
@@ -99,5 +98,5 @@ jobs:
       uses: alirezanet/publish-nuget@v3.0.0  # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
       with:
           PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
           INCLUDE_SYMBOLS: true
