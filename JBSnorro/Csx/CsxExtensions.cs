@@ -31,7 +31,7 @@ namespace JBSnorro.Csx
 			// translate Windows path to bash path
 			cwd = ProcessExtensions.ToBashPath(cwd, includeMnt: PathsRequireMnt);
 
-			return Execute($"cd '{cwd}' && {command}", stripStdoutTrailingNewline, cancellationToken);
+			return Execute($"export	GIT_CONFIG_SYSTEM=/dev/null; export GIT_CONFIG_GLOBAL=/dev/null; cd '{cwd}' && {command}", stripStdoutTrailingNewline, cancellationToken);
 		}
 
 	}
