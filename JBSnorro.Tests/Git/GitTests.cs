@@ -30,23 +30,30 @@ namespace JBSnorro.Csx.Tests
         private static string GIT_SSH_COMMAND => $"GIT_SSH_COMMAND=\"ssh -i {ssh_key_path} -F /dev/null\"";
         protected static string SSH_SCRIPT => $"source {init_ssh_agent_path} && ssh-add {ssh_key_path} && export {GIT_SSH_COMMAND}";
 
-        protected static async Task<GitRepo> InitEmptyRepo(string? ssh_script = null)
+        protected static async Task<IGitRepo> InitEmptyRepo(Func<string /*dir*/, IRemoteGitRepo>? remoteFactory = null)
         {
             string dir = IOExtensions.CreateTemporaryDirectory();
             var result = await "git init; git config user.name 'tester'; git config user.email 'tester@test.com'".Execute(cwd: dir);
 
             Assert.AreEqual(result.ExitCode, 0, result.ErrorOutput);
             Assert.IsTrue(result.StandardOutput.StartsWith("Initialized empty Git repository"));
-            return new GitRepo(dir, ssh_script);
+
+            var remote = (remoteFactory ?? DefaultRemoteIGitRepoFactory)(dir);
+            return IGitRepo.Create(dir, remote);
+
+            static IRemoteGitRepo DefaultRemoteIGitRepoFactory(string dir)
+            {
+                return new RemoteRepoWithNoUpdates();
+            }
         }
-        protected static async Task<GitRepo> InitRepo(string? ssh_script = null)
+        protected static async Task<IGitRepo> InitRepo(Func<string /*dir*/, IRemoteGitRepo>? remoteFactory = null)
         {
-            var repo = await InitEmptyRepo(ssh_script);
+            var repo = await InitEmptyRepo(remoteFactory);
             var result = await "git commit --allow-empty -m 'First commit'".Execute(cwd: repo.Dir);
             Assert.IsTrue(result.StandardOutput.EndsWith("First commit"));
             return repo;
         }
-        protected static async Task<GitRepo> InitRepoWithUntrackedFile()
+        protected static async Task<IGitRepo> InitRepoWithUntrackedFile()
         {
             var repo = await InitRepo();
             using (File.Create(Path.Combine(repo.Dir, "tmp"))) { }
@@ -54,7 +61,7 @@ namespace JBSnorro.Csx.Tests
             return repo;
         }
         /// <summary> Tracked means not untracked, but not staged either.  </summary>
-        protected static async Task<GitRepo> InitRepoWithTrackedFile()
+        protected static async Task<IGitRepo> InitRepoWithTrackedFile()
         {
             var repo = await InitRepoWithStagedFile();
             var result = await "git reset -- tmp".Execute(cwd: repo.Dir);
@@ -62,7 +69,7 @@ namespace JBSnorro.Csx.Tests
 
             return repo;
         }
-        protected static async Task<GitRepo> InitRepoWithStagedFile()
+        protected static async Task<IGitRepo> InitRepoWithStagedFile()
         {
             var repo = await InitRepoWithUntrackedFile();
             var result = await "git add tmp".Execute(cwd: repo.Dir);
@@ -70,7 +77,7 @@ namespace JBSnorro.Csx.Tests
 
             return repo;
         }
-        protected static async Task<GitRepo> InitRepoWithTrackedUntrackedAndStagedFiles(string? newBranchName = "new_branch")
+        protected static async Task<IGitRepo> InitRepoWithTrackedUntrackedAndStagedFiles(string? newBranchName = "new_branch")
         {
             var repo = await InitRepo();
 
@@ -91,7 +98,7 @@ namespace JBSnorro.Csx.Tests
             Assert.AreEqual(result.ExitCode, 0);
             return repo;
         }
-        protected static async Task<GitRepo> InitRepoWithStash()
+        protected static async Task<IGitRepo> InitRepoWithStash()
         {
             var repo = await InitRepoWithUntrackedFile();
             var result = await "git stash -u".Execute(cwd: repo.Dir);
@@ -99,7 +106,7 @@ namespace JBSnorro.Csx.Tests
 
             return repo;
         }
-        protected static async Task<GitRepo> InitDetachedState()
+        protected static async Task<IGitRepo> InitDetachedState()
         {
             var repo = await InitRepo();
             var result = await "git commit --allow-empty -m 'Second commit'; git checkout HEAD~".Execute(cwd: repo.Dir);
@@ -107,16 +114,16 @@ namespace JBSnorro.Csx.Tests
 
             return repo;
         }
-        protected static async Task<GitRepo> InitRepoWithCommit()
+        protected static async Task<IGitRepo> InitRepoWithCommit()
         {
             var repo = await InitRepoWithStagedFile();
             await "git commit -m 'contains file'".Execute(cwd: repo.Dir);
 
             return repo;
         }
-        protected static async Task<GitRepo> InitRemoteRepo()
+        protected static async Task<IGitRepo> InitRemoteRepo()
         {
-            var repo = await InitRepo(SSH_SCRIPT);
+            var repo = await InitRepo(dir => IRemoteGitRepo.Create(dir, SSH_SCRIPT));
 
             var sshKey = File.ReadAllLines(ssh_file.ToWindowsPath());
             Assert.AreEqual(27, sshKey.Length, delta: 1);
@@ -173,7 +180,7 @@ namespace JBSnorro.Csx.Tests
             // Assert.IsTrue(stdErr.Split('\n')[1].StartsWith("Everything up-to-date"));
             return repo;
         }
-        protected static async Task<GitRepo> InitRemoteRepoWithCommit(Reference<string>? commitHash = null)
+        protected static async Task<IGitRepo> InitRemoteRepoWithCommit(Reference<string>? commitHash = null)
         {
             var repo = await InitRemoteRepo();
             using (File.Create(Path.Combine(repo.Dir, "tmp"))) { }
@@ -190,7 +197,7 @@ namespace JBSnorro.Csx.Tests
             }
             return repo;
         }
-        protected static async Task<GitRepo> InitRemoteRepoWithRemoteCommit(Reference<string>? remoteCommitHash = null)
+        protected static async Task<IGitRepo> InitRemoteRepoWithRemoteCommit(Reference<string>? remoteCommitHash = null)
         {
             var repo = await InitRemoteRepoWithCommit(remoteCommitHash);
 
@@ -347,7 +354,7 @@ namespace JBSnorro.Csx.Tests
         }
     }
     [TestClass]
-    public class IsGitRepoTests : GitTestsBase
+    public class IsIGitRepoTests : GitTestsBase
     {
         [TestMethod]
         public async Task Test_Git_Repo_Repository_Is_Repo()
@@ -363,7 +370,7 @@ namespace JBSnorro.Csx.Tests
         {
             string dir = IOExtensions.CreateTemporaryDirectory();
 
-            bool isGitRepo = await new GitRepo(dir).IsGitRepo();
+            bool isGitRepo = await IGitRepo.Create(dir).IsGitRepo();
 
             Assert.IsFalse(isGitRepo);
         }
@@ -428,8 +435,17 @@ namespace JBSnorro.Csx.Tests
             // I don't have a method GetUnstagedFiles yet: Assert.AreEqual(1, unstagedFiles.Count);
         }
     }
+
+    public class GitHubTestsBase : GitTestsBase
+    {
+        protected static async Task<IGitHubRepo> InitGitHubRepoWithRemoteCommit(Reference<string>? remoteCommitHash = null)
+        {
+            IGitRepo git = await GitTestsBase.InitRemoteRepoWithRemoteCommit(remoteCommitHash);
+            return IGitHubRepo.Create(git);
+        }
+    }
     [TestClass]
-    public class NewTests : GitTestsBase
+    public class NewTests : GitHubTestsBase
     {
         [TestMethod]
         public async Task Test_New_Takes_Untracked_tracked_and_staged()
@@ -470,7 +486,7 @@ namespace JBSnorro.Csx.Tests
         public async Task Test_New_Pulls_Remote()
         {
             var commitHash = new Reference<string>();
-            var repo = await InitRemoteRepoWithRemoteCommit(commitHash);
+            var repo = await InitGitHubRepoWithRemoteCommit(commitHash);
             await "git checkout -b somebranch".Execute(cwd: repo.Dir);
             Assert.AreEqual(await repo.GetCurrentHash(), ROOT_HASH);
 
@@ -484,7 +500,7 @@ namespace JBSnorro.Csx.Tests
             // [TestMethod] // reimplement when GH login works from CI
             public async Task Test_Get_Pr_Name()
             {
-                var repo = await InitRemoteRepoWithRemoteCommit();
+                var repo = await InitGitHubRepoWithRemoteCommit();
 
                 var branchName = await repo.GetPRBranchName("1");
 
@@ -497,7 +513,7 @@ namespace JBSnorro.Csx.Tests
             // [TestMethod] // reimplement when GH login works from CI
             public async Task Test_Get_Pr_CommitHash()
             {
-                var repo = await InitRemoteRepoWithRemoteCommit();
+                var repo = await InitGitHubRepoWithRemoteCommit();
 
                 var branchName = await repo.GetPRBranchCommitHash("1");
 
@@ -510,12 +526,19 @@ namespace JBSnorro.Csx.Tests
             // [TestMethod] // reimplement when GH login works from CI
             public async Task Test_Get_Pr_BaseName()
             {
-                var repo = await InitRemoteRepoWithRemoteCommit();
+                var repo = await InitGitHubRepoWithRemoteCommit();
 
                 var branchName = await repo.GetPRBaseBranch("1");
 
                 Assert.AreEqual("origin/master", branchName);
             }
         }
+    }
+    class RemoteRepoWithNoUpdates : IRemoteGitRepo
+    {
+        public string SSH_SCRIPT => ":;";  // :; is a no-op
+
+        public Task Fetch() => Task.CompletedTask;
+        public Task Pull() => Task.CompletedTask;
     }
 }
