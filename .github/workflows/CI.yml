@@ -37,12 +37,6 @@ jobs:
     - name: Create SSH_FILE env var 
       run: echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
 
-    - name: Check CI var
-      run: |
-          if [[ "$CI" != "true" ]]; then
-              echo "CI: $CI"
-              exit 1
-          fi
     - name: Prepare ssh access
       run: |
           mkdir "$(dirname "$SSH_FILE")"

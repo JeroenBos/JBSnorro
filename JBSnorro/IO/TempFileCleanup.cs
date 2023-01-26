@@ -15,7 +15,12 @@ public static class TempFileCleanup
     {
         get
         {
-            return bool.Parse(Environment.GetEnvironmentVariable("CI") ?? "false");
+            var var = Environment.GetEnvironmentVariable("CI");
+            if (string.IsNullOrEmpty(var)) {
+                throw new Exception("'CI' variable not found");
+            }
+            Console.WriteLine($"CI: '{var}'");
+            return bool.Parse(var);
         }
     }
 
