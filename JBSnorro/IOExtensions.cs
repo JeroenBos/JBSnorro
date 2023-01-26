@@ -70,7 +70,7 @@ namespace JBSnorro
 		{
 			string tempDirectory = CreateTempDirectory();
             var cleanupDisposable = TempFileCleanup.Register(tempDirectory + (tempDirectory.EndsWith('/') ? "" : "/"));
-			return new AsyncDisposable<string>(tempDirectory, async () => await cleanupDisposable.DisposeAsync());
+			return new AsyncDisposable<string>(tempDirectory, async () => { if (cleanupDisposable != null) await cleanupDisposable.DisposeAsync(); });
 		}
 #nullable enable
 		/// <summary>
