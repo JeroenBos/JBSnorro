@@ -126,7 +126,7 @@ namespace JBSnorro.Testing
         private static IEnumerable<MethodInfo> GetCleanupMethod(Type type)
         {
             string[] names = new[] {
-                "Microsoft.VisualStudio.TestTools.UnitTesting.TestInitializeAttribute",
+                "Microsoft.VisualStudio.TestTools.UnitTesting.TestCleanupAttribute",
             };
             var msTestCleanupMethods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy)
                                            .Where(AttributeExtensions.HasAttributeDelegate<MethodInfo>(names));
