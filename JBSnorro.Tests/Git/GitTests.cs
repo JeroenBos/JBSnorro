@@ -43,8 +43,9 @@ namespace JBSnorro.Csx.Tests
         }
         protected async Task<IGitRepo> InitEmptyRepo(Func<string /*dir*/, IRemoteGitRepo>? remoteFactory = null)
         {
-            string dir = IOExtensions.CreateTemporaryDirectory();
-            this.cleanup = TempFileCleanup.Register(dir + "/");
+            var tmpDir = IOExtensions.CreateTemporaryDirectory();
+            this.cleanup = tmpDir;
+            string dir = tmpDir.Value;
             var result = await "git init; git config user.name 'tester'; git config user.email 'tester@test.com'".Execute(cwd: dir);
 
             Assert.AreEqual(result.ExitCode, 0, result.ErrorOutput);
@@ -226,8 +227,8 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task CheckGitBashInstallation()
         {
-            string dir = IOExtensions.CreateTemporaryDirectory();
-            var result = await "echo hi".Execute(cwd: dir);
+            await using var tempDir = IOExtensions.CreateTemporaryDirectory();
+            var result = await "echo hi".Execute(cwd: tempDir.Value);
 
             Assert.AreEqual(expected: 0, result.ExitCode);
 
@@ -380,9 +381,9 @@ namespace JBSnorro.Csx.Tests
         [TestMethod]
         public async Task Test_NonGit_Repo_Repository_Is_Not_A_Repo()
         {
-            string dir = IOExtensions.CreateTemporaryDirectory();
+            await using var tempDir = IOExtensions.CreateTemporaryDirectory();
 
-            bool isGitRepo = await IGitRepo.Create(dir).IsGitRepo();
+            bool isGitRepo = await IGitRepo.Create(tempDir.Value).IsGitRepo();
 
             Assert.IsFalse(isGitRepo);
         }

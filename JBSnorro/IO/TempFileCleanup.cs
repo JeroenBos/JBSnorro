@@ -27,7 +27,7 @@ public static class TempFileCleanup
     /// </summary>
     /// <param name="path">The path of the temporary file or directory that was created. </param>
     /// <param name="lifetime_minutes">The lifetime in minutes after which other processes may clean up the path.</param>
-    public static IAsyncDisposable? Register(string path, int lifetime_minutes = 60)
+    public static DisposableTaskOutcome? Register(string path, int lifetime_minutes = 60)
     {
         if (Path.Exists(path))
         {

@@ -1,4 +1,5 @@
 ﻿using JBSnorro.Diagnostics;
+using JBSnorro.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -57,18 +58,19 @@ namespace JBSnorro
 
 			return new Span<byte>(stream.GetBuffer()).Slice(0, (int)stream.Length);
 		}
-		/// <summary> Gets a new temporary directory. </summary>
-		public static string CreateTempDirectory()
+		/// <summary> Creates a new temporary directory. </summary>
+		private static string CreateTempDirectory()
 		{
 			string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 			Directory.CreateDirectory(tempDirectory);
 			return tempDirectory.Replace('\\', '/');
 		}
 		/// <summary> Gets a new temporary directory, and deletes it on disposal. </summary>
-		public static Disposable<string> CreateTemporaryDirectory()
+		public static AsyncDisposable<string> CreateTemporaryDirectory()
 		{
 			string tempDirectory = CreateTempDirectory();
-			return new Disposable<string>(tempDirectory, [DebuggerHidden] () => Directory.Delete(tempDirectory));
+            var cleanupDisposable = TempFileCleanup.Register(tempDirectory + (tempDirectory.EndsWith('/') ? "" : "/"));
+			return new AsyncDisposable<string>(tempDirectory, async () => await cleanupDisposable.DisposeAsync());
 		}
 #nullable enable
 		/// <summary>
@@ -138,14 +140,14 @@ namespace JBSnorro
 			}
 		}
    
-		public static string CloneDirectoryTemporarily(string dir, string? ignoreFile = null) => TemporarilyDuplicate(dir, ignoreFile);
+		public static AsyncDisposable<string> CloneDirectoryTemporarily(string dir, string? ignoreFile = null) => TemporarilyDuplicate(dir, ignoreFile);
 		/// <summary>
 		/// Duplicates a directory to a temporary location.
 		/// </summary>
-		public static string TemporarilyDuplicate(string dir, string? ignoreFile = null)
+		public static AsyncDisposable<string> TemporarilyDuplicate(string dir, string? ignoreFile = null)
 		{
 			var dstDir = CreateTemporaryDirectory();
-			CopyDirectory(dir, dstDir, ignoreFile == null ? GlobPatternCollection.Empty : GlobPatternCollection.FromFile(ignoreFile));
+			CopyDirectory(dir, dstDir.Value, ignoreFile == null ? GlobPatternCollection.Empty : GlobPatternCollection.FromFile(ignoreFile));
 			return dstDir;
 		}
 #nullable restore

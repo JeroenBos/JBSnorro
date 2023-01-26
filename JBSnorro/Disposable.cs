@@ -50,12 +50,12 @@ public class AsyncDisposable : IAsyncDisposable
 /// <summary>
 /// Represents a task and a clean up method after that task has finished.
 /// </summary>
-class DisposableTaskOutcome : IAsyncDisposable
+public class DisposableTaskOutcome : IAsyncDisposable
 {
 	public Task Task { get; }
-	public AsyncDisposable Disposable { get; }
+	public IAsyncDisposable Disposable { get; }
 
-	public DisposableTaskOutcome(Task task, AsyncDisposable disposable)
+	public DisposableTaskOutcome(Task task, IAsyncDisposable disposable)
 	{
 		this.Task = task;
 		this.Disposable = disposable;
@@ -74,11 +74,28 @@ class DisposableTaskOutcome : IAsyncDisposable
 	}
 }
 
-class DisposableTaskOutcome<T> : DisposableTaskOutcome
+public class DisposableTaskOutcome<T> : DisposableTaskOutcome
 {
 	public new Task<T> Task => (Task<T>)base.Task;
 
 	public DisposableTaskOutcome(Task<T> task, AsyncDisposable disposable) : base(task, disposable)
 	{
 	}
+}
+
+
+public class AsyncDisposable<T> : IAsyncDisposable
+{
+	public T Value { get; }
+	private readonly Func<Task> dispose;
+    public AsyncDisposable(T value, Func<Task> dispose)
+	{
+		this.Value = value;
+		this.dispose = dispose;
+
+	}
+    public async ValueTask DisposeAsync()
+    {
+		await dispose();
+    }
 }

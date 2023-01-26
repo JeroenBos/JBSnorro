@@ -221,7 +221,7 @@ fi");
                     try
                     {
                         string source = Path.Combine(this.Dir, filename);
-                        string dest = Path.Combine(tempDir, filename);
+                        string dest = Path.Combine(tempDir.Value, filename);
 
                         Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
                         File.Move(source, dest, overwrite: true);
