@@ -1995,6 +1995,7 @@ namespace JBSnorro
 		/// <typeparam name="TResult"> The type of the elements in the resulting array.</typeparam>
 		/// <param name="array"> The array to map. </param>
 		/// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
+		[DebuggerHidden]
 		public static TResult[] Map<T, TResult>(this T[] array, Func<T, TResult> resultSelector)
 		{
 			Contract.Requires(array != null);

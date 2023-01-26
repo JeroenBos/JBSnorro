@@ -31,16 +31,13 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Build
-      run: dotnet build JBSnorro/JBSnorro.csproj
+    - name: Create NODE_PATH env var
+      run: echo "NODE_PATH=$(which node)$([[ '${{ matrix.os }}' == 'windows-latest' ]] && echo -n '.exe')" >> $GITHUB_ENV 
 
     - name: Create SSH_FILE env var 
       run: echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
 
-    - name: Create NODE_PATH env var
-      run: echo "NODE_PATH=$(which node)$([[ '${{ matrix.os }}' == 'windows-latest' ]] && echo -n '.exe')" >> $GITHUB_ENV 
-
-    - name: Create ssh access file
+    - name: Prepare ssh access
       run: |
           mkdir "$(dirname "$SSH_FILE")"
           echo "${{secrets.PLAYGROUND_SSH_KEY}}" > "$SSH_FILE"
@@ -50,11 +47,9 @@ jobs:
               sudo chmod 600 "$SSH_FILE"
           fi
 
-    - name: Append GitHub ssh host
-      run: ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
-    - name: Test
-      run: | 
-          dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
-          # Can't add '--no-build' as optimization because the test project hasn't been built yet
+    - run: dotnet build
+
+    - run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
       timeout-minutes: 5
