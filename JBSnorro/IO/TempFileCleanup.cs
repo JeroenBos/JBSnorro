@@ -9,12 +9,23 @@ namespace JBSnorro.IO;
 public static class TempFileCleanup
 {
     /// <summary>
+    /// Gets whether the environment is configured for temporary file cleanup.
+    /// </summary>
+    public static bool IsEnabled
+    {
+        get
+        {
+            return bool.Parse(Environment.GetEnvironmentVariable("CI") ?? "false");
+        }
+    }
+
+    /// <summary>
     /// Registers the path of a directory or file that exists temporarily. 
     /// Disposing of the returned disposable will delete it, as well as other temporarily files that are created on previous runs.
     /// </summary>
     /// <param name="path">The path of the temporary file or directory that was created. </param>
     /// <param name="lifetime_minutes">The lifetime in minutes after which other processes may clean up the path.</param>
-    public static IAsyncDisposable Register(string path, int lifetime_minutes = 60)
+    public static IAsyncDisposable? Register(string path, int lifetime_minutes = 60)
     {
         if (Path.Exists(path))
         {
@@ -32,6 +43,10 @@ public static class TempFileCleanup
             // we can't check trailing character correctness and just assume it's been provided correctly
         }
 
+        if (!IsEnabled)
+        {
+            return null; // No need to do cleanup in CI
+        }
 
         var configPath = Environment.GetEnvironmentVariable("TEMP_FILE_REGISTRY_PATH") ?? Path.Combine(Path.GetTempPath(), ".temp_file_registry.txt");
 
@@ -52,6 +67,11 @@ public static class TempFileCleanup
     /// <param name="path">The path of the temporary file or directory that was created. </param>
     public static Task Unregister(string fullpath)
     {
+        if (!IsEnabled)
+        {
+            return Task.CompletedTask; // No need to do cleanup in CI
+        }
+
         return CleanupLine(ToLine(fullpath, TimeSpan.Zero), ignoreTimestamp: true);
     }
 
