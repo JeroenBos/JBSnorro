@@ -155,6 +155,7 @@ public static class ProcessExtensions
     public static async Task<ProcessOutput> ExecuteBashViaTempFile(string bash, bool includeMnt = true, CancellationToken cancellationToken = default)
     {
         string path = Path.GetTempFileName() + ".exe"; // windows needs it to be 'executable'
+        await using var pathCleanup = TempFileCleanup.Register(path);
         bash = bash.Replace("\r", "");
         if (!bash.StartsWith("#"))
         {

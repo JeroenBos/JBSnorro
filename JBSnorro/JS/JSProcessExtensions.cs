@@ -5,6 +5,7 @@ using JBSnorro.Csx;
 using JBSnorro.Csx.Node;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
+using JBSnorro.IO;
 using JBSnorro.Text;
 using JBSnorro.Text.Json;
 using System.Collections;
@@ -27,6 +28,7 @@ public class JSProcessRunner : IJSRunner
     async Task<DebugProcessOutput> IJSRunner.ExecuteJSViaTempFile(string js)
     {
         string path = Path.GetTempFileName();
+        await using var pathCleaner = TempFileCleanup.Register(path);
         await File.AppendAllTextAsync(path, js);
         var output = await new ProcessStartInfo(this.nodePath, $"\"{path}\"").WaitForExitAndReadOutputAsync();
         var result = ExtractDebugOutput(output);
