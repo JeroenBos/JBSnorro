@@ -1,11 +1,12 @@
-﻿using JBSnorro.Diagnostics;
+﻿using JBSnorro;
+using JBSnorro.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JBSnorro;
+namespace JBSnorro.Graphs;
 
 /// <summary> This class contains methods that can be implemented on trees, that is, non-cyclic graphs. The generic parameter is the node type. </summary>
 public static class TreeExtensions<TNode>
