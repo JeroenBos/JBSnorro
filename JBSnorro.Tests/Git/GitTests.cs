@@ -19,6 +19,7 @@ using JBSnorro.IO;
 
 namespace JBSnorro.Csx.Tests
 {
+    [TestCategory("Integration")]
     public class GitTestsBase
     {
         protected const string ROOT_HASH = "818c7ad1722e9c4fe682b30ade4413bf1e36c542";
