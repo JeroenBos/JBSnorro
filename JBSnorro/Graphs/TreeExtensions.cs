@@ -8,36 +8,6 @@ using System.Threading.Tasks;
 
 namespace JBSnorro.Graphs;
 
-/// <summary> This class contains methods that can be implemented on trees, that is, non-cyclic graphs. The generic parameter is the node type. </summary>
-public static class TreeExtensions<TNode>
-{
-    /// <summary> This method traverses the tree in a breadth-first manner. </summary>
-    /// <param name="root"> The node to start on. </param>
-    /// <param name="getChildren"> A function yielding the nodes connected to the specified node. </param>
-    public static IEnumerable<TNode> TraverseBreadthFirst(TNode root, Func<TNode, IEnumerable<TNode>> getChildren)
-    {
-        Contract.Requires(getChildren != null);
-
-        var stack = new Stack<TNode>();
-        stack.Push(root);
-        while (stack.Count != 0)
-        {
-            TNode item = stack.Pop();
-            yield return item;
-            foreach (var child in getChildren(item))
-            {
-                stack.Push(child);
-            }
-        }
-    }
-    /// <summary> This method traverses the tree in a breadth-first manner. </summary>
-    /// <param name="roots"> The node to start from. They are started from in depth-first manner. </param>
-    /// <param name="getChildren"> A function yielding the nodes connected to the specified node. </param>
-    public static IEnumerable<TNode> TraverseBreadthFirst(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>> getChildren)
-    {
-        return roots.Select(root => TraverseBreadthFirst(root, getChildren)).Concat();
-    }
-}
 
 public interface ITreeNode
 {
@@ -45,6 +15,8 @@ public interface ITreeNode
     IEnumerable<ITreeNode> GetChildren();
     ITreeNode Parent { get; }
 }
+
+/// <summary> This class contains methods that can be implemented on trees, that is, non-cyclic graphs. The generic parameter is the node type. </summary>
 public static class TreeExtensions
 {
     /// <summary> Gets the children of the tree node, or an empty enumerable if it is a leaf. </summary>
@@ -124,5 +96,32 @@ public static class TreeExtensions
             yield return node;
             node = node.Parent;
         }
+    }
+
+    /// <summary> This method traverses the tree in a breadth-first manner. </summary>
+    /// <param name="root"> The node to start on. </param>
+    /// <param name="getChildren"> A function yielding the nodes connected to the specified node. </param>
+    public static IEnumerable<TNode> TraverseBreadthFirst<TNode>(TNode root, Func<TNode, IEnumerable<TNode>> getChildren)
+    {
+        Contract.Requires(getChildren != null);
+
+        var stack = new Stack<TNode>();
+        stack.Push(root);
+        while (stack.Count != 0)
+        {
+            TNode item = stack.Pop();
+            yield return item;
+            foreach (var child in getChildren(item))
+            {
+                stack.Push(child);
+            }
+        }
+    }
+    /// <summary> This method traverses the tree in a breadth-first manner. </summary>
+    /// <param name="roots"> The node to start from. They are started from in depth-first manner. </param>
+    /// <param name="getChildren"> A function yielding the nodes connected to the specified node. </param>
+    public static IEnumerable<TNode> TraverseBreadthFirst<TNode>(IEnumerable<TNode> roots, Func<TNode, IEnumerable<TNode>> getChildren)
+    {
+        return roots.Select(root => TraverseBreadthFirst(root, getChildren)).Concat();
     }
 }
