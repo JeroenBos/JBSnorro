@@ -59,11 +59,12 @@ jobs:
            JBSnorro/JS/*
            JBSnorro.Tests/Csx/*
 
-    - name: Unit test + integration tests
-      if: steps.should-test-gh.outputs.files_changed == 'true'
-      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
+    - name: Unit test
+      if: steps.should-test-gh.outputs.files_changed == 'true' && github.event.pull_request.draft == true
+      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration"
       timeout-minutes: 5
 
-    - name: Unit test
-      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration"
+    - name: Unit test + integration tests
+      if: ! (steps.should-test-gh.outputs.files_changed == 'true' && github.event.pull_request.draft == true)
+      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
       timeout-minutes: 5
