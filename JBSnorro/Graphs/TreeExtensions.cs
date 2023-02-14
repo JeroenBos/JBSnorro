@@ -152,7 +152,7 @@ public static class TreeExtensions
             var children = getChildren(node).EnsureSingleEnumerationDEBUG();
             Contract.Assert(children is not null);
 
-            bool isLeaf = IsEmpty(ref children);
+            bool isLeaf = EnumerableExtensions.IsEmpty(ref children);
             if (isLeaf)
             {
                 return node.ToSingleton();
