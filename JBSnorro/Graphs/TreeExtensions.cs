@@ -184,4 +184,51 @@ public static class TreeExtensions
         Contract.Ensures(node != null);
         return node;
     }
+    /// <summary>
+    /// Gets all descendants of the specified node, depth-first.
+    /// </summary>
+    public static IEnumerable<T> GetDescendants<T>(this T node, Func<T, IEnumerable<T>> getChildren)
+    {
+        foreach (var child in getChildren(node))
+        {
+            yield return child;
+            foreach (var descendant in GetDescendants(child, getChildren))
+            {
+                yield return descendant;
+            }
+        }
+    }
+    /// <summary>
+    /// Gets all descendants of the specified node, and the node itself, depth-first.
+    /// </summary>
+    public static IEnumerable<T> GetDescendantsAndSelf<T>(this T node, Func<T, IEnumerable<T>> getChildren)
+    {
+        yield return node;
+        foreach (var descendant in GetDescendants(node, getChildren))
+        {
+            yield return descendant;
+        }
+    }
+    /// <summary>
+    /// Gets all descendants of the specified node together with their respective parent, depth-first.
+    /// </summary>
+    public static IEnumerable<ParentChild<T>> GetDescendantsWithParent<T>(this T node, Func<T, IEnumerable<T>> getChildren)
+    {
+        foreach (var child in getChildren(node))
+        {
+            yield return new ParentChild<T> { Child = child, Parent = node };
+            foreach (var descendant in GetDescendants(child, getChildren))
+            {
+                yield return new ParentChild<T> { Child = descendant, Parent = child };
+            }
+        }
+    }
+    /// <summary>
+    /// A combination of a child and parent.
+    /// </summary>
+    public readonly record struct ParentChild<T>
+    {
+        public required T Parent { get; init; }
+        public required T Child { get; init; }
+    }
 }
