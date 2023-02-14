@@ -452,59 +452,6 @@ namespace JBSnorro
 			}
 		}
 
-		/// <summary> Gets the leaves that are in the specified tree. A leaf is one where getChildren returns null. </summary>
-		/// <param name="getChildren"> The function getting the children of some specified root. Return an empty collection if it is a leaf. </param>
-		public static IEnumerable<T> GetLeaves<T>(this T root, Func<T, IEnumerable<T>> getChildren) where T : class
-		{
-			Contract.Requires(root != null);
-			Contract.Requires(getChildren != null);
-
-			HashSet<T> usedNodes = new HashSet<T>(ReferenceEqualityComparer.Instance); // debugging purposes only
-
-			var result = GetLeaves(root).EnsureSingleEnumerationDEBUG();
-			Contract.Ensures(result.All(resultNode => resultNode != null));
-			return result;
-
-			IEnumerable<T> GetLeaves(T node)
-			{
-				Contract.Requires(node != null);
-				Contract.Requires(usedNodes.Add(node), "Circular reference in tree");
-
-				var children = getChildren(node).EnsureSingleEnumerationDEBUG();
-				if (children == null) throw new Exception($"The return value of '{getChildren}' may not be null");
-				bool isLeaf = IsEmpty(ref children);
-				if (isLeaf)
-				{
-					return node.ToSingleton();
-				}
-				else
-				{
-					Contract.Assert(children != null);
-					Contract.AssertForAll(children, child => child != null);
-					return children.SelectMany(child => GetLeaves(child));
-				}
-			}
-		}
-		/// <summary> Gets the root of a tree. </summary>
-		/// <param name="node"> The node of the tree for which to get the root. </param>
-		/// <param name="getParent"> The function that gets the parent of its argument; or null if the argument is the root node. </param>
-		public static T GetRoot<T>(this T node, Func<T, T> getParent) where T : class
-		{
-			Contract.Requires(node != null);
-			Contract.Requires(getParent != null);
-			Contract.Requires(node.Unfold(t => getParent(t) ?? Option<T>.None).AreUnique(ReferenceEqualityComparer.Instance), "Circular reference");
-
-			var parent = getParent(node);
-			while (parent != null)
-			{
-				node = parent;
-				parent = getParent(node);
-			}
-
-			Contract.Ensures(node != null);
-			return node;
-		}
-
 		/// <summary> Determines whether all elements of a sequence satisfy a condition. </summary>
 		/// <param name="source"> An <see cref="IEnumerable{T}"/> to filter. </param>
 		/// <param name="predicate"> A function to test each source element for a condition; the second parameter of the function represents the index of the source element. </param>
