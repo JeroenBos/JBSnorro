@@ -987,9 +987,26 @@ namespace JBSnorro
 			}
 			return Enumerate();
 		}
-		/// <summary> Returns the specified sequence except the last element. </summary>
-		/// <param name="source"> The sequence to skip the last element of. </param>
-		public static IEnumerable<T> ExceptLast<T>(this IEnumerable<T> source)
+        /// <summary> Returns the specified sequence except the elements in the specified range. </summary>
+        /// <param name="source"> The sequence to skip an element of. </param>
+        /// <param name="rangeToSkip"> The range of the elements to skip. </param>
+        public static IEnumerable<T> ExceptAt<T>(this IEnumerable<T> source, Range rangeToSkip)
+        {
+            if (!source.TryGetNonEnumeratedCount(out int sourceCount))
+            {
+                Contract.Requires<NotImplementedException>(!rangeToSkip.Start.IsFromEnd);
+                Contract.Requires<NotImplementedException>(!rangeToSkip.End.IsFromEnd);
+            }
+
+            var range = rangeToSkip.GetOffsetAndLength(sourceCount);
+            var min = range.Offset;
+            var max = range.Offset + range.Length;
+            return source.Where((element, elementIndex) => !(min <= elementIndex && elementIndex < max));
+        }
+      
+        /// <summary> Returns the specified sequence except the last element. </summary>
+        /// <param name="source"> The sequence to skip the last element of. </param>
+        public static IEnumerable<T> ExceptLast<T>(this IEnumerable<T> source)
 		{
 			return source.WithIsLast()
 						 .Where(element => !element.IsLast)
