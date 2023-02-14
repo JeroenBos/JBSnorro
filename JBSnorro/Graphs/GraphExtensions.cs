@@ -127,4 +127,33 @@ public static class RedGreenExtensions
     {
         return TreeExtensions.GetDescendantsWithParent(node, [DebuggerHidden] (c) => c.Elements);
     }
+
+    /// <summary>
+    /// Gets all green descendants of the specified red node, depth-first.
+    /// </summary>
+    public static IEnumerable<TGreenNode> GetGreenDescendants<TRedNode, TGreenNode>(this TRedNode node) where TRedNode : class, IRedNode<TRedNode, TGreenNode> where TGreenNode : class, IGreenNode<TGreenNode>
+    {
+        foreach (var element in node.Elements)
+        {
+            yield return element;
+            foreach (var descendant in TreeExtensions.GetDescendants<TGreenNode>(element, [DebuggerHidden] (c) => c.Elements))
+            {
+                yield return descendant;
+            }
+        }
+    }
+    /// <summary>
+    /// Gets all descendants of the specified red node, depth-first.
+    /// </summary>
+    public static IEnumerable<TRedNode> GetDescendants<TRedNode, TGreenNode>(this TRedNode node) where TRedNode : class, IRedNode<TRedNode, TGreenNode> where TGreenNode : class, IGreenNode<TGreenNode>
+    {
+        return TreeExtensions.GetDescendants(node, [DebuggerHidden] (c) => c.Elements.Select(TRedNode.Create));
+    }
+    /// <summary>
+    /// Gets all descendants of the specified red node, and the node itself, depth-first.
+    /// </summary>
+    public static IEnumerable<TRedNode> GetDescendantsAndSelf<TRedNode, TGreenNode>(this TRedNode node) where TRedNode : class, IRedNode<TRedNode, TGreenNode> where TGreenNode : class, IGreenNode<TGreenNode>
+    {
+        return TreeExtensions.GetDescendantsAndSelf(node, [DebuggerHidden] (c) => c.Elements.Select(TRedNode.Create));
+    }
 }

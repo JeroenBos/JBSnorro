@@ -5,11 +5,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace JBSnorro.Tests.Graphs;
 
+/// <summary>
+/// Tests the interface <see cref="IGreenNode{TGreenNode}"/>.
+/// </summary>
 [TestCategory("RedGreen")]
 public abstract class IGreenNodeInvariants<TGreenNode> where TGreenNode: class, IGreenNode<TGreenNode>
 {
     protected abstract TGreenNode create(IReadOnlyList<TGreenNode> elements);
-    [InvariantMethod]
+    [InvariantMethod] // intention is that this should hold for all instances of TGreenNode. Not sure how to call this though.
     public void TestElementsNotNull(TGreenNode node)
     {
         Contract.InvariantForAll(node.GetDescendants(), element => element is not null);
@@ -53,47 +56,4 @@ public abstract class IGreenNodeInvariants<TGreenNode> where TGreenNode: class, 
 public class TrivialGreenNodeTests : IGreenNodeInvariants<TrivialGreenNode>
 {
     protected override TrivialGreenNode create(IReadOnlyList<TrivialGreenNode> elements) => new TrivialGreenNode(elements);
-}
-
-
-
-public class TrivialGreenNode : IGreenNode<TrivialGreenNode>
-{
-    public IReadOnlyList<TrivialGreenNode> Elements { get; }
-
-    public TrivialGreenNode(IReadOnlyList<TrivialGreenNode> elements)
-    {
-        Elements = elements;
-    }
-
-    public TrivialGreenNode With(IReadOnlyList<TrivialGreenNode> elements)
-    {
-        return new TrivialGreenNode(elements);
-    }
-}
-public class TrivialRedNode : IRedNode<TrivialRedNode, TrivialGreenNode>
-{
-    public TrivialRedNode? Parent { get; }
-
-    public IReadOnlyList<TrivialGreenNode> Elements { get; }
-
-    public TrivialRedNode(IReadOnlyList<TrivialGreenNode> elements)
-    {
-        Elements = elements;
-    }
-    public TrivialRedNode(TrivialRedNode parent, IReadOnlyList<TrivialGreenNode> elements)
-    {
-        Parent = parent;
-        Elements = elements;
-    }
-
-    public static TrivialRedNode Create(TrivialGreenNode green)
-    {
-        return new TrivialRedNode(green.Elements);
-    }
-
-    public TrivialGreenNode With(IReadOnlyList<TrivialGreenNode> elements)
-    {
-        return new TrivialGreenNode(elements);
-    }
 }
