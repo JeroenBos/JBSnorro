@@ -1382,11 +1382,33 @@ namespace JBSnorro
 				yield return element;
 			}
 		}
-		/// <summary> Prepends the specified elements to the specified sequence. </summary>
-		/// <param name="sequence"> The sequence to be prepended. </param>
-		/// <param name="elements"> The elements to prepend to the sequence. </param>
-		/// <returns> the sequence containing first the specified elements and then the original sequence. </returns>
-		public static IEnumerable<T> Prepend<T>(this IEnumerable<T> sequence, params T[] elements)
+		/// <summary>
+		/// Returns a new sequence with the the specified elements inserted at the specified index.
+		/// </summary>
+        public static IEnumerable<T> InsertAt<T>(this IEnumerable<T> sequence, int index, IEnumerable<T> items)
+        {
+            if (sequence is null) throw new ArgumentNullException(nameof(sequence));
+            if (items is null) throw new ArgumentNullException(nameof(items));
+            if (index < 0) throw new ArgumentOutOfRangeException(nameof(index));
+			if (sequence.TryGetNonEnumeratedCount(out int sequenceCount) && index > sequenceCount) throw new ArgumentOutOfRangeException(nameof(index));
+
+            int i = 0;
+            foreach (T element in sequence)
+            {
+                if (i == index)
+                {
+                    foreach (T insertion in items)
+                        yield return insertion;
+                }
+                yield return element;
+            }
+        }
+
+        /// <summary> Prepends the specified elements to the specified sequence. </summary>
+        /// <param name="sequence"> The sequence to be prepended. </param>
+        /// <param name="elements"> The elements to prepend to the sequence. </param>
+        /// <returns> the sequence containing first the specified elements and then the original sequence. </returns>
+        public static IEnumerable<T> Prepend<T>(this IEnumerable<T> sequence, params T[] elements)
 		{
 			Contract.Requires(sequence != null);
 			Contract.Requires(elements != null);
