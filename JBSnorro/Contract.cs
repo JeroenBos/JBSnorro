@@ -664,6 +664,7 @@ namespace JBSnorro.Diagnostics
 		{
 			return i => start <= i && i < start + count;
 		}
+#nullable enable
 		/// <summary>
 		/// Asserts that the specified sequences are equality according to the default element equality comparer.
 		/// </summary>
@@ -731,7 +732,7 @@ namespace JBSnorro.Diagnostics
 		[DebuggerHidden]
 		public static void AssertSetEqual<T>(IEnumerable<T> sequence,
 											 IEnumerable<T> expectedSequence,
-											 out (IReadOnlyCollection<T> Sequence, IReadOnlyCollection<T> Expected) remainder)
+											 out (IReadOnlyCollection<T>? Sequence, IReadOnlyCollection<T>? Expected) remainder)
 		{
 			AssertSetEqual(sequence, expectedSequence, EqualityComparer<T>.Default.Equals, out remainder);
 		}
@@ -742,9 +743,9 @@ namespace JBSnorro.Diagnostics
 		/// </summary>
 		[DebuggerHidden]
 		public static void AssertSetEqual<T, U>(IEnumerable<T> sequence,
-												 IEnumerable<U> expectedSequence,
-												 Func<T, U, bool> equals,
-												 out (IReadOnlyCollection<T> Sequence, IReadOnlyCollection<U> Expected) remainder)
+												IEnumerable<U> expectedSequence,
+												Func<T, U, bool> equals,
+												out (IReadOnlyCollection<T>? Sequence, IReadOnlyCollection<U>? Expected) remainder)
 		{
 
 #if DEBUG
@@ -792,7 +793,7 @@ namespace JBSnorro.Diagnostics
 
 	public sealed class AppSettingNotFoundException : ContractException
 	{
-		public AppSettingNotFoundException(string key = null) : base($"AppSetting key {(key == null ? "" : $"'{key}' ")} not found. ") { }
+		public AppSettingNotFoundException(string? key = null) : base($"AppSetting key {(key == null ? "" : $"'{key}' ")} not found. ") { }
 	}
 
 }
