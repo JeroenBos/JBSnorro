@@ -682,19 +682,37 @@ namespace JBSnorro.Diagnostics
 			Contract.Requires(equalityComparer != null);
 			AssertSequenceEqual(sequence, expectedSequence, equalityComparer.Equals);
 		}
-		/// <summary>
-		/// Asserts that the specified sequences are equality according to the specified element equality comparer.
-		/// </summary>
-		[DebuggerHidden, Conditional("DEBUG")]
+        /// <summary>
+        /// Asserts that the specified sequences are equality according to the specified element equality comparer.
+        /// </summary>
+        [DebuggerHidden, Conditional("DEBUG")]
+        public static void AssertSequenceEqual<T>(IEnumerable<T> sequence,
+                                                  IEnumerable<T> expectedSequence,
+                                                  string? baseMessage = null)
+        {
+            AssertSequenceEqual<T, T>(sequence, expectedSequence, EqualityComparer<T>.Default.Equals, baseMessage);
+		}
+
+        /// <summary>
+        /// Asserts that the specified sequences are equality according to the specified element equality comparer.
+        /// </summary>
+        [DebuggerHidden, Conditional("DEBUG")]
 		public static void AssertSequenceEqual<T, U>(IEnumerable<T> sequence,
 													 IEnumerable<U> expectedSequence,
-													 Func<T, U, bool> equalityComparer)
+													 Func<T, U, bool> equalityComparer,
+													 string? baseMessage = null)
 		{
 			Contract.Requires(sequence != null);
 			Contract.Requires(expectedSequence != null);
 			Contract.Requires(equalityComparer != null);
 
-			int index = 0;
+			if (baseMessage is not null)
+			{
+				baseMessage.TrimEnd(' ', '.', ',');
+				baseMessage += ". ";
+			}
+
+            int index = 0;
 			using (IEnumerator<T> enumerator1 = sequence.GetEnumerator())
 			using (IEnumerator<U> enumerator2 = expectedSequence.GetEnumerator())
 			{
@@ -706,11 +724,12 @@ namespace JBSnorro.Diagnostics
 						while (enumerator1.MoveNext())
 							expectedCount++;
 
-						throw new ContractException($"The sequence has more elements than expected (received {index}/{expectedCount})");
+						throw new ContractException($"{baseMessage}The sequence has more elements than expected (received {index}/{expectedCount})");
 					}
-					if (!equalityComparer(enumerator1.Current, enumerator2.Current))
+
+                    if (!equalityComparer(enumerator1.Current, enumerator2.Current))
 					{
-						throw new ContractException($"The element at index {index} didn't match the expected element: received '{enumerator1.Current}', but expected '{enumerator2.Current}'");
+						throw new ContractException($"{baseMessage}The element at index {index} didn't match the expected element: received '{enumerator1.Current}', but expected '{enumerator2.Current}'");
 					}
 					index++;
 				}
@@ -720,7 +739,7 @@ namespace JBSnorro.Diagnostics
 					while (enumerator2.MoveNext())
 						expectedCount++;
 
-					throw new ContractException($"The sequence has fewer elements than expected (received {index}/{expectedCount})");
+					throw new ContractException($"{baseMessage}The sequence has fewer elements than expected (received {index}/{expectedCount})");
 				}
 			}
 		}
