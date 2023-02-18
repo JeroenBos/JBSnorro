@@ -167,27 +167,27 @@ public interface IModel : IGreenNode<IModel>
 
 // and btw, the binder will know about which lexemes bind to which notions; that's not something the lexemes will have to know
 
-interface IMorpheme : IParseNode<IMorpheme> // should have TSelf?
+interface IMorpheme<TSelf> : IParseNode<IMorpheme<TSelf>> // should have TSelf?
 {
     string? Text { get; }
-    ILexeme Lexeme { get; }
+    ILexeme<Morpheme> Lexeme { get; }
 }
-interface ILexeme
+interface ILexeme<TMorpheme> where TMorpheme : IMorpheme<TMorpheme>
 {
-    IMorpheme MainRepresentation { get; }
+    TMorpheme MainRepresentation { get; }
 }
 
 
-sealed class Morpheme : IMorpheme
+sealed class Morpheme : IMorpheme<Morpheme>
 {
     public string? Text { get; }
-    public ILexeme Lexeme { get; }
+    public ILexeme<Morpheme> Lexeme { get; }
     public IReadOnlyList<Morpheme> Elements { get; }
     public IPosition Position { get; }
 
 
     /// <param name="getText">A function that gets the text from a specific source node. </param>
-    public static Morpheme Create<TSource>(ILexeme lexeme, TSource tree, Func<TSource, string?> getText) where TSource : class, IParseNode<TSource>
+    public static Morpheme Create<TSource>(ILexeme<Morpheme> lexeme, TSource tree, Func<TSource, string?> getText) where TSource : class, IParseNode<TSource>
     {
         return RedGreenExtensions.Map<TSource, Morpheme>(tree, create);
         Morpheme create(TSource element, IReadOnlyList<Morpheme> elements)
@@ -207,11 +207,11 @@ sealed class Morpheme : IMorpheme
             }
         }
     }
-    public static Morpheme Create(ILexeme lexeme, IPosition position, params (IPosition Position, string Text)[] leaves)
+    public static Morpheme Create(ILexeme<Morpheme> lexeme, IPosition position, params (IPosition Position, string Text)[] leaves)
     {
         return new Morpheme(lexeme, position, leaves.Map(_ => new Morpheme(lexeme, _.Position, null, _.Text)), null);
     }
-    private Morpheme(ILexeme lexeme, IPosition position, IReadOnlyList<Morpheme>? elements, string? text)
+    private Morpheme(ILexeme<Morpheme> lexeme, IPosition position, IReadOnlyList<Morpheme>? elements, string? text)
     {
         Contract.Requires(lexeme != null);
         Contract.Requires(position != null);
@@ -251,16 +251,16 @@ sealed class Morpheme : IMorpheme
     {
         return new Morpheme(this.Lexeme, position, this.Elements, this.Text);
     }
-    IReadOnlyList<IMorpheme> IGreenNode<IMorpheme>.Elements => Elements;
-    IMorpheme IGreenNode<IMorpheme>.With(IReadOnlyList<IMorpheme> elements)
+    IReadOnlyList<IMorpheme<Morpheme>> IGreenNode<IMorpheme<Morpheme>>.Elements => Elements;
+    IMorpheme<Morpheme> IGreenNode<IMorpheme<Morpheme>>.With(IReadOnlyList<IMorpheme<Morpheme>> elements)
     {
-        return With(elements as IReadOnlyList<Morpheme> ?? elements.Map(e => e as Morpheme ?? throw new NotImplementedException("IMorpheme not castable to Morpheme")));
+        return With(elements as IReadOnlyList<Morpheme> ?? elements.Map(e => e as Morpheme ?? throw new NotImplementedException("IMorpheme<Morpheme> not castable to Morpheme")));
     }
 }
-class Lexeme : ILexeme
+class Lexeme : ILexeme<Morpheme>
 {
-    public IMorpheme MainRepresentation { get; }
-    public Lexeme(IMorpheme mainRepresentation)
+    public Morpheme MainRepresentation { get; }
+    public Lexeme(Morpheme mainRepresentation)
     {
         this.MainRepresentation = mainRepresentation;
     }
