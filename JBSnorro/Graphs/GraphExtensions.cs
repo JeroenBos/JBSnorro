@@ -156,4 +156,24 @@ public static class RedGreenExtensions
     {
         return TreeExtensions.GetDescendantsAndSelf(node, [DebuggerHidden] (c) => c.Elements.Select(TRedNode.Create));
     }
+
+    /// <summary>
+    /// Maps one tree structure to another.
+    /// </summary>
+    public static TResultGreenNode Map<TGreenNode, TResultGreenNode>(this TGreenNode node, Func<TGreenNode, TResultGreenNode> selectorWithoutElements)
+        where TGreenNode : class, IGreenNode<TGreenNode>
+        where TResultGreenNode : class, IGreenNode<TResultGreenNode>
+    {
+        return node.Map<TGreenNode, TResultGreenNode>((node, elements) => selectorWithoutElements(node).With(elements));
+    }
+    /// <summary>
+    /// Maps one tree structure to another.
+    /// </summary>
+    public static TResultGreenNode Map<TGreenNode, TResultGreenNode>(this TGreenNode node, Func<TGreenNode, IReadOnlyList<TResultGreenNode> /*elements*/, TResultGreenNode> selector)
+        where TGreenNode : class, IGreenNode<TGreenNode>
+        where TResultGreenNode : class, IGreenNode<TResultGreenNode>
+    {
+        var newElements = node.Elements.Map(element => element.Map(selector));
+        return selector(node, newElements);
+    }
 }

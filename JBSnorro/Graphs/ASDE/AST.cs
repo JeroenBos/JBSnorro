@@ -2,24 +2,48 @@
 using JBSnorro;
 using JBSnorro.Diagnostics;
 using JBSnorro.Graphs;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ASDE;
 
 
-public interface IPositioned : IGreenNode<IPositioned>
+public interface IPositioned // <TSelf> : IGreenNode<TSelf> where TSelf : class, IPositioned<TSelf>
 {
     public IPosition Position { get; }
+
+    // IReadOnlyList<TSelf> IGreenNode<TSelf>.Elements => ((TSelf)this).Elements; // circular
+    // TSelf IGreenNode<TSelf>.With(IReadOnlyList<TSelf> elements) => ((TSelf)this).With(elements);  // circular
 }
-
-
-public interface IParseNode : IGreenNode<IParseNode>, IPositioned
+public interface IParseNode<TSelf> : IGreenNode<TSelf>, IPositioned where TSelf : class, IParseNode<TSelf>, IGreenNode<TSelf>
 {
-    IReadOnlyList<IPositioned> IGreenNode<IPositioned>.Elements => ((IGreenNode<IParseNode>)this).Elements;
-    new IReadOnlyList<IParseNode> Elements => ((IGreenNode<IParseNode>)this).Elements;
+
 }
-public interface IASTNode : IRedNode<IASTNode, IParseNode>, IParseNode
+
+class ParseNode : IParseNode<ParseNode>
+{
+    public IReadOnlyList<ParseNode> Elements { get; }
+    public IPosition Position { get; }
+
+    public ParseNode(IPosition position, IReadOnlyList<ParseNode> elements)
+    {
+        Position = position;
+        Elements = elements;
+    }
+
+    public ParseNode With(IReadOnlyList<ParseNode> elements)
+    {
+        return new ParseNode(this.Position, elements);
+    }
+}
+
+
+
+
+public interface IASTNode<TSelf, TParseNode> : IRedNode<TSelf, TParseNode> where TSelf : class, IASTNode<TSelf, TParseNode> where TParseNode : class, IParseNode<TParseNode>
 {
     /// <summary>
     /// Gets the semantics of this node if they're computed already; otherwise <code>null</code>.
@@ -27,46 +51,31 @@ public interface IASTNode : IRedNode<IASTNode, IParseNode>, IParseNode
     public IModel? Semantics { get; }
     public IModel ComputeSemantics(IBinder binder);
 
-    static IASTNode IRedNode<IASTNode, IParseNode>.Create(IParseNode green) => throw new UnreachableException("Must be implemented"); // Hmm 🤔
+    //static TSelf IRedNode<TSelf, IParseNode<TSelf>>.Create(IParseNode<TSelf> green) => throw new UnreachableException("Must be implemented"); // Hmm 🤔
 }
 
 
 
-
-class TestASTNodeImplementation : IASTNode
+class ASTNode : IASTNode<ASTNode, ParseNode>
 {
-    private readonly IParseNode green;
-    public IReadOnlyList<IParseNode> Elements => green.Elements;
+    protected ParseNode Green { get; }
+    public ASTNode? Parent { get; }
+    public IReadOnlyList<ASTNode> Elements { get; }
+    public IModel? Semantics { get; private set; }
 
 
-    public IModel? Semantics { get; }
-    public IASTNode? Parent { get; }
-
-    public IPosition Position => throw new NotImplementedException();
-
-    public TestASTNodeImplementation(IParseNode green)
+    public static ASTNode Create(ParseNode green, ASTNode? parent) => new ASTNode(green, parent);
+    public ASTNode(ParseNode green, ASTNode? parent)
     {
-        this.green = green;
+        this.Green = green;
+        this.Parent = parent;
+        this.Elements = green.Elements.MapLazily(green => ASTNode.Create(green, this));
     }
 
-    public IModel ComputeSemantics(IBinder binder)
-    {
-        throw new NotImplementedException();
-    }
 
-    public TestASTNodeImplementation With(IReadOnlyList<TestASTNodeImplementation> elements)
-    {
-        var n = green.With(elements);
-        var result = new TestASTNodeImplementation(n);
-        return result;
-    }
-    IParseNode IGreenNode<IParseNode>.With(IReadOnlyList<IParseNode> elements)
-    {
-        return this.With(elements);
-    }
+    ParseNode IRedNode<ASTNode, ParseNode>.Green => this.Green;
 
-    IASTNode IRedNode<IASTNode, IParseNode>.With(IReadOnlyList<IParseNode> elements) => (IASTNode)((IPositioned)this).With(elements); 
-    IPositioned IGreenNode<IPositioned>.With(IReadOnlyList<IPositioned> elements) => ((IGreenNode<IParseNode>)this).With(elements as IReadOnlyList<IParseNode> ?? elements.Map(e => (IParseNode)e));
+    public IModel ComputeSemantics(IBinder binder) => throw new NotImplementedException();
 }
 
 
@@ -93,11 +102,14 @@ class TestASTNodeImplementation : IASTNode
 
 
 
-public interface IPosition { }
+public interface IPosition
+{
+    static IPosition RootPosition { get; } = default!;
+}
 
 public interface IBinder
 {
-    public IModel GetSemanticModel(AST node);
+    public IModel GetSemanticModel(ASTNode node);
 }
 public interface IModel : IGreenNode<IModel>
 {
@@ -155,18 +167,106 @@ public interface IModel : IGreenNode<IModel>
 
 // and btw, the binder will know about which lexemes bind to which notions; that's not something the lexemes will have to know
 
-interface IMorpheme : IGreenNode<IMorpheme>
+interface IMorpheme : IParseNode<IMorpheme> // should have TSelf?
 {
-
+    string? Text { get; }
+    ILexeme Lexeme { get; }
 }
-interface ILexeme : IRedNode<ILexeme, IMorpheme>
+interface ILexeme
 {
-    static ILexeme IRedNode<ILexeme, IMorpheme>.Create(IMorpheme green) => throw new UnreachableException("Must be implemented"); // Hmm 🤔 can't make it abstract. can't create a abstract overload
+    IMorpheme MainRepresentation { get; }
 }
 
 
+sealed class Morpheme : IMorpheme
+{
+    public string? Text { get; }
+    public ILexeme Lexeme { get; }
+    public IReadOnlyList<IMorpheme> Elements { get; }
+    public IPosition Position { get; }
+
+    /// <param name="getText">A function that gets the text from a specific source node. </param>
+    public static Morpheme Create<TSource>(ILexeme lexeme, TSource tree, Func<TSource, string?> getText) where TSource : class, IParseNode<TSource>
+    {
+        return (Morpheme)RedGreenExtensions.Map<TSource, IMorpheme>(tree, create);
+        Morpheme create(TSource element, IReadOnlyList<IMorpheme> elements)
+        {
+            if (elements.Count == 0)
+            {
+                var text = getText(element);
+                if (string.IsNullOrEmpty(text))
+                {
+                    throw new InvalidCastException($"Return value of {nameof(getText)} cannot be null or empty for nodes without child nodes");
+                }
+                return new Morpheme(lexeme, element.Position, null, text);
+            }
+            else
+            {
+                return new Morpheme(lexeme, element.Position, elements, null);
+            }
+        }
+    }
+    public static Morpheme Create(ILexeme lexeme, IPosition position, params (IPosition Position, string Text)[] leaves)
+    {
+        return new Morpheme(lexeme, position, leaves.Map(_ => new Morpheme(lexeme, _.Position, null, _.Text)), null);
+    }
+    private Morpheme(ILexeme lexeme, IPosition position, IReadOnlyList<IMorpheme>? elements, string? text)
+    {
+        Contract.Requires(lexeme != null);
+        Contract.Requires(position != null);
+        Contract.Requires(elements is null != text is null);
+        if (elements is null)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(text));
+        }
+        else
+        {
+            Contract.Requires(elements.Count != 0);
+        }
+
+        this.Lexeme = lexeme;
+        this.Position = position;
+        this.Text = text;
+        this.Elements = elements ?? EmptyCollection<IMorpheme>.ReadOnlyList;
+    }
 
 
+    IMorpheme IGreenNode<IMorpheme>.With(IReadOnlyList<IMorpheme> elements)
+    {
+        return With(elements);
+    }
+    public Morpheme With(IReadOnlyList<IMorpheme> elements)
+    {
+        Contract.Requires(this.Text == null, "{0}: Cannot add elements to node with text");
+        Contract.Requires(elements != null);
+        Contract.Requires(elements.Count != 0);
+
+        return new Morpheme(this.Lexeme, this.Position, elements, null);
+    }
+    public Morpheme With(string text)
+    {
+        Contract.Requires(this.Text != null, "{0}: Cannot add text to node with elements");
+        Contract.Requires(!string.IsNullOrEmpty(text));
+
+        return new Morpheme(this.Lexeme, this.Position, null, text);
+    }
+    public Morpheme With(IPosition position)
+    {
+        return new Morpheme(this.Lexeme, position, this.Elements, this.Text);
+    }
+}
+class Lexeme : ILexeme
+{
+    public IMorpheme MainRepresentation { get; }
+    public Lexeme? Parent { get; }
+
+    IReadOnlyList<Lexeme> IRedNode<Lexeme, IMorpheme>.Elements => throw new NotImplementedException();
+
+    static Lexeme IRedNode<Lexeme, IMorpheme>.Create(IMorpheme green, Lexeme? parent)
+    {
+        throw new NotImplementedException();
+    }
+}
 
 sealed class Character : IASTNode
 {
