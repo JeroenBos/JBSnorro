@@ -8,11 +8,18 @@ using System.Diagnostics;
 namespace ASDE;
 
 
-public interface IASTNode : IGreenNode<IASTNode>
+public interface IPositioned : IGreenNode<IPositioned>
 {
     public IPosition Position { get; }
 }
-public interface AST : IRedNode<AST, IASTNode>, IASTNode /*inherits just for Position 🤔 */
+
+
+public interface IParseNode : IGreenNode<IParseNode>, IPositioned
+{
+    IReadOnlyList<IPositioned> IGreenNode<IPositioned>.Elements => ((IGreenNode<IParseNode>)this).Elements;
+    new IReadOnlyList<IParseNode> Elements => ((IGreenNode<IParseNode>)this).Elements;
+}
+public interface IASTNode : IRedNode<IASTNode, IParseNode>, IParseNode
 {
     /// <summary>
     /// Gets the semantics of this node if they're computed already; otherwise <code>null</code>.
@@ -20,9 +27,70 @@ public interface AST : IRedNode<AST, IASTNode>, IASTNode /*inherits just for Pos
     public IModel? Semantics { get; }
     public IModel ComputeSemantics(IBinder binder);
 
-
-    static AST IRedNode<AST, IASTNode>.Create(IASTNode green) => throw new UnreachableException("Must be implemented"); // Hmm 🤔
+    static IASTNode IRedNode<IASTNode, IParseNode>.Create(IParseNode green) => throw new UnreachableException("Must be implemented"); // Hmm 🤔
 }
+
+
+
+
+class TestASTNodeImplementation : IASTNode
+{
+    private readonly IParseNode green;
+    public IReadOnlyList<IParseNode> Elements => green.Elements;
+
+
+    public IModel? Semantics { get; }
+    public IASTNode? Parent { get; }
+
+    public IPosition Position => throw new NotImplementedException();
+
+    public TestASTNodeImplementation(IParseNode green)
+    {
+        this.green = green;
+    }
+
+    public IModel ComputeSemantics(IBinder binder)
+    {
+        throw new NotImplementedException();
+    }
+
+    public TestASTNodeImplementation With(IReadOnlyList<TestASTNodeImplementation> elements)
+    {
+        var n = green.With(elements);
+        var result = new TestASTNodeImplementation(n);
+        return result;
+    }
+    IParseNode IGreenNode<IParseNode>.With(IReadOnlyList<IParseNode> elements)
+    {
+        return this.With(elements);
+    }
+
+    IASTNode IRedNode<IASTNode, IParseNode>.With(IReadOnlyList<IParseNode> elements) => (IASTNode)((IPositioned)this).With(elements); 
+    IPositioned IGreenNode<IPositioned>.With(IReadOnlyList<IPositioned> elements) => ((IGreenNode<IParseNode>)this).With(elements as IReadOnlyList<IParseNode> ?? elements.Map(e => (IParseNode)e));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 public interface IPosition { }
