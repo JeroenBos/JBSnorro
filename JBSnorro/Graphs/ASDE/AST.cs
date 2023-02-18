@@ -56,7 +56,7 @@ public interface IASTNode<TSelf, TParseNode> : IRedNode<TSelf, TParseNode> where
 
 
 
-class ASTNode : IASTNode<ASTNode, ParseNode>
+public class ASTNode : IASTNode<ASTNode, ParseNode>
 {
     protected ParseNode Green { get; }
     public ASTNode? Parent { get; }
@@ -182,14 +182,15 @@ sealed class Morpheme : IMorpheme
 {
     public string? Text { get; }
     public ILexeme Lexeme { get; }
-    public IReadOnlyList<IMorpheme> Elements { get; }
+    public IReadOnlyList<Morpheme> Elements { get; }
     public IPosition Position { get; }
+
 
     /// <param name="getText">A function that gets the text from a specific source node. </param>
     public static Morpheme Create<TSource>(ILexeme lexeme, TSource tree, Func<TSource, string?> getText) where TSource : class, IParseNode<TSource>
     {
-        return (Morpheme)RedGreenExtensions.Map<TSource, IMorpheme>(tree, create);
-        Morpheme create(TSource element, IReadOnlyList<IMorpheme> elements)
+        return RedGreenExtensions.Map<TSource, Morpheme>(tree, create);
+        Morpheme create(TSource element, IReadOnlyList<Morpheme> elements)
         {
             if (elements.Count == 0)
             {
@@ -210,7 +211,7 @@ sealed class Morpheme : IMorpheme
     {
         return new Morpheme(lexeme, position, leaves.Map(_ => new Morpheme(lexeme, _.Position, null, _.Text)), null);
     }
-    private Morpheme(ILexeme lexeme, IPosition position, IReadOnlyList<IMorpheme>? elements, string? text)
+    private Morpheme(ILexeme lexeme, IPosition position, IReadOnlyList<Morpheme>? elements, string? text)
     {
         Contract.Requires(lexeme != null);
         Contract.Requires(position != null);
@@ -227,15 +228,11 @@ sealed class Morpheme : IMorpheme
         this.Lexeme = lexeme;
         this.Position = position;
         this.Text = text;
-        this.Elements = elements ?? EmptyCollection<IMorpheme>.ReadOnlyList;
+        this.Elements = elements ?? EmptyCollection<Morpheme>.ReadOnlyList;
     }
 
 
-    IMorpheme IGreenNode<IMorpheme>.With(IReadOnlyList<IMorpheme> elements)
-    {
-        return With(elements);
-    }
-    public Morpheme With(IReadOnlyList<IMorpheme> elements)
+    public Morpheme With(IReadOnlyList<Morpheme> elements)
     {
         Contract.Requires(this.Text == null, "{0}: Cannot add elements to node with text");
         Contract.Requires(elements != null);
@@ -254,71 +251,17 @@ sealed class Morpheme : IMorpheme
     {
         return new Morpheme(this.Lexeme, position, this.Elements, this.Text);
     }
+    IReadOnlyList<IMorpheme> IGreenNode<IMorpheme>.Elements => Elements;
+    IMorpheme IGreenNode<IMorpheme>.With(IReadOnlyList<IMorpheme> elements)
+    {
+        return With(elements as IReadOnlyList<Morpheme> ?? elements.Map(e => e as Morpheme ?? throw new NotImplementedException("IMorpheme not castable to Morpheme")));
+    }
 }
 class Lexeme : ILexeme
 {
     public IMorpheme MainRepresentation { get; }
-    public Lexeme? Parent { get; }
-
-    IReadOnlyList<Lexeme> IRedNode<Lexeme, IMorpheme>.Elements => throw new NotImplementedException();
-
-    static Lexeme IRedNode<Lexeme, IMorpheme>.Create(IMorpheme green, Lexeme? parent)
+    public Lexeme(IMorpheme mainRepresentation)
     {
-        throw new NotImplementedException();
-    }
-}
-
-sealed class Character : IASTNode
-{
-    public string Text { get; }
-    public IPosition Position { get; }
-
-    public IReadOnlyList<IASTNode> Elements => EmptyCollection<IASTNode>.ReadOnlyList;
-
-    public IASTNode With(IReadOnlyList<IASTNode> elements)
-    {
-        Contract.Requires(elements != null);
-        Contract.Requires(elements.Count == 1);
-
-        return this;
-    }
-    internal Character(IPosition position, string text)
-    {
-        this.Text = text;
-        this.Position = position;
-    }
-}
-sealed class ParseTreeNode : IASTNode
-{
-    public IPosition Position { get; }
-    public IReadOnlyList<IASTNode> Elements { get; }
-
-    public static IASTNode Create(IPosition position, IEnumerable<IASTNode> elements)
-    {
-        return new ParseTreeNode(position, elements.ToList());
-    }
-    public static IASTNode Create(IPosition position, ImmutableList<IASTNode> elements)
-    {
-        return new ParseTreeNode(position, elements);
-    }
-    internal static IASTNode Create(IPosition position, IReadOnlyList<IASTNode> elements)
-    {
-        return new ParseTreeNode(position, elements);
-    }
-
-    public static IASTNode Create(IPosition position, string text)
-    {
-        return new Character(position, text);
-    }
-
-    public IASTNode With(IReadOnlyList<IASTNode> elements)
-    {
-        return new ParseTreeNode(this.Position, elements);
-    }
-
-    private ParseTreeNode(IPosition position, IReadOnlyList<IASTNode> elements)
-    {
-        this.Position = position;
-        this.Elements = elements;
+        this.MainRepresentation = mainRepresentation;
     }
 }

@@ -160,18 +160,18 @@ public static class RedGreenExtensions
     /// <summary>
     /// Maps one tree structure to another.
     /// </summary>
-    public static TResultGreenNode Map<TGreenNode, TResultGreenNode>(this TGreenNode node, Func<TGreenNode, TResultGreenNode> selectorWithoutElements)
+    public static TResult Map<TGreenNode, TResult>(this TGreenNode node, Func<TGreenNode, TResult> selectorWithoutElements)
         where TGreenNode : class, IGreenNode<TGreenNode>
-        where TResultGreenNode : class, IGreenNode<TResultGreenNode>
+        where TResult : class, IGreenNode<TResult>
     {
-        return node.Map<TGreenNode, TResultGreenNode>((node, elements) => selectorWithoutElements(node).With(elements));
+        return node.Map<TGreenNode, TResult>((node, elements) => selectorWithoutElements(node).With(elements));
     }
     /// <summary>
     /// Maps one tree structure to another.
     /// </summary>
-    public static TResultGreenNode Map<TGreenNode, TResultGreenNode>(this TGreenNode node, Func<TGreenNode, IReadOnlyList<TResultGreenNode> /*elements*/, TResultGreenNode> selector)
+    public static TResult Map<TGreenNode, TResult>(this TGreenNode node, Func<TGreenNode, IReadOnlyList<TResult> /*elements*/, TResult> selector)
         where TGreenNode : class, IGreenNode<TGreenNode>
-        where TResultGreenNode : class, IGreenNode<TResultGreenNode>
+        // where TResultGreenNode : class//, IGreenNode<TResultGreenNode>
     {
         var newElements = node.Elements.Map(element => element.Map(selector));
         return selector(node, newElements);
