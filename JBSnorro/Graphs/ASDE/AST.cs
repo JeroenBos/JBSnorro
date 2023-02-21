@@ -75,9 +75,7 @@ public class ASTNode : IASTNode<ASTNode, ParseNode>
 
 
     ParseNode IRedNode<ASTNode, ParseNode>.Green => this.Green;
-
     int IRedNode<ASTNode, ParseNode>.IndexInParent => indexInParent;
-
     public IModel ComputeSemantics(IBinder binder) => throw new NotImplementedException();
 }
 

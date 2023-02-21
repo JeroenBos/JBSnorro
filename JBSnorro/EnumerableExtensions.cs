@@ -829,27 +829,6 @@ namespace JBSnorro
 			}
 			return Enumerate();
 		}
-		/// <summary> Returns the first element of the sequence that satisfies a condition or a specified default value if no such element is found. </summary>
-		/// <param name="source"> An <see cref="IEnumerable{T}"/> to return an element from. </param>
-		/// <param name="predicate"> A function to test each element for a condition. </param>
-		/// <param name="defaultValue"> The default value to be returned. </param>
-		[DebuggerHidden]
-		public static T FirstOrDefault<T>(this IEnumerable<T> source, Func<T, bool> predicate, T defaultValue)
-		{
-			Contract.Requires(source != null);
-			Contract.Requires(predicate != null);
-
-			foreach (T element in source)
-			{
-				if (predicate(element))
-				{
-					return element;
-				}
-			}
-			return defaultValue;
-		}
-
-
 
 		/// <summary> Gives the indices in the specified sequence that are minimal according to the specified comparison function. </summary>
 		/// <typeparam name="T"> The elements of the sequence to find the minima of. </typeparam>
