@@ -16,7 +16,6 @@ public abstract class IRedNodeInvariants<TRedNode, TGreenNode> where TRedNode: c
     /// </summary>
     protected abstract bool EqualsByValue(TRedNode red, TGreenNode green);
     protected abstract TGreenNode createGreen(IReadOnlyList<TGreenNode> elements);
-    protected abstract TRedNode create(IReadOnlyList<TGreenNode> elements);
     [InvariantMethod] // intention is that this should hold for all instances of TGreenNode. Not sure how to call this though.
     public void TestElementsNotNull(TRedNode node)
     {
@@ -35,33 +34,6 @@ public abstract class IRedNodeInvariants<TRedNode, TGreenNode> where TRedNode: c
         }
     }
 
-
-    [TestMethod]
-    public void With_no_elements_has_no_elements()
-    {
-        var node = create(EmptyCollection<TGreenNode>.ReadOnlyList);
-        
-        Contract.AssertSequenceEqual(node.Elements, new TGreenNode[0]);
-    }
-    [TestMethod]
-    public void With_single_element_has_that_single_element()
-    {
-        var element = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
-        var node = create(new[] { element });
-
-        Contract.AssertSequenceEqual(node.Elements, new[] { element });
-    }
-    [TestMethod]
-    public void With_two_elements_has_those_two_elements()
-    {
-        var element = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
-        var element2 = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
-        var node = create(new[] { element, element2});
-
-        Contract.AssertSequenceEqual(node.Elements, new[] { element, element2 });
-    }
-
-
     [TestMethod]
     public void Create_from_green_copies_green_value_and_elements()
     {
@@ -72,74 +44,47 @@ public abstract class IRedNodeInvariants<TRedNode, TGreenNode> where TRedNode: c
         var red = TRedNode.Create(green);
 
         Contract.Assert(EqualsByValue(red, green));
-        Contract.AssertSequenceEqual(red.Elements, new[] { element });
+        Contract.AssertSequenceEqual(red.Elements.Select(red => red.Green), new[] { element });
         Contract.AssertSequenceEqual(green.Elements, new[] { element }, "Green node should remain unchanged");
     }
     [TestMethod]
-    public void Create_no_elements_has_no_elements()
+    public void Create_from_green_without_elements_has_no_elements()
     {
         var green = createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
 
         // Act
-        var red = TRedNode.Create(green, EmptyCollection<TGreenNode>.ReadOnlyList);
+        var red = TRedNode.Create(green);
 
-        Contract.AssertSequenceEqual(red.Elements, new TGreenNode[0]);
+        Contract.AssertSequenceEqual(red.Elements.Select(red => red.Green), new TGreenNode[0]);
         Contract.Assert(EqualsByValue(red, green));
         Contract.AssertSequenceEqual(green.Elements, EmptyCollection<TGreenNode>.ReadOnlyList, "Green node should remain unchanged");
     }
     [TestMethod]
-    public void Create_single_element_has_that_single_element()
+    public void Create_from_green_with_single_element_has_that_single_element()
     {
         var element = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
         var green = this.createGreen(new[] { element });
 
         // Act
-        var red = TRedNode.Create(green, new[] { element });
+        var red = TRedNode.Create(green);
 
-        Contract.AssertSequenceEqual(red.Elements, new[] { element });
+        Contract.AssertSequenceEqual(red.Elements.Select(red => red.Green), new[] { element });
         Contract.Assert(EqualsByValue(red, green));
         Contract.AssertSequenceEqual(green.Elements, new[] { element }, "Green node should remain unchanged");
-    }
-    [TestMethod]
-    public void Create_single_element_has_that_single_regardless_of_green_elements()
-    {
-        var element = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
-        var green = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
-
-        // Act
-        var red = TRedNode.Create(green, new[] { element });
-
-        Contract.AssertSequenceEqual(red.Elements, new[] { element });
-        Contract.Assert(EqualsByValue(red, green));
-        Contract.AssertSequenceEqual(green.Elements, EmptyCollection<TGreenNode>.ReadOnlyList, "Green node should remain unchanged");
     }
     [TestMethod]
     public void Create_two_elements_has_those_two_elements()
     {
         var element = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
         var element2 = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
-        var green = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
+        var green = this.createGreen(new[] { element, element2 });
 
         // Act
-        var red = TRedNode.Create(green, new[] { element, element2 });
+        var red = TRedNode.Create(green);
 
-        Contract.AssertSequenceEqual(red.Elements, new[] { element, element2 });
+        Contract.AssertSequenceEqual(red.Elements.Select(red => red.Green), new[] { element, element2 });
         Contract.Assert(EqualsByValue(red, green));
-        Contract.AssertSequenceEqual(green.Elements, EmptyCollection<TGreenNode>.ReadOnlyList, "Green node should remain unchanged");
-    }
-    [TestMethod]
-    public void Create_two_elements_has_those_two_elements_regardless_of_green_elements()
-    {
-        var element = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
-        var element2 = this.createGreen(EmptyCollection<TGreenNode>.ReadOnlyList);
-        var green = this.createGreen(new[] { element2 });
-
-        // Act
-        var red = TRedNode.Create(green, new[] { element, element2 });
-
-        Contract.AssertSequenceEqual(red.Elements, new[] { element, element2 });
-        Contract.Assert(EqualsByValue(red, green));
-        Contract.AssertSequenceEqual(green.Elements, new[] { element2 }, "Green node should remain unchanged");
+        Contract.AssertSequenceEqual(green.Elements, new[] { element, element2 }, "Green node should remain unchanged");
     }
 }
 
@@ -151,5 +96,4 @@ public class TrivialRedNodeTests : IRedNodeInvariants<TrivialRedNode, TrivialGre
         return true; // trivial red and green nodes have no state aside from their elements.
     }
     protected override TrivialGreenNode createGreen(IReadOnlyList<TrivialGreenNode> elements) => new TrivialGreenNode(elements);
-    protected override TrivialRedNode create(IReadOnlyList<TrivialGreenNode> elements) => new TrivialRedNode(elements);
 }

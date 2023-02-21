@@ -2078,7 +2078,7 @@ namespace JBSnorro
 			Contract.Requires(list != null);
 			Contract.Requires(resultSelector != null);
 
-			return new LazyArray<TSource, TResult>(list, resultSelector);
+			throw new NotImplementedException(); // return new LazyArray<TSource, TResult>(list, resultSelector);
 		}
 		/// <summary> Maps the specified list lazily: each mapped element is computed on demand (and is not cached). </summary>
 		/// <typeparam name="TSource"> The type of the elements to map. </typeparam>
@@ -2115,7 +2115,25 @@ namespace JBSnorro
 			};
 			return new LazyReadOnlyArray<TResult>(selector, list.Count);
 		}
-		[DebuggerHidden]
+        /// <summary> Maps the specified list lazily: each mapped element is computed on demand (and is not cached). </summary>
+        /// <typeparam name="TSource"> The type of the elements to map. </typeparam>
+        /// <typeparam name="TResult"> The type of the elements to map to. </typeparam>
+        /// <param name="list"> The list to map. </param>
+        /// <param name="resultSelector"> The function applying the map to each element. </param>
+        [DebuggerHidden]
+        public static IReadOnlyList<TResult> MapLazily<TSource, TResult>(this IReadOnlyList<TSource> list, Func<TSource, int, TResult> resultSelector)
+        {
+            Contract.Requires(list != null);
+            Contract.Requires(resultSelector != null);
+
+            Func<int, TResult> selector = index =>
+            {
+                var element = list[index];
+                return resultSelector(element, index);
+            };
+            return new LazyReadOnlyArray<TResult>(selector, list.Count);
+        }
+        [DebuggerHidden]
 		public static IReadOnlyList<TResult> CastLazily<TSource, TResult>(this IReadOnlyList<TSource> list)
 		{
 			return list.MapLazily(element => (TResult)(object)element!);
@@ -2151,15 +2169,31 @@ namespace JBSnorro
 				result[i++] = resultSelector(t);
 			return new ReadOnlyCollection<TResult>(result);
 		}
+        /// <summary> Maps a readonly collection into another of the same size using a specified mapping function. </summary>
+        /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+        /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
+        /// <param name="list"> The collection to map. </param>
+        /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
+        public static ReadOnlyCollection<TResult> Map<T, TResult>(this IReadOnlyList<T> list, Func<T, int, TResult> resultSelector)
+        {
+            var result = new TResult[list.Count];
+            int i = 0;
+			foreach (T t in list)
+			{
+				result[i] = resultSelector(t, i);
+				i++;
+			}
+            return new ReadOnlyCollection<TResult>(result);
+        }
 
-		/// <summary> Returns whether the sequence contains the specified items in order of their occurrence. 
-		/// Any number of elements may be in between though. </summary>
-		/// <typeparam name="T"> The type of the elements. </typeparam>
-		/// <param name="enumerable"> The sequence to check whether it has all items in their order. </param>
-		/// <param name="items"> The items to look for in the sequence. </param>
-		/// <param name="equalityComparer"> The equality comparer. When null, the default is used. </param>
-		/// <returns> If items is empty, true is returned. </returns>
-		public static bool ContainsOrdered<T>(this IEnumerable<T> enumerable, IEnumerable<T> items, IEqualityComparer<T>? equalityComparer = null)
+        /// <summary> Returns whether the sequence contains the specified items in order of their occurrence. 
+        /// Any number of elements may be in between though. </summary>
+        /// <typeparam name="T"> The type of the elements. </typeparam>
+        /// <param name="enumerable"> The sequence to check whether it has all items in their order. </param>
+        /// <param name="items"> The items to look for in the sequence. </param>
+        /// <param name="equalityComparer"> The equality comparer. When null, the default is used. </param>
+        /// <returns> If items is empty, true is returned. </returns>
+        public static bool ContainsOrdered<T>(this IEnumerable<T> enumerable, IEnumerable<T> items, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(enumerable != null);
 			Contract.Requires(items != null);

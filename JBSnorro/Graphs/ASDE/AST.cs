@@ -23,7 +23,7 @@ public interface IParseNode<TSelf> : IGreenNode<TSelf>, IPositioned where TSelf 
 
 }
 
-class ParseNode : IParseNode<ParseNode>
+public class ParseNode : IParseNode<ParseNode>
 {
     public IReadOnlyList<ParseNode> Elements { get; }
     public IPosition Position { get; }
@@ -62,18 +62,21 @@ public class ASTNode : IASTNode<ASTNode, ParseNode>
     public ASTNode? Parent { get; }
     public IReadOnlyList<ASTNode> Elements { get; }
     public IModel? Semantics { get; private set; }
+    private readonly int indexInParent;
 
-
-    public static ASTNode Create(ParseNode green, ASTNode? parent) => new ASTNode(green, parent);
-    public ASTNode(ParseNode green, ASTNode? parent)
+    public static ASTNode Create(ParseNode green, ASTNode? parent, int? indexInParent) => new ASTNode(green, parent, indexInParent);
+    public ASTNode(ParseNode green, ASTNode? parent, int? indexInParent)
     {
         this.Green = green;
         this.Parent = parent;
-        this.Elements = green.Elements.MapLazily(green => ASTNode.Create(green, this));
+        this.Elements = green.Elements.MapLazily((green, i) => ASTNode.Create(green, this, i));
+        this.indexInParent = indexInParent ?? -1;
     }
 
 
     ParseNode IRedNode<ASTNode, ParseNode>.Green => this.Green;
+
+    int IRedNode<ASTNode, ParseNode>.IndexInParent => indexInParent;
 
     public IModel ComputeSemantics(IBinder binder) => throw new NotImplementedException();
 }
@@ -131,9 +134,9 @@ public interface IModel : IGreenNode<IModel>
 // however, the way I had it before was that the tokenization was not unique: a lexer had to retokenize depending on the findings by the parser.
 
 // suppose you're defining the arrangement of tokens can be mapped to a symbol, what do you call such? Not the tokens, but the things the tokens are being mapped to? 
-// I think we'll call them lexemes. I lexeme consists of characters or morphemes more generally, but I don't think we'll have to go there?
+// I think we'll call them lexemes. I lexeme consists of characters or graphemes more generally, but I don't think we'll have to go there?
 // Let's define a lexicon to be a set of lexemes. A lexer is then a process taking a stream of characters and identifying the lexemes in them and to output a stream of those, then called "tokens".
-// That sort of maps to the concepts of IName (=lexeme), and INamePart (=morpheme) that I had before.
+// That sort of maps to the concepts of IName (=lexeme), and INamePart (=grapheme) that I had before.
 //
 // Do we ever have to parse streams of semantics? I hope not...
 //
@@ -167,30 +170,30 @@ public interface IModel : IGreenNode<IModel>
 
 // and btw, the binder will know about which lexemes bind to which notions; that's not something the lexemes will have to know
 
-interface IMorpheme<TSelf> : IParseNode<IMorpheme<TSelf>> // should have TSelf?
+interface IGrapheme<TSelf> : IParseNode<IGrapheme<TSelf>> // should have TSelf?
 {
     string? Text { get; }
-    ILexeme<Morpheme> Lexeme { get; }
+    ILexeme<Grapheme> Lexeme { get; }
 }
-interface ILexeme<TMorpheme> where TMorpheme : IMorpheme<TMorpheme>
+interface ILexeme<TGrapheme> where TGrapheme : IGrapheme<TGrapheme>
 {
-    TMorpheme MainRepresentation { get; }
+    TGrapheme MainRepresentation { get; }
 }
 
 
-sealed class Morpheme : IMorpheme<Morpheme>
+sealed class Grapheme : IGrapheme<Grapheme>
 {
     public string? Text { get; }
-    public ILexeme<Morpheme> Lexeme { get; }
-    public IReadOnlyList<Morpheme> Elements { get; }
+    public Lexeme Lexeme { get; }
+    public IReadOnlyList<Grapheme> Elements { get; }
     public IPosition Position { get; }
 
 
     /// <param name="getText">A function that gets the text from a specific source node. </param>
-    public static Morpheme Create<TSource>(ILexeme<Morpheme> lexeme, TSource tree, Func<TSource, string?> getText) where TSource : class, IParseNode<TSource>
+    public static Grapheme Create<TSource>(Lexeme lexeme, TSource tree, Func<TSource, string?> getText) where TSource : class, IParseNode<TSource>
     {
-        return RedGreenExtensions.Map<TSource, Morpheme>(tree, create);
-        Morpheme create(TSource element, IReadOnlyList<Morpheme> elements)
+        return RedGreenExtensions.Map<TSource, Grapheme>(tree, create);
+        Grapheme create(TSource element, IReadOnlyList<Grapheme> elements)
         {
             if (elements.Count == 0)
             {
@@ -199,19 +202,19 @@ sealed class Morpheme : IMorpheme<Morpheme>
                 {
                     throw new InvalidCastException($"Return value of {nameof(getText)} cannot be null or empty for nodes without child nodes");
                 }
-                return new Morpheme(lexeme, element.Position, null, text);
+                return new Grapheme(lexeme, element.Position, null, text);
             }
             else
             {
-                return new Morpheme(lexeme, element.Position, elements, null);
+                return new Grapheme(lexeme, element.Position, elements, null);
             }
         }
     }
-    public static Morpheme Create(ILexeme<Morpheme> lexeme, IPosition position, params (IPosition Position, string Text)[] leaves)
+    public static Grapheme Create(Lexeme lexeme, IPosition position, params (IPosition Position, string Text)[] leaves)
     {
-        return new Morpheme(lexeme, position, leaves.Map(_ => new Morpheme(lexeme, _.Position, null, _.Text)), null);
+        return new Grapheme(lexeme, position, leaves.Map(_ => new Grapheme(lexeme, _.Position, null, _.Text)), null);
     }
-    private Morpheme(ILexeme<Morpheme> lexeme, IPosition position, IReadOnlyList<Morpheme>? elements, string? text)
+    private Grapheme(Lexeme lexeme, IPosition position, IReadOnlyList<Grapheme>? elements, string? text)
     {
         Contract.Requires(lexeme != null);
         Contract.Requires(position != null);
@@ -228,40 +231,42 @@ sealed class Morpheme : IMorpheme<Morpheme>
         this.Lexeme = lexeme;
         this.Position = position;
         this.Text = text;
-        this.Elements = elements ?? EmptyCollection<Morpheme>.ReadOnlyList;
+        this.Elements = elements ?? EmptyCollection<Grapheme>.ReadOnlyList;
     }
 
 
-    public Morpheme With(IReadOnlyList<Morpheme> elements)
+    public Grapheme With(IReadOnlyList<Grapheme> elements)
     {
         Contract.Requires(this.Text == null, "{0}: Cannot add elements to node with text");
         Contract.Requires(elements != null);
         Contract.Requires(elements.Count != 0);
 
-        return new Morpheme(this.Lexeme, this.Position, elements, null);
+        return new Grapheme(this.Lexeme, this.Position, elements, null);
     }
-    public Morpheme With(string text)
+    public Grapheme With(string text)
     {
         Contract.Requires(this.Text != null, "{0}: Cannot add text to node with elements");
         Contract.Requires(!string.IsNullOrEmpty(text));
 
-        return new Morpheme(this.Lexeme, this.Position, null, text);
+        return new Grapheme(this.Lexeme, this.Position, null, text);
     }
-    public Morpheme With(IPosition position)
+    public Grapheme With(IPosition position)
     {
-        return new Morpheme(this.Lexeme, position, this.Elements, this.Text);
+        return new Grapheme(this.Lexeme, position, this.Elements, this.Text);
     }
-    IReadOnlyList<IMorpheme<Morpheme>> IGreenNode<IMorpheme<Morpheme>>.Elements => Elements;
-    IMorpheme<Morpheme> IGreenNode<IMorpheme<Morpheme>>.With(IReadOnlyList<IMorpheme<Morpheme>> elements)
+    IReadOnlyList<IGrapheme<Grapheme>> IGreenNode<IGrapheme<Grapheme>>.Elements => Elements;
+
+    ILexeme<Grapheme> IGrapheme<Grapheme>.Lexeme => this.Lexeme;
+    IGrapheme<Grapheme> IGreenNode<IGrapheme<Grapheme>>.With(IReadOnlyList<IGrapheme<Grapheme>> elements)
     {
-        return With(elements as IReadOnlyList<Morpheme> ?? elements.Map(e => e as Morpheme ?? throw new NotImplementedException("IMorpheme<Morpheme> not castable to Morpheme")));
+        return With(elements as IReadOnlyList<Grapheme> ?? elements.Map(e => e as Grapheme ?? throw new NotImplementedException("IGrapheme<Grapheme> not castable to Grapheme")));
     }
 }
-class Lexeme : ILexeme<Morpheme>
+class Lexeme : ILexeme<Grapheme>
 {
-    public Morpheme MainRepresentation { get; }
-    public Lexeme(Morpheme mainRepresentation)
+    public Grapheme MainRepresentation { get; }
+    public Lexeme(Func<Lexeme, Grapheme> mainRepresentationFactory)
     {
-        this.MainRepresentation = mainRepresentation;
+        this.MainRepresentation = mainRepresentationFactory(this);
     }
 }

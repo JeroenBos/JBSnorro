@@ -1,0 +1,71 @@
+<Playlist Version="2.0">
+  <Rule Name="Includes" Match="Any">
+    <Rule Match="All">
+      <Property Name="Solution" />
+      <Rule Match="Any">
+        <Rule Match="All">
+          <Property Name="Project" Value="JBSnorro.Tests (net7.0)" />
+          <Rule Match="Any">
+            <Rule Match="All">
+              <Property Name="Namespace" Value="JBSnorro.Tests.Graphs" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="TrivialGreenNodeTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Graphs.TrivialGreenNodeTests.TestWithEmptyElementsHasEmptyElements" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestWithEmptyElementsHasEmptyElements" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Graphs.TrivialGreenNodeTests.TestWithSingleElementHasSingleElement" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestWithSingleElementHasSingleElement" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Graphs.TrivialGreenNodeTests.TestWithTwoElementsHasTwoElements" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestWithTwoElementsHasTwoElements" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="TrivialRedNodeTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Graphs.TrivialRedNodeTests.Create_from_green_copies_green_value_and_elements" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Create_from_green_copies_green_value_and_elements" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Graphs.TrivialRedNodeTests.Create_from_green_with_single_element_has_that_single_element" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Create_from_green_with_single_element_has_that_single_element" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Graphs.TrivialRedNodeTests.Create_from_green_without_elements_has_no_elements" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Create_from_green_without_elements_has_no_elements" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Graphs.TrivialRedNodeTests.Create_two_elements_has_those_two_elements" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Create_two_elements_has_those_two_elements" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+          </Rule>
+        </Rule>
+      </Rule>
+    </Rule>
+  </Rule>
+</Playlist>
