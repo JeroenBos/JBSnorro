@@ -327,10 +327,11 @@ namespace JBSnorro.Extensions
 			return (target, value) => nonstaticField.SetValue(target, value);
 		}
 
-		/// <summary> Gets whether the specified type implements the specified interface type, including all (if any) generic type arguments. Does not take into account variance. </summary>
-		/// <param name="type"> The type to check whether it implements the interface. </param>
-		/// <param name="interfaceType"> The interface to check whether it is implemented. </param>
-		public static bool Implements(this Type type, Type interfaceType)
+        /// <summary> Gets whether the specified type implements the specified interface type, including all (if any) generic type arguments. Does not take into account variance. </summary>
+        /// <param name="type"> The type to check whether it implements the interface. </param>
+        /// <param name="interfaceType"> The interface to check whether it is implemented. </param>
+        [DebuggerHidden]
+        public static bool Implements(this Type type, Type interfaceType)
 		{
 			Contract.Requires(type != null);
 			Contract.Requires(interfaceType != null);

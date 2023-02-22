@@ -1,4 +1,6 @@
-﻿namespace JBSnorro.Extensions;
+﻿using System.Diagnostics;
+
+namespace JBSnorro.Extensions;
 
 public class EnvironmentExtensions
 {
@@ -7,6 +9,7 @@ public class EnvironmentExtensions
     /// </summary>
     /// <param name="name">The name of the environment variable to get. </param>
     /// <exception cref="EnvironmentVariableNotFoundException"></exception>
+    [DebuggerHidden]
     public static string GetRequiredEnvironmentVariable(string name)
     {
         return Environment.GetEnvironmentVariable(name) ?? throw new EnvironmentVariableNotFoundException(name);
