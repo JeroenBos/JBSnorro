@@ -28,6 +28,14 @@ public class EnvironmentExtensions
         }
         return value;
     }
+
+    public static bool IsCI
+    {
+        get
+        {
+            return bool.Parse(Environment.GetEnvironmentVariable("CI") ?? "false");
+        }
+    }
 }
 
 

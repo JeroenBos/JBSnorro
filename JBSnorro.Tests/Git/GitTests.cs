@@ -51,11 +51,20 @@ namespace JBSnorro.Csx.Tests
                 throw new BashNonzeroExitCodeException(exitCode, stdErr);
             }
 
+            if (EnvironmentExtensions.IsCI)
+            {
+                return;
+            }
             // not sure if we should be doing this, but somehow I commited in bash with the tester git user
             // that's possible because the tester git user ssh-agent was up and running. No program should be
             // communicating with it, but somehow it is. Maybe this triggers that communication to use
             // the correct user again.
-            await $"\"{init_ssh_agent_path}\" \"$HOME/.ssh/agent.env\"".Execute(cwd: repoDir);
+            (exitCode, stdOut, stdErr) = await $"\"{init_ssh_agent_path}\" \"$HOME/.ssh/agent.env\"".Execute(cwd: repoDir);
+            if (exitCode != 0)
+            {
+                Console.WriteLine("Unsuccessfully reinstated the original ssh agent:");
+                Console.WriteLine(stdErr);
+            }
         }
         protected async Task<IGitRepo> InitEmptyRepo(Func<string /*dir*/, IRemoteGitRepo>? remoteFactory = null)
         {
