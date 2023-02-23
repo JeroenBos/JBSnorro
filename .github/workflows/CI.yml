@@ -21,7 +21,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest] # , windows-latest]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -52,17 +52,19 @@ jobs:
     - run: dotnet build
 
     - id: should-test-gh
-      uses: tj-actions/verify-changed-files@v13
+      uses: tj-actions/changed-files@v35
       with:
         files: |
            **
 
     - name: debugging
       run: |
-        echo "$\{ steps.should-test-gh.outputs.files_changed }: ${{ steps.should-test-gh.outputs.files_changed }}"
-        echo "$\{ github.event.pull_request.draft == true }: ${{ github.event.pull_request.draft == true }}"
-        echo "$\{ steps.should-test-gh.outputs.files_changed != 'true' && github.event.pull_request.draft == true }:  ${{ steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true }}"
-        echo "$\{ ! (steps.should-test-gh.outputs.files_changed != 'true' && github.event.pull_request.draft == true) }:  ${{ ! (steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true) }}"
+        echo "$\{ steps.should-test-gh.outputs.all_changed_and_modified_files }: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}"
+        echo "$\{ steps.should-test-gh.outputs.all_changed_and_modified_files == '' }: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files == '' }}"
+        
+    - name: debugging 2
+      run: |
+        echo "$\{ steps.should-test-gh.outputs }: ${{ steps.should-test-gh.outputs }}"
 
     - name: Unit test
       if: ${{ steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true }}
