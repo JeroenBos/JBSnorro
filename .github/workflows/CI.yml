@@ -74,12 +74,6 @@ jobs:
       if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
       run: echo booleanable
       
-    
-    - name: debugging 4
-      if: ! ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
-      run: echo booleanable
-      
-    
     - name: debugging 5
       if: ${{ ! steps.should-test-gh.outputs.all_changed_and_modified_files }}
       run: echo booleanable
