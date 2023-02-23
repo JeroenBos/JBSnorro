@@ -55,10 +55,7 @@ jobs:
       uses: tj-actions/verify-changed-files@v13
       with:
         files: |
-           **/JBSnorro/Git/**
-           **/JBSnorro/JS/**
-           **/JBSnorro.Tests/Csx/**
-           **/JBSnorro.Tests/Git/**
+           **
 
     - name: debugging
       run: |
