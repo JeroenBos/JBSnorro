@@ -60,25 +60,12 @@ jobs:
             **/JBSnorro.Tests/Csx/**
             **/JBSnorro.Tests/Git/**
 
-    - name: debugging
-      run: |
-        echo "$\{ steps.should-test-gh.outputs.all_changed_and_modified_files }: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}"
-        echo "$\{ steps.should-test-gh.outputs.all_changed_and_modified_files == '' }: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files == '' }}"
-        
-    - name: debugging 2
-      run: |
-        echo "$\{ steps.should-test-gh.outputs }: ${{ steps.should-test-gh.outputs }}"
-
-    - name: debugging 6
-      if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files && true }}
-      run: echo booleanable
-
     - name: Unit test
-      if: ${{ steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true }}
+      if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files || github.event.pull_request.draft == true }}
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration"
       timeout-minutes: 5
 
     - name: Unit test + integration tests
-      if: ${{ ! (steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true) }}
+      if: ${{ ! (steps.should-test-gh.outputs.all_changed_and_modified_files || github.event.pull_request.draft == true) }}
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
       timeout-minutes: 5
