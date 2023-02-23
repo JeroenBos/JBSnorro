@@ -55,10 +55,7 @@ jobs:
       uses: tj-actions/verify-changed-files@v13
       with:
         files: |
-           **/JBSnorro/Git/**
-           **/JBSnorro/JS/**
-           **/JBSnorro.Tests/Csx/**
-           **/JBSnorro.Tests/Git/**
+           **
 
     - name: Unit test
       if: ${{ steps.should-test-gh.outputs.files_changed != 'true' && github.event.pull_request.draft == true }}
