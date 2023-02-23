@@ -66,6 +66,11 @@ jobs:
       run: |
         echo "$\{ steps.should-test-gh.outputs }: ${{ steps.should-test-gh.outputs }}"
 
+    
+    - name: debugging 3
+      if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
+      run: echo booleanable
+
     - name: Unit test
       if: ${{ steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true }}
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration"
