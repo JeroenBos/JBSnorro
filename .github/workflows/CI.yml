@@ -72,7 +72,7 @@ jobs:
       if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files || github.event.pull_request.draft == true }}
       run: echo 'steps.should-test-gh.outputs.all_changed_and_modified_files || github.event.pull_request.draft == true' is true
     
-    - name: ! (steps.should-test-gh.outputs.all_changed_and_modified_files || github.event.pull_request.draft == true)
+    - name: "! (steps.should-test-gh.outputs.all_changed_and_modified_files || github.event.pull_request.draft == true)"
       if: ${{ ! (steps.should-test-gh.outputs.all_changed_and_modified_files || github.event.pull_request.draft == true) }}
       run: echo '! (steps.should-test-gh.outputs.all_changed_and_modified_files || github.event.pull_request.draft == true)' is true
 
