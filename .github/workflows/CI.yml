@@ -55,7 +55,10 @@ jobs:
       uses: tj-actions/changed-files@v35
       with:
         files: |
-           **
+            **/JBSnorro/Git/**
+            **/JBSnorro/JS/**
+            **/JBSnorro.Tests/Csx/**
+            **/JBSnorro.Tests/Git/**
 
     - name: debugging
       run: |
