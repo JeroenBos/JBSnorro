@@ -69,13 +69,8 @@ jobs:
       run: |
         echo "$\{ steps.should-test-gh.outputs }: ${{ steps.should-test-gh.outputs }}"
 
-    
-    - name: debugging 3
-      if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
-      run: echo booleanable
-      
-    - name: debugging 5
-      if: ${{ ! steps.should-test-gh.outputs.all_changed_and_modified_files }}
+    - name: debugging 6
+      if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files && true }}
       run: echo booleanable
 
     - name: Unit test
