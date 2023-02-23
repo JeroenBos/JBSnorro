@@ -62,10 +62,10 @@ jobs:
 
     - name: debugging
       run: |
-        echo "$\{ steps.should-test-gh.outputs.changed_files }: ${{ steps.should-test-gh.outputs.changed_files }}"
+        echo "$\{ steps.should-test-gh.outputs.files_changed }: ${{ steps.should-test-gh.outputs.files_changed }}"
         echo "$\{ github.event.pull_request.draft == true }: ${{ github.event.pull_request.draft == true }}"
-        echo "$\{ steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true }:  ${{ steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true }}"
-        echo "$\{ ! (steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true) }:  ${{ ! (steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true) }}"
+        echo "$\{ steps.should-test-gh.outputs.files_changed != 'true' && github.event.pull_request.draft == true }:  ${{ steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true }}"
+        echo "$\{ ! (steps.should-test-gh.outputs.files_changed != 'true' && github.event.pull_request.draft == true) }:  ${{ ! (steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true) }}"
 
     - name: Unit test
       if: ${{ steps.should-test-gh.outputs.changed_files != 'true' && github.event.pull_request.draft == true }}
