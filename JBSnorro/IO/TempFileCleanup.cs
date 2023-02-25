@@ -15,7 +15,7 @@ public static class TempFileCleanup
     {
         get
         {
-            bool ci = bool.Parse(Environment.GetEnvironmentVariable("CI") ?? "false");
+            bool ci = EnvironmentExtensions.IsCI;
             bool enabled = !ci;
             return enabled;
         }

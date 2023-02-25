@@ -16,7 +16,6 @@ env:
 defaults:
   run:
     shell: bash
-
 jobs:
   test:
     strategy:
@@ -24,8 +23,9 @@ jobs:
         os: [ubuntu-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+
     steps:
-          
     - uses: actions/checkout@v3
     - uses: actions/setup-dotnet@v3
       with:
@@ -40,7 +40,7 @@ jobs:
     - name: Prepare ssh access
       run: |
           mkdir "$(dirname "$SSH_FILE")"
-          echo "${{secrets.PLAYGROUND_SSH_KEY}}" > "$SSH_FILE"
+          echo "${{ secrets.PLAYGROUND_SSH_KEY }}" > "$SSH_FILE"
           
           # Give access to ssh key (Linux)
           if [[ '${{ matrix.os }}' == 'ubuntu-latest' ]]; then
@@ -52,19 +52,18 @@ jobs:
     - run: dotnet build
 
     - id: should-test-gh
-      uses: tj-actions/verify-changed-files@v13
+      uses: tj-actions/changed-files@v35
       with:
         files: |
-           JBSnorro/Git/*
-           JBSnorro/JS/*
-           JBSnorro.Tests/Csx/*
+            **/JBSnorro/Git/**
+            **/JBSnorro/JS/**
+            **/JBSnorro.Tests/Csx/**
+            **/JBSnorro.Tests/Git/**
 
     - name: Unit test
-      if: ${{ steps.should-test-gh.outputs.files_changed != 'true' && github.event.pull_request.draft == true }}
+      if: ${{ ! steps.should-test-gh.outputs.all_changed_and_modified_files }}
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration"
-      timeout-minutes: 5
 
     - name: Unit test + integration tests
-      if: ${{ ! (steps.should-test-gh.outputs.files_changed != 'true' && github.event.pull_request.draft == true) }}
+      if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
-      timeout-minutes: 5

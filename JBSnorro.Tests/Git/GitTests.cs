@@ -30,8 +30,9 @@ namespace JBSnorro.Csx.Tests
         protected static string ssh_file => EnvironmentExtensions.GetRequiredEnvironmentVariable("SSH_FILE");
         protected static string ssh_key_path => Path.GetFullPath(ssh_file.ExpandTildeAsHomeDir()).ToBashPath(false);
         protected static string init_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/init-ssh-agent.sh";
+        protected static string cleanup_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/cleanup-ssh-agent.sh";
         private static string GIT_SSH_COMMAND => $"GIT_SSH_COMMAND=\"ssh -i {ssh_key_path} -F /dev/null\"";
-        protected static string SSH_SCRIPT => $"source {init_ssh_agent_path} && ssh-add {ssh_key_path} && export {GIT_SSH_COMMAND}";
+        protected static string SSH_SCRIPT => $"source \"{init_ssh_agent_path}\" && ssh-add {ssh_key_path} && export {GIT_SSH_COMMAND}";
 
         private IAsyncDisposable? cleanup;
         [TestCleanup]
@@ -42,11 +43,35 @@ namespace JBSnorro.Csx.Tests
                 await cleanup.DisposeAsync();
             }
         }
+        private static async Task CleanupSSHAgent(string repoDir)
+        {
+            var (exitCode, stdOut, stdErr) = await $"source \"{cleanup_ssh_agent_path}\"".Execute(cwd: repoDir);
+            if (exitCode != 0 && !stdErr.Contains("No ssh agent pid found"))
+            {
+                throw new BashNonzeroExitCodeException(exitCode, stdErr);
+            }
+
+            if (EnvironmentExtensions.IsCI)
+            {
+                return;
+            }
+            // not sure if we should be doing this, but somehow I commited in bash with the tester git user
+            // that's possible because the tester git user ssh-agent was up and running. No program should be
+            // communicating with it, but somehow it is. Maybe this triggers that communication to use
+            // the correct user again.
+            (exitCode, stdOut, stdErr) = await $"\"{init_ssh_agent_path}\" \"$HOME/.ssh/agent.env\"".Execute(cwd: repoDir);
+            if (exitCode != 0)
+            {
+                Console.WriteLine("Unsuccessfully reinstated the original ssh agent:");
+                Console.WriteLine(stdErr);
+            }
+        }
         protected async Task<IGitRepo> InitEmptyRepo(Func<string /*dir*/, IRemoteGitRepo>? remoteFactory = null)
         {
-            var tmpDir = IOExtensions.CreateTemporaryDirectory();
-            this.cleanup = tmpDir;
-            string dir = tmpDir.Value;
+            var dirDisposable = IOExtensions.CreateTemporaryDirectory();
+            string dir = dirDisposable.Value;
+            this.cleanup = dirDisposable.WithBefore(() => CleanupSSHAgent(dir));
+
             var result = await "git init; git config user.name 'tester'; git config user.email 'tester@test.com'".Execute(cwd: dir);
 
             Assert.AreEqual(result.ExitCode, 0, result.ErrorOutput);
