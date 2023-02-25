@@ -16,6 +16,11 @@ env:
 defaults:
   run:
     shell: bash
+env:
+  # SSH_FILE:
+  # NODE_PATH:
+  OS: ${{ matrix.os }}
+
 jobs:
   test:
     strategy:
@@ -32,10 +37,15 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Create NODE_PATH env var
-      run: echo "NODE_PATH=$(which node)$([[ '${{ matrix.os }}' == 'windows-latest' ]] && echo -n '.exe')" >> $GITHUB_ENV 
+      run: |
+        echo $OS
+        which node
+        echo "NODE_PATH=$(which node)$([[ '${{ matrix.os }}' == 'windows-latest' ]] && echo -n '.exe')" >> $GITHUB_ENV 
 
     - name: Create SSH_FILE env var 
-      run: echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
+      run: |
+        echo $HOME
+        echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
 
     - name: Prepare ssh access
       run: |
