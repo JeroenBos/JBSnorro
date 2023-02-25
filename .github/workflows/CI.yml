@@ -47,7 +47,7 @@ jobs:
     - name: Prepare ssh access
       run: |
           mkdir "$(dirname "$SSH_FILE")"
-          echo "${{ secrets.PLAYGROUND_SSH_KEY }}" > "$SSH_FILE"
+          echo "${{ secrets.JEROENBOS_TESTSERVICEUSER_SSH_KEY }}" > "$SSH_FILE"
           
           # Give access to ssh key (Linux)
           if [[ '${{ matrix.os }}' == 'ubuntu-latest' ]]; then
