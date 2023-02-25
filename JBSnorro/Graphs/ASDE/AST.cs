@@ -5,25 +5,23 @@ using JBSnorro.Graphs;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
-namespace ASDE;
+namespace JBSnorro.Experimentation.AST;
 
 
-public interface IPositioned // <TSelf> : IGreenNode<TSelf> where TSelf : class, IPositioned<TSelf>
+internal interface IPositioned // <TSelf> : IGreenNode<TSelf> where TSelf : class, IPositioned<TSelf>
 {
     public IPosition Position { get; }
 
     // IReadOnlyList<TSelf> IGreenNode<TSelf>.Elements => ((TSelf)this).Elements; // circular
     // TSelf IGreenNode<TSelf>.With(IReadOnlyList<TSelf> elements) => ((TSelf)this).With(elements);  // circular
 }
-public interface IParseNode<TSelf> : IGreenNode<TSelf>, IPositioned where TSelf : class, IParseNode<TSelf>, IGreenNode<TSelf>
+internal interface IParseNode<TSelf> : IGreenNode<TSelf>, IPositioned where TSelf : class, IParseNode<TSelf>, IGreenNode<TSelf>
 {
 
 }
 
-public class ParseNode : IParseNode<ParseNode>
+internal class ParseNode : IParseNode<ParseNode>
 {
     public IReadOnlyList<ParseNode> Elements { get; }
     public IPosition Position { get; }
@@ -43,7 +41,7 @@ public class ParseNode : IParseNode<ParseNode>
 
 
 
-public interface IASTNode<TSelf, TParseNode> : IRedNode<TSelf, TParseNode> where TSelf : class, IASTNode<TSelf, TParseNode> where TParseNode : class, IParseNode<TParseNode>
+internal interface IASTNode<TSelf, TParseNode> : IRedNode<TSelf, TParseNode> where TSelf : class, IASTNode<TSelf, TParseNode> where TParseNode : class, IParseNode<TParseNode>
 {
     /// <summary>
     /// Gets the semantics of this node if they're computed already; otherwise <code>null</code>.
@@ -54,7 +52,7 @@ public interface IASTNode<TSelf, TParseNode> : IRedNode<TSelf, TParseNode> where
 
 
 
-public class ASTNode : IASTNode<ASTNode, ParseNode>
+internal class ASTNode : IASTNode<ASTNode, ParseNode>
 {
     public ASTNode? Parent { get; }
     public IReadOnlyList<ASTNode> Elements { get; }
@@ -106,16 +104,16 @@ public class ASTNode : IASTNode<ASTNode, ParseNode>
 
 
 
-public interface IPosition
+internal interface IPosition
 {
     static IPosition RootPosition { get; } = default!;
 }
 
-public interface IBinder
+internal interface IBinder
 {
     public IModel GetSemanticModel(ASTNode node);
 }
-public interface IModel : IGreenNode<IModel>
+internal interface IModel : IGreenNode<IModel>
 {
 
 }
