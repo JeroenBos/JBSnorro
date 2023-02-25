@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using JBSnorro.Graphs.RedGreen;
 using static JBSnorro.Graphs.TreeExtensions;
 
 namespace JBSnorro.Graphs;

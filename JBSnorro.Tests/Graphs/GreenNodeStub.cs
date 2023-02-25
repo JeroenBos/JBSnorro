@@ -1,4 +1,4 @@
-﻿using JBSnorro.Graphs;
+﻿using JBSnorro.Graphs.RedGreen;
 
 namespace JBSnorro.Tests.Graphs;
 

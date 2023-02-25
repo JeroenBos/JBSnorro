@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using JBSnorro.Diagnostics;
 using JBSnorro.Graphs;
+using JBSnorro.Graphs.RedGreen;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace JBSnorro.Tests.Graphs;

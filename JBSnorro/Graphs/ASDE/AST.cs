@@ -2,6 +2,7 @@
 using JBSnorro;
 using JBSnorro.Diagnostics;
 using JBSnorro.Graphs;
+using JBSnorro.Graphs.RedGreen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
