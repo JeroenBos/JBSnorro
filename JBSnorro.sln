@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		.github\workflows\CI.yml = .github\workflows\CI.yml
+		.github\get_current_version.sh = .github\get_current_version.sh
+		.github\get_published_version.sh = .github\get_published_version.sh
 		.github\workflows\Publish.yml = .github\workflows\Publish.yml
 	EndProjectSection
 EndProject

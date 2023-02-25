@@ -25,6 +25,13 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
+	  <Watch Remove="Graphs\GreenNodeStub.cs" />
+	  <Watch Remove="Graphs\IGreenNodeTests.cs" />
+	  <Watch Remove="Graphs\IRedNodeTests.cs" />
+	  <Watch Remove="Graphs\RedNodeStub.cs" />
+	</ItemGroup>
+	
+	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
