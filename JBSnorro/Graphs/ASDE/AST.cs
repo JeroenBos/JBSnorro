@@ -50,33 +50,36 @@ public interface IASTNode<TSelf, TParseNode> : IRedNode<TSelf, TParseNode> where
     /// </summary>
     public IModel? Semantics { get; }
     public IModel ComputeSemantics(IBinder binder);
-
-    //static TSelf IRedNode<TSelf, IParseNode<TSelf>>.Create(IParseNode<TSelf> green) => throw new UnreachableException("Must be implemented"); // Hmm 🤔
 }
 
 
 
 public class ASTNode : IASTNode<ASTNode, ParseNode>
 {
-    protected ParseNode Green { get; }
     public ASTNode? Parent { get; }
     public IReadOnlyList<ASTNode> Elements { get; }
+    protected ParseNode Green { get; }
     public IModel? Semantics { get; private set; }
-    private readonly int indexInParent;
+    public int IndexInParent { get; }
 
     public static ASTNode Create(ParseNode green, ASTNode? parent, int? indexInParent) => new ASTNode(green, parent, indexInParent);
     public ASTNode(ParseNode green, ASTNode? parent, int? indexInParent)
     {
+        Contract.Requires(green != null);
+        Contract.Requires(parent is null == indexInParent < 0);
+
         this.Green = green;
         this.Parent = parent;
         this.Elements = green.Elements.MapLazily((green, i) => ASTNode.Create(green, this, i));
-        this.indexInParent = indexInParent ?? -1;
+        this.IndexInParent = indexInParent ?? -1;
     }
 
 
-    ParseNode IRedNode<ASTNode, ParseNode>.Green => this.Green;
-    int IRedNode<ASTNode, ParseNode>.IndexInParent => indexInParent;
     public IModel ComputeSemantics(IBinder binder) => throw new NotImplementedException();
+    ParseNode IRedNode<ASTNode, ParseNode>.Green => this.Green;
+    int IRedNode<ASTNode, ParseNode>.IndexInParent => IndexInParent;
+    IReadOnlyList<ASTNode> IRedNode<ASTNode, ParseNode>.Elements => Elements;
+    ASTNode? IRedNode<ASTNode, ParseNode>.Parent => Parent;
 }
 
 
