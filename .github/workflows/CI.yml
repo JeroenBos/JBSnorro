@@ -77,11 +77,11 @@ jobs:
       run: echo '! (steps.should-test-gh.outputs.all_changed_and_modified_files || github.event.pull_request.draft == true)' is true
 
     - name: Unit test
-      if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
+      if: ${{ ! steps.should-test-gh.outputs.all_changed_and_modified_files }}
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration"
       timeout-minutes: 5
 
     - name: Unit test + integration tests
-      if: ${{ ! steps.should-test-gh.outputs.all_changed_and_modified_files }}
+      if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
       timeout-minutes: 5
