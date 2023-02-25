@@ -2,7 +2,7 @@
 namespace JBSnorro.Graphs.RedGreen;
 
 /// <summary>
-/// Asnything that derives from this must be immutable.
+/// Anything that derives from this must be immutable.
 /// </summary>
 public interface IGreenNode<TGreenNode> where TGreenNode : class, IGreenNode<TGreenNode>
 {
