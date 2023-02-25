@@ -12,14 +12,11 @@ on:
 env:
     DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
     DOTNET_CLI_TELEMETRY_OPTOUT: true
+    OS: ${{ matrix.os }}
 
 defaults:
   run:
     shell: bash
-env:
-  # SSH_FILE:
-  # NODE_PATH:
-  OS: ${{ matrix.os }}
 
 jobs:
   test:
