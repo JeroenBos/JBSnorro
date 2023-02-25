@@ -73,6 +73,7 @@ namespace JBSnorro.Csx.Tests
             this.cleanup = dirDisposable.WithBefore(() => CleanupSSHAgent(dir));
 
             var result = await "git init; git config user.name 'tester'; git config user.email 'tester@test.com'".Execute(cwd: dir);
+
             Assert.AreEqual(result.ExitCode, 0, result.ErrorOutput);
             Assert.IsTrue(result.StandardOutput.StartsWith("Initialized empty Git repository"));
 
