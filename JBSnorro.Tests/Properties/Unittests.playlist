@@ -7,6 +7,1404 @@
           <Property Name="Project" Value="JBSnorro.Tests (net7.0)" />
           <Rule Match="Any">
             <Rule Match="All">
+              <Property Name="Namespace" Value="Tests" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="ExtensionTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="Tests.ExtensionTests.TestSplitByIndices" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestSplitByIndices" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+            <Rule Match="All">
+              <Property Name="Namespace" Value="JBSnorro.Tests.TypeExtensions" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="IsOpenlyAssignableFromTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeExtensions.IsOpenlyAssignableFromTests.IListOfIntIsAssignableToIListOfInt" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="IListOfIntIsAssignableToIListOfInt" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeExtensions.IsOpenlyAssignableFromTests.IntIsAssignableToInt" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="IntIsAssignableToInt" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeExtensions.IsOpenlyAssignableFromTests.ListOfIntIsAssignableToListOfInt" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ListOfIntIsAssignableToListOfInt" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeExtensions.IsOpenlyAssignableFromTests.ListOfIntIsAssignableToOpenIList" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ListOfIntIsAssignableToOpenIList" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeExtensions.IsOpenlyAssignableFromTests.ListOfIntIsAssignableToOpenList" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ListOfIntIsAssignableToOpenList" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeExtensions.IsOpenlyAssignableFromTests.OpenIListIsNotAssignableToIListOfInt" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="OpenIListIsNotAssignableToIListOfInt" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeExtensions.IsOpenlyAssignableFromTests.OpenListIsNotAssignableToListOfInt" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="OpenListIsNotAssignableToListOfInt" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+            <Rule Match="All">
+              <Property Name="Namespace" Value="JBSnorro.Tests.Text" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="LanguageStringVerifierTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Text.LanguageStringVerifierTests.TestContainsOnlyValidEscapeSequencesByExample" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestContainsOnlyValidEscapeSequencesByExample" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Text.LanguageStringVerifierTests.TestValidEscapeCharacters" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestValidEscapeCharacters" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+            <Rule Match="All">
+              <Property Name="Namespace" Value="JBSnorro.Tests.Extensions" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="StringExtensionsTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Extensions.StringExtensionsTests.SubstringUntilLast_Returns_Input_If_Not_Found" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SubstringUntilLast_Returns_Input_If_Not_Found" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Extensions.StringExtensionsTests.SubstringUntilLast_Returns_Until_Last_Contiguous_Match" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SubstringUntilLast_Returns_Until_Last_Contiguous_Match" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Extensions.StringExtensionsTests.SubstringUntilLast_Returns_Until_Last_Input_If_Found" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SubstringUntilLast_Returns_Until_Last_Input_If_Found" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+            <Rule Match="All">
+              <Property Name="Namespace" Value="JBSnorro.Tests" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="AsyncVoidReturningMethodsTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.AsyncVoidReturningMethodsTests.ATest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ATest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.AsyncVoidReturningMethodsTests.I" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="I" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="BitArrayIndexOfTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitArrayIndexOfTests.TestFindExactSecondUlongMatch" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestFindExactSecondUlongMatch" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitArrayIndexOfTests.TestFindExactUlongMatch" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestFindExactUlongMatch" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitArrayIndexOfTests.TestFindMatchOnLastNonAlignedBit" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestFindMatchOnLastNonAlignedBit" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitArrayIndexOfTests.TestFindMatchOnSecondBit" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestFindMatchOnSecondBit" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitArrayIndexOfTests.TestFindMultiple" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestFindMultiple" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitArrayIndexOfTests.TestFindZero" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestFindZero" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="BitArrayTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitArrayTests.BitArrayCtorTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="BitArrayCtorTest" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="BitInsertionTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.InsertionsAtSameSpot" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InsertionsAtSameSpot" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.InsertionsIn2Bytes" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InsertionsIn2Bytes" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.InsertionsInManyBytes" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InsertionsInManyBytes" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.InsertionsInSameBytes" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InsertionsInSameBytes" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.InsertionsInSameBytesCloserTogether" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InsertionsInSameBytesCloserTogether" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.InsertionsOf0In2Bytes" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InsertionsOf0In2Bytes" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.NoBitInsertion" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="NoBitInsertion" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleAppendBit" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleAppendBit" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionAtTheEndOfLastElement" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionAtTheEndOfLastElement" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionInMiddleOfFlags" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionInMiddleOfFlags" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionInThirdElement" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionInThirdElement" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionIntoEmptyList" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionIntoEmptyList" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionIntoEmptyListGoesOutOfIndex" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionIntoEmptyListGoesOutOfIndex" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionIntoExistingList" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionIntoExistingList" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionIntoExistingListWithCrossoverBit" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionIntoExistingListWithCrossoverBit" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionIntoExistingListWithCrossoverBits" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionIntoExistingListWithCrossoverBits" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionIntoMiddleOfFirstByte" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionIntoMiddleOfFirstByte" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitInsertionTests.SimpleBitInsertionWithOnesInNextByte" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleBitInsertionWithOnesInNextByte" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="BitRemovalTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitRemovalTests.Test_RemovalInSecondULong" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test_RemovalInSecondULong" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitRemovalTests.Test_RemovalofMultipleInULong" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test_RemovalofMultipleInULong" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitRemovalTests.Test_SimpleRemoval" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test_SimpleRemoval" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitRemovalTests.Test_SimpleRemovalAtBeginning" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test_SimpleRemovalAtBeginning" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitRemovalTests.Test_SimpleRemovalAtEnd" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test_SimpleRemovalAtEnd" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitRemovalTests.Test_SimpleRemovalOnlyBit" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test_SimpleRemovalOnlyBit" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.BitRemovalTests.Test_SimpleRemovalofMultiple" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test_SimpleRemovalofMultiple" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="DefaultObjectJsonConverterTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DefaultObjectJsonConverterTests.ConvertNewObject" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ConvertNewObject" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DefaultObjectJsonConverterTests.ConvertObjectWithOneProperty" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ConvertObjectWithOneProperty" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="DefineConstantsTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DefineConstantsTests.TestNotLinuxOS" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestNotLinuxOS" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DefineConstantsTests.TestWindowsOS" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestWindowsOS" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="DictionaryJsonConverterTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DictionaryJsonConverterTests.ElementIsEmptyArray" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ElementIsEmptyArray" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DictionaryJsonConverterTests.ElementIsEmptyObject" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ElementIsEmptyObject" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DictionaryJsonConverterTests.ElementIsEmptyString" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ElementIsEmptyString" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DictionaryJsonConverterTests.ElementIsNumber" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ElementIsNumber" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DictionaryJsonConverterTests.ElementIsObject" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ElementIsObject" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DictionaryJsonConverterTests.ElementIsObjectRemainsJsonElementIfUndeserializable" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ElementIsObjectRemainsJsonElementIfUndeserializable" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DictionaryJsonConverterTests.ElementIsObjectWithIncompatibleField" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ElementIsObjectWithIncompatibleField" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DictionaryJsonConverterTests.ElementIsObjectWithTwoFields" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ElementIsObjectWithTwoFields" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DictionaryJsonConverterTests.TwoElements" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TwoElements" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="DijkstraTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.HeapSpecificAdditionTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="HeapSpecificAdditionTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.HeapTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="HeapTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.HeapTestAddition" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="HeapTestAddition" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.Test" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.Test1" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test1" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.Test2" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test2" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.Test4" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test4" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.Test5" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test5" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.TestFail" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestFail" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DijkstraTests.TestImplements" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestImplements" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="DirectoryPathEqualityComparerTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DirectoryPathEqualityComparerTests.TestEquality" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestEquality" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.DirectoryPathEqualityComparerTests.TestInequality" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestInequality" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="EnumerableExtensionsTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EnumerableExtensionsTests.TestMaximumBy" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestMaximumBy" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EnumerableExtensionsTests.TestMaximumByThrowsOnEmpty" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestMaximumByThrowsOnEmpty" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="EventBindingTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.InvokedWhenSourcePropertyChangesToDefaultWhilePropertyWasNotDefaultTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InvokedWhenSourcePropertyChangesToDefaultWhilePropertyWasNotDefaultTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.InvokedWhenSourcePropertyChangesToPropertyWithDefaultWhilePropertyWasNotDefault" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InvokedWhenSourcePropertyChangesToPropertyWithDefaultWhilePropertyWasNotDefault" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.InvokedWhenSourcePropertyChangesToPropertyWithNonDefaultWhilePropertyWasNotDefault" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InvokedWhenSourcePropertyChangesToPropertyWithNonDefaultWhilePropertyWasNotDefault" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.InvokedWhenSourcePropertyIsSetWithNonDefaultPropertyTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InvokedWhenSourcePropertyIsSetWithNonDefaultPropertyTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.NotInvokedWhenSourcePropertyChangesToDefaultWhilePropertyWasDefaultTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="NotInvokedWhenSourcePropertyChangesToDefaultWhilePropertyWasDefaultTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.NotInvokedWhenSourcePropertyIsSetWithDefaultPropertyTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="NotInvokedWhenSourcePropertyIsSetWithDefaultPropertyTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.NotInvokedWhenSourcePropertyRemainsDefault" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="NotInvokedWhenSourcePropertyRemainsDefault" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.PropertyOnCollectionChangedIsNotPropagatedIfRemoved" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="PropertyOnCollectionChangedIsNotPropagatedIfRemoved" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.PropertyOnCollectionChangedIsPropagated" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="PropertyOnCollectionChangedIsPropagated" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.ReductionBindTakesOnFirstSpecifiedValue" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ReductionBindTakesOnFirstSpecifiedValue" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.ReductionBindTakesOnFirstValueFromBeginning" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ReductionBindTakesOnFirstValueFromBeginning" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.ReductionBindTriggersHandler" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ReductionBindTriggersHandler" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.EventBindingTests.TestBindRecursively" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestBindRecursively" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="ExtraPropertyJsonConverterTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.ExtraPropertyJsonConverterTests.AddExtraPropertyToNewObject" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="AddExtraPropertyToNewObject" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.ExtraPropertyJsonConverterTests.AddExtraPropertyToObjectWithOneProp" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="AddExtraPropertyToObjectWithOneProp" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.ExtraPropertyJsonConverterTests.DoNotAddExtraPropertyToObjectWithOneProp" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="DoNotAddExtraPropertyToObjectWithOneProp" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="IntervalTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IntervalTests.TestContainment" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestContainment" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IntervalTests.TestEmptyInterval" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestEmptyInterval" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IntervalTests.TestEmptyWithOtherInterval" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestEmptyWithOtherInterval" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IntervalTests.TestEndOpenClosedEquality" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestEndOpenClosedEquality" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IntervalTests.TestStartOpenClosedEquality" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestStartOpenClosedEquality" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="IsEmptyTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.DoubletonCollectionIsDisposed" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="DoubletonCollectionIsDisposed" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.DoubletonCollectionIteratedOverIsDisposed" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="DoubletonCollectionIteratedOverIsDisposed" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.DoubletonExceptionalEnumerableIsDisposedTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="DoubletonExceptionalEnumerableIsDisposedTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.DoubletonIsEnumeratedOverOnlyOnce" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="DoubletonIsEnumeratedOverOnlyOnce" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.EmptyCollectionIsDisposed" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="EmptyCollectionIsDisposed" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.EmptyCollectionIteratedOverIsDisposed" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="EmptyCollectionIteratedOverIsDisposed" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.EmptyExceptionalEnumerableIsDisposedTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="EmptyExceptionalEnumerableIsDisposedTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.EmptyIsEmptyTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="EmptyIsEmptyTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.EmptyIsEnumeratedOverOnlyOnce" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="EmptyIsEnumeratedOverOnlyOnce" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.NonEmptyIsNonEmptyTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="NonEmptyIsNonEmptyTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.SequenceDoubletonInvarianceTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SequenceDoubletonInvarianceTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.SequenceEmptyInvarianceTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SequenceEmptyInvarianceTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.SequenceSingletonInvarianceTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SequenceSingletonInvarianceTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.SequenceTripletonInvarianceTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SequenceTripletonInvarianceTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.SingletonCollectionIsDisposed" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SingletonCollectionIsDisposed" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.SingletonCollectionIteratedOverIsDisposed" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SingletonCollectionIteratedOverIsDisposed" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.SingletonExceptionalEnumerableIsDisposedTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SingletonExceptionalEnumerableIsDisposedTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.SingltonIsEnumeratedOverOnlyOnce" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SingltonIsEnumeratedOverOnlyOnce" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.TestEmptyRemainerMoveNextReturnedFalse" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestEmptyRemainerMoveNextReturnedFalse" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.TestExclusiveEmptyRemainer" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestExclusiveEmptyRemainer" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.TestExclusiveRemainer" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestExclusiveRemainer" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.TestInclusiveEmptyRemainer" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestInclusiveEmptyRemainer" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.TestInclusiveRemainer" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestInclusiveRemainer" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsEmptyTests.TripletonIsEnumeratedOverOnlyOnce" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TripletonIsEnumeratedOverOnlyOnce" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="IsFullPathTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsFullPathTests.TestIsFullPathInUnix" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestIsFullPathInUnix" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.IsFullPathTests.TestIsFullPathinWindows" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestIsFullPathinWindows" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="JsonEnumerableSerializationTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonEnumerableSerializationTests.CanSerializeArrayWithInt" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CanSerializeArrayWithInt" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonEnumerableSerializationTests.CanSerializeArrayWithNestedObject" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CanSerializeArrayWithNestedObject" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonEnumerableSerializationTests.CanSerializeEmptyArray" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CanSerializeEmptyArray" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonEnumerableSerializationTests.CanSerializeEmptyDictionary" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CanSerializeEmptyDictionary" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonEnumerableSerializationTests.CanSerializeNestedArraysWithInts" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CanSerializeNestedArraysWithInts" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonEnumerableSerializationTests.CanSerializeNestedArraysWithNestedObjects" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CanSerializeNestedArraysWithNestedObjects" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonEnumerableSerializationTests.CanSerializeString" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CanSerializeString" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="JsonSerializationTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonSerializationTests.NumberIsSerializedAsNumber" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="NumberIsSerializedAsNumber" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonSerializationTests.ObjectIsJsonIdempotent" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ObjectIsJsonIdempotent" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.JsonSerializationTests.TabIsJsonIdempotent" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TabIsJsonIdempotent" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="NonPublicMembersDynamicWrapperTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.NonPublicMembersDynamicWrapperTests.Test" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Test" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="RedGreenTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.RedGreenTests.CreationTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CreationTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.RedGreenTests.IdentityEquality" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="IdentityEquality" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.RedGreenTests.Insertion" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Insertion" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.RedGreenTests.Parenting" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Parenting" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.RedGreenTests.Removal" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Removal" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.RedGreenTests.RootDoesntHaveParentTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="RootDoesntHaveParentTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.RedGreenTests.TransitiveIdentityEquality" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TransitiveIdentityEquality" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.RedGreenTests.With" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="With" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="SingleORDefaultTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SingleORDefaultTests.NoMatchForPredicateTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="NoMatchForPredicateTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SingleORDefaultTests.NoMatchForPredicateTest2" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="NoMatchForPredicateTest2" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SingleORDefaultTests.OneMatchForPredicateTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="OneMatchForPredicateTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SingleORDefaultTests.TestDefaultOnEmpty" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestDefaultOnEmpty" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SingleORDefaultTests.TestMultipleElementsCase" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestMultipleElementsCase" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SingleORDefaultTests.TestNormalCase" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestNormalCase" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SingleORDefaultTests.TwoMatchesForPredicateTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TwoMatchesForPredicateTest" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="SortedEnumerableTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SortedEnumerableTests.DerferredExecutionTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="DerferredExecutionTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SortedEnumerableTests.SimpleTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SortedEnumerableTests.TestSimpleLinkedListAddition" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestSimpleLinkedListAddition" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SortedEnumerableTests.TestSimpleListAddition" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestSimpleListAddition" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="SubsetTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.SubsetTests.OverallTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="OverallTest" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="TakeWhileTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TakeWhileTests.TestEmptySequence" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestEmptySequence" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TakeWhileTests.TestFirstElementMatches" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestFirstElementMatches" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TakeWhileTests.TestPredicateNotNull" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestPredicateNotNull" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TakeWhileTests.TestSecondElementFails" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestSecondElementFails" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TakeWhileTests.TestSequenceNotNull" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestSequenceNotNull" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="TestCopyBitArray" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TestCopyBitArray.CanCopyEmpty" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CanCopyEmpty" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TestCopyBitArray.CanCopyEmptyToNonEmpty" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CanCopyEmptyToNonEmpty" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TestCopyBitArray.CannotCopyNonEmptyToEmpty" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CannotCopyNonEmptyToEmpty" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TestCopyBitArray.CopyMultipleBytes" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CopyMultipleBytes" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TestCopyBitArray.CopySingleByte" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CopySingleByte" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TestCopyBitArray.CopyToOffset" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CopyToOffset" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="Tests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.IntsAreValueTypes" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="IntsAreValueTypes" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestAppSettingNotFoundException" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestAppSettingNotFoundException" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestBinarySearch" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestBinarySearch" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestExpandableIntervalCombinations" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestExpandableIntervalCombinations" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestFindMaxima" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestFindMaxima" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestIntervalCombinations" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestIntervalCombinations" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestSelectManySorted" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestSelectManySorted" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestSelectManySorted2" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestSelectManySorted2" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestSelectManySorted3" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestSelectManySorted3" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestSortedRangeExcept" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestSortedRangeExcept" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.TestToNullIfEmpty" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestToNullIfEmpty" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.Tests.ValueTypeEquality" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ValueTypeEquality" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="ToLinkedDictionaryTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.ToLinkedDictionaryTests.Addition" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Addition" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.ToLinkedDictionaryTests.InitialElements" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="InitialElements" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.ToLinkedDictionaryTests.Initialization" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Initialization" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="TypeTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestEventHandlerHasHandlerSignature" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestEventHandlerHasHandlerSignature" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestEventHandlerHasHandlerSignatureIncovariance" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestEventHandlerHasHandlerSignatureIncovariance" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestEventHandlerHasSignature" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestEventHandlerHasSignature" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestInstanceFieldToFunc" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestInstanceFieldToFunc" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestToActionOnInstanceMethodWithOneParameter" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestToActionOnInstanceMethodWithOneParameter" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestToActionOnInstanceMethodWithOneParameterWithReturnType" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestToActionOnInstanceMethodWithOneParameterWithReturnType" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestToActionOnParameterlessStaticMethod" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestToActionOnParameterlessStaticMethod" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestToActionOnStaticMethodWithOneParameter" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestToActionOnStaticMethodWithOneParameter" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestToActionOnStaticMethodWithReturnType" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestToActionOnStaticMethodWithReturnType" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.TypeTests.TestToFuncOnStaticMethod" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestToFuncOnStaticMethod" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Rule Match="All">
+                  <Property Name="Class" Value="WeakReferenceDictionaryTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.Tests.WeakReferenceDictionaryTests.Remove" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Remove" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+            <Rule Match="All">
+              <Property Name="Namespace" Value="JBSnorro" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="ContractTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.ContractTests.TestCallerExpressionOnAssert" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestCallerExpressionOnAssert" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.ContractTests.TestCallerExpressionOnEnsures" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestCallerExpressionOnEnsures" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="JBSnorro.ContractTests.TestCallerExpressionOnRequires" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TestCallerExpressionOnRequires" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+            <Rule Match="All">
+              <Property Name="Namespace" Value="GlobPatternTests" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="SimpleNamesTests" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="GlobPatternTests.SimpleNamesTests.SimpleFilenameDoesNotMatchNested" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleFilenameDoesNotMatchNested" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="GlobPatternTests.SimpleNamesTests.SimpleFilenameEqualityTest" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleFilenameEqualityTest" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="GlobPatternTests.SimpleNamesTests.SimpleFilenameMatchesWithLeadingDirectorySeparator" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleFilenameMatchesWithLeadingDirectorySeparator" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="GlobPatternTests.SimpleNamesTests.SimpleNestedFileInOtherDirectoryDoesNotMatch" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleNestedFileInOtherDirectoryDoesNotMatch" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="GlobPatternTests.SimpleNamesTests.SimpleNestedFileMatchesNested" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleNestedFileMatchesNested" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="GlobPatternTests.SimpleNamesTests.SimpleNestedFileMatchesNestedWithLeadingDirectorySeparator" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SimpleNestedFileMatchesNestedWithLeadingDirectorySeparator" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+            <Rule Match="All">
               <Property Name="Namespace" Value="JBSnorro.Tests.Graphs" />
               <Rule Match="Any">
                 <Rule Match="All">

@@ -19,9 +19,10 @@ using JBSnorro.IO;
 
 namespace JBSnorro.Csx.Tests
 {
+    [TestCategory("Integration")]
     public class GitTestsBase
     {
-        protected const string ROOT_HASH = "818c7ad1722e9c4fe682b30ade4413bf1e36c542";
+        protected const string ROOT_HASH = "56f98d2dbf26e00ddd74479250a00a5a8fc25ec3";
 
         // if SSH_FILE cannot be found:
         // - in testing, add JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
@@ -29,8 +30,9 @@ namespace JBSnorro.Csx.Tests
         protected static string ssh_file => EnvironmentExtensions.GetRequiredEnvironmentVariable("SSH_FILE");
         protected static string ssh_key_path => Path.GetFullPath(ssh_file.ExpandTildeAsHomeDir()).ToBashPath(false);
         protected static string init_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/init-ssh-agent.sh";
+        protected static string cleanup_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/cleanup-ssh-agent.sh";
         private static string GIT_SSH_COMMAND => $"GIT_SSH_COMMAND=\"ssh -i {ssh_key_path} -F /dev/null\"";
-        protected static string SSH_SCRIPT => $"source {init_ssh_agent_path} && ssh-add {ssh_key_path} && export {GIT_SSH_COMMAND}";
+        protected static string SSH_SCRIPT => $"source \"{init_ssh_agent_path}\" && ssh-add {ssh_key_path} && export {GIT_SSH_COMMAND}";
 
         private IAsyncDisposable? cleanup;
         [TestCleanup]
@@ -41,12 +43,36 @@ namespace JBSnorro.Csx.Tests
                 await cleanup.DisposeAsync();
             }
         }
+        private static async Task CleanupSSHAgent(string repoDir)
+        {
+            var (exitCode, stdOut, stdErr) = await $"source \"{cleanup_ssh_agent_path}\"".Execute(cwd: repoDir);
+            if (exitCode != 0 && !stdErr.Contains("No ssh agent pid found"))
+            {
+                throw new BashNonzeroExitCodeException(exitCode, stdErr);
+            }
+
+            if (EnvironmentExtensions.IsCI)
+            {
+                return;
+            }
+            // not sure if we should be doing this, but somehow I commited in bash with the tester git user
+            // that's possible because the tester git user ssh-agent was up and running. No program should be
+            // communicating with it, but somehow it is. Maybe this triggers that communication to use
+            // the correct user again.
+            (exitCode, stdOut, stdErr) = await $"\"{init_ssh_agent_path}\" \"$HOME/.ssh/agent.env\"".Execute(cwd: repoDir);
+            if (exitCode != 0)
+            {
+                Console.WriteLine("Unsuccessfully reinstated the original ssh agent:");
+                Console.WriteLine(stdErr);
+            }
+        }
         protected async Task<IGitRepo> InitEmptyRepo(Func<string /*dir*/, IRemoteGitRepo>? remoteFactory = null)
         {
-            var tmpDir = IOExtensions.CreateTemporaryDirectory();
-            this.cleanup = tmpDir;
-            string dir = tmpDir.Value;
-            var result = await "git init; git config user.name 'tester'; git config user.email 'tester@test.com'".Execute(cwd: dir);
+            var dirDisposable = IOExtensions.CreateTemporaryDirectory();
+            string dir = dirDisposable.Value;
+            this.cleanup = dirDisposable.WithBefore(() => CleanupSSHAgent(dir));
+
+            var result = await "git init; git config user.name 'JeroenBos-TestServiceUser'; git config user.email 'tester@test.com'; git config init.defaultBranch main; ".Execute(cwd: dir);
 
             Assert.AreEqual(result.ExitCode, 0, result.ErrorOutput);
             Assert.IsTrue(result.StandardOutput.StartsWith("Initialized empty Git repository"));
@@ -64,6 +90,8 @@ namespace JBSnorro.Csx.Tests
             var repo = await InitEmptyRepo(remoteFactory);
             var result = await "git commit --allow-empty -m 'First commit'".Execute(cwd: repo.Dir);
             Assert.IsTrue(result.StandardOutput.EndsWith("First commit"));
+            result = await "git checkout -b main; git branch -D master".Execute(cwd: repo.Dir);
+            Assert.IsTrue(result.StandardOutput.Contains("Deleted branch master"));
             return repo;
         }
         protected async Task<IGitRepo> InitRepoWithUntrackedFile()
@@ -149,7 +177,7 @@ namespace JBSnorro.Csx.Tests
                 await $"sudo chmod 600 {ssh_file}".Execute(cwd: repo.Dir); // or just execute manually if I ever reinstalled Windows or something
                 (exitCode, stdOut, stdErr) = await $"source ../startup.sh && ssh-add {ssh_file}".Execute(cwd: repo.Dir);
             }
-            (exitCode, stdOut, stdErr) = await "git remote add origin git@github.com:JeroenBos/TestPlayground.git".Execute(cwd: repo.Dir);
+            (exitCode, stdOut, stdErr) = await "git remote add origin git@github.com:JeroenBos-TestServiceUser/TestPlayground.git".Execute(cwd: repo.Dir);
             Assert.AreEqual((exitCode, stdOut, stdErr), (0, "", ""));
 
             try
@@ -169,14 +197,20 @@ namespace JBSnorro.Csx.Tests
                                     .Where(line => !line.StartsWith("warning", StringComparison.OrdinalIgnoreCase)) // "warning: no common commits", and "Warning: Permanently added the RSA host ..."
                                     .ToArray();
             Assert.IsTrue(stdErrLines[0].StartsWith("Identity added"));
-            Assert.IsTrue(stdErrLines[1].StartsWith("From github.com:JeroenBos/TestPlayground"), stdErrLines[1]);
-            Assert.IsTrue(stdErrLines[2].StartsWith(" * [new branch]      master     -> origin/master"), stdErrLines[2]);
+            // var (e, o, er) = await $"{SSH_SCRIPT} && git init && git commit --allow-empty -nm 'Initial commit' && git branch -M main".Execute(cwd: repo.Dir);
+            // Assert.AreEqual(e, 0);
 
-            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git branch --set-upstream-to=origin/master master".Execute(cwd: repo.Dir);
+            // var (e2, o2, er2) = await $"{SSH_SCRIPT} && git remote add origin git@github.com:JeroenBos-TestServiceUser/Testplayground.git && git push -u origin main".Execute(cwd: repo.Dir);
+            // Assert.AreEqual(e2, 0);
+
+            Assert.IsTrue(stdErrLines[1].StartsWith("From github.com:JeroenBos-TestServiceUser/TestPlayground"), stdErrLines[1]);
+            Assert.IsTrue(stdErrLines[2].StartsWith(" * [new branch]      main       -> origin/main"), stdErrLines[2]);
+
+            (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git branch --set-upstream-to=origin/main main".Execute(cwd: repo.Dir);
             Assert.AreEqual(exitCode, 0);
             // the following depends on git version or something:
-            Assert.IsTrue(stdOut.IsAnyOf("Branch 'master' set up to track remote branch 'master' from 'origin'.",
-                                         "branch 'master' set up to track 'origin/master'."), stdOut);
+            Assert.IsTrue(stdOut.IsAnyOf("Branch 'main' set up to track remote branch 'main' from 'origin'.",
+                                         "branch 'main' set up to track 'origin/main'."), stdOut);
             Assert.AreEqual(stdErr.Split('\n').Length, 1);
             Assert.IsTrue(stdErr.StartsWith("Identity added"));
 
@@ -185,7 +219,7 @@ namespace JBSnorro.Csx.Tests
             Assert.AreEqual(stdOut.Split('\n').Length, 1);
             Assert.IsTrue(stdOut.StartsWith("HEAD is now at"));
 
-            // this can throw with error containing "! [remote rejected] master -> master (cannot lock ref 'refs/heads/master'"
+            // this can throw with error containing "! [remote rejected] main -> main (cannot lock ref 'refs/heads/main'"
             // it's presumably due to parallelism, but that shouldn't be there :/
             (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git fetch && git push --force-with-lease".Execute(cwd: repo.Dir);
             Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr);
@@ -544,7 +578,7 @@ namespace JBSnorro.Csx.Tests
 
             var branchName = await repo.GetPRBaseBranch("1");
 
-            Assert.AreEqual("origin/master", branchName);
+            Assert.AreEqual("origin/main", branchName);
         }
     }
     class RemoteRepoWithNoUpdates : IRemoteGitRepo

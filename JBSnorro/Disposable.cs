@@ -35,14 +35,47 @@ public class Disposable<T> : Disposable
 /// </summary>
 public class AsyncDisposable : IAsyncDisposable
 {
-	private readonly Func<Task> dispose;
+	protected readonly Func<Task> dispose;
 	public AsyncDisposable(Func<Task> dispose)
 	{
 		this.dispose = dispose ?? throw new ArgumentNullException(nameof(dispose));
 	}
-	public async ValueTask DisposeAsync()
+	public virtual async ValueTask DisposeAsync()
 	{
 		await dispose();
+	}
+
+	public virtual AsyncDisposable With(Func<Task> anotherDisposalTask)
+	{
+		return new AsyncDisposable(() => Task.WhenAll(this.dispose(), anotherDisposalTask()));
+	}
+	public virtual AsyncDisposable WithAfter(Func<Task> anotherDisposalTask)
+	{
+		return new AsyncDisposable(async () =>
+		{
+			try
+			{
+				await this.dispose();
+			}
+			finally
+			{
+				await anotherDisposalTask();
+			}
+		});
+	}
+	public virtual AsyncDisposable WithBefore(Func<Task> anotherDisposalTask)
+	{
+		return new AsyncDisposable(async () =>
+		{
+			try
+			{
+				await anotherDisposalTask();
+			}
+			finally
+			{
+				await this.dispose();
+			}
+		});
 	}
 }
 
@@ -84,18 +117,42 @@ public class DisposableTaskOutcome<T> : DisposableTaskOutcome
 }
 
 
-public class AsyncDisposable<T> : IAsyncDisposable
+public class AsyncDisposable<T> : AsyncDisposable
 {
 	public T Value { get; }
-	private readonly Func<Task> dispose;
-    public AsyncDisposable(T value, Func<Task> dispose)
+	public AsyncDisposable(T value, Func<Task> dispose) : base(dispose)
 	{
 		this.Value = value;
-		this.dispose = dispose;
 
 	}
-    public async ValueTask DisposeAsync()
-    {
-		await dispose();
-    }
+	public override AsyncDisposable<T> With(Func<Task> anotherDisposalTask)
+	{
+		 return new AsyncDisposable<T>(this.Value,
+			 async () =>
+			 {
+				 try
+				 {
+					 await this.dispose();
+				 }
+				 finally
+				 {
+					 await anotherDisposalTask();
+				 }
+			 });
+	}
+	public override AsyncDisposable<T> WithAfter(Func<Task> anotherDisposalTask)
+	{
+		return new AsyncDisposable<T>(this.Value,
+			async () =>
+			{
+				try
+				{
+					await anotherDisposalTask();
+				}
+				finally
+				{
+					await this.dispose();
+				}
+			});
+	}
 }
