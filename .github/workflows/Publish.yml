@@ -25,7 +25,7 @@ jobs:
           is_up_to_date=$([[ "$current_version" == "$published_version" ]] && echo true || echo false)
           echo "is_up_to_date: $is_up_to_date"
 
-          if [[ "$(is_up_to_date)" == "true" ]]; then
+          if [[ "${is_up_to_date}" == "true" ]]; then
               echo "Up-to-date"
           else
               echo "PUBLISH=true" >> $GITHUB_ENV
