@@ -1,7 +1,7 @@
 ﻿#nullable enable
 namespace JBSnorro.Graphs.RedGreen;
 
-public interface IRedNode<TSelf, TGreenNode> where TSelf : class, IRedNode<TSelf, TGreenNode> where TGreenNode : class, IGreenNode<TGreenNode>
+public interface IRedNode<TSelf, TGreenNode> where TSelf : class, IRedNode<TSelf, TGreenNode>
 {
     TSelf? Parent { get; }
     IReadOnlyList<TSelf> Elements { get; }
