@@ -3141,5 +3141,16 @@ namespace JBSnorro
 
 			list.Sort(Comparer<T>.Create((Comparison<T>)((x, y) => comparer(x, y))));
 		}
+
+		/// <summary>
+		/// Gets an IEnumerable that throws on enumeration.
+		/// </summary>
+		public static IEnumerable<T> Throw<T>()
+		{
+			throw new UnreachableException();
+#pragma warning disable CS0162 // Unreachable code detected
+            yield return default; // has effect
+#pragma warning restore CS0162 // Unreachable code detected
+        }
 	}
 }
