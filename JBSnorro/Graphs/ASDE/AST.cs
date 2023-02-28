@@ -47,8 +47,8 @@ internal interface IASTNode<TSelf, TParseNode> : IRedNode<TSelf, TParseNode> whe
     /// <summary>
     /// Gets the semantics of this node if they're computed already; otherwise <code>null</code>.
     /// </summary>
-    public IModel? Semantics { get; }
-    public IModel ComputeSemantics(IBinder binder);
+    public ISymbol? Semantics { get; }
+    public ISymbol ComputeSemantics(IBinder binder);
 }
 
 
@@ -58,7 +58,7 @@ internal class ASTNode : IASTNode<ASTNode, ParseNode>
     public ASTNode? Parent { get; }
     public IReadOnlyList<ASTNode> Elements { get; }
     protected ParseNode Green { get; }
-    public IModel? Semantics { get; private set; }
+    public ISymbol? Semantics { get; private set; }
     public int IndexInParent { get; }
 
     public static ASTNode Create(ParseNode green, ASTNode? parent, int? indexInParent) => new ASTNode(green, parent, indexInParent);
@@ -74,7 +74,7 @@ internal class ASTNode : IASTNode<ASTNode, ParseNode>
     }
 
 
-    public IModel ComputeSemantics(IBinder binder) => throw new NotImplementedException();
+    public ISymbol ComputeSemantics(IBinder binder) => throw new NotImplementedException();
     ParseNode IRedNode<ASTNode, ParseNode>.Green => this.Green;
     int IRedNode<ASTNode, ParseNode>.IndexInParent => IndexInParent;
     IReadOnlyList<ASTNode> IRedNode<ASTNode, ParseNode>.Elements => Elements;
@@ -112,9 +112,9 @@ internal interface IPosition
 
 internal interface IBinder
 {
-    public IModel GetSemanticModel(ASTNode node);
+    public ISymbol GetSemanticModel(ASTNode node);
 }
-internal interface IModel : IGreenNode<IModel>
+internal interface ISymbol : IGreenNode<ISymbol>
 {
 
 }
