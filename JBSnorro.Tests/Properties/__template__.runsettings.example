@@ -4,6 +4,7 @@
 	<RunConfiguration>
 		<EnvironmentVariables>
 			<SSH_FILE>~/.ssh/playground</SSH_FILE>  <!-- The path to a ssh key that has access granted here: https://github.com/JeroenBos/JBSnorro/settings/secrets/actions-->
+			<NODE_PATH>%USERPROFILE%\.nvm\versions\node\v16.14.2\bin\node.exe</NODE_PATH>  <!-- The path to the node executable to use for testing. -->
 		</EnvironmentVariables>
 	</RunConfiguration>
 </RunSettings>

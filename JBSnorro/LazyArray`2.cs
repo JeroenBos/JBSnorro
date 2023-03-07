@@ -122,9 +122,13 @@ namespace JBSnorro
 			return GetEnumerator();
 		}
 
-		public LazyArray(IList<TSource> source, Func<TSource, TResult> resultSelector)
+		public LazyArray(IReadOnlyList<TSource> source, Func<TSource, TResult> resultSelector)
 		{
-			this.elements = source.Map<TSource, Element>(element => element);
+			this.elements = new List<Element>();
+			foreach (TSource item in source)
+			{
+				this.elements.Add((Element)item);
+			}
 			cached = new List<bool>(elements.Count);
 			for (int i = 0; i < elements.Count; i++)
 			{

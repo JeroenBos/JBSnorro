@@ -12,6 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		.github\workflows\CI.Testing.yml = .github\workflows\CI.Testing.yml
 		.github\workflows\CI.yml = .github\workflows\CI.yml
+		.github\get_current_version.sh = .github\get_current_version.sh
+		.github\get_published_version.sh = .github\get_published_version.sh
+		.github\workflows\Publish.yml = .github\workflows\Publish.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JBSnorro.Testing", "JBSnorro.Testing\JBSnorro.Testing.csproj", "{0B0745BD-9A38-4281-9504-2E316D18565E}"

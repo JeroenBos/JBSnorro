@@ -182,13 +182,13 @@ namespace JBSnorro.Extensions
 				return @this;
 			return @this.Substring(i + value.Length);
 		}
-		/// <summary> 
+		/// <summary>
 		/// Gets the substring of <paramref name="this"/> until the first occurrence of <paramref name="value"/>;
 		/// or <paramref name="this"/> if the value was not.
 		/// </summary>
-		public static string SubstringUntil(this string @this, string value, int startIndex = 0)
+		public static string SubstringUntil(this string @this, string value, int startIndex = 0, bool includeValue = false)
 		{
-			int i = @this.IndexAfter(value, startIndex);
+			int i = includeValue ? @this.IndexAfter(value, startIndex) : @this.IndexOf(value, startIndex);
 			if (i == -1)
 				return @this;
 			return @this[..i];

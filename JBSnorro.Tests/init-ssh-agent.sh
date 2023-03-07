@@ -1,5 +1,6 @@
+#!/usr/bin/env bash
 function start_ssh_agent_if_necessary() {
-    env=$HOME/.ssh/jbsnorro_debug_agent.env
+    env="$1"
 
     agent_load_env () { test -f "$env" && . "$env" >| /dev/null ; }
 
@@ -27,5 +28,7 @@ function start_ssh_agent_if_necessary() {
 
     unset env
 }
-start_ssh_agent_if_necessary
+
+env="${1:-"$HOME/.ssh/jbsnorro_debug_agent.env"}"
+start_ssh_agent_if_necessary "$env"
 export SSH_AUTH_SOCK

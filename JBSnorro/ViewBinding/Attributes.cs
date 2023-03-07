@@ -81,7 +81,7 @@ namespace JBSnorro.View.Binding
 		protected sealed override object createSubstitute(object collection) => createSubstitute((INotifyCollectionChanged)collection);
 		public INotifyPropertyChanged createSubstitute(INotifyCollectionChanged collection)
 		{
-			var result = new substitute();
+			var result = new Substitute();
 			collection.CollectionChanged += onCollectionChange;
 
 			if (collection is IEnumerable enumerable)
@@ -133,7 +133,7 @@ namespace JBSnorro.View.Binding
 				}
 			}
 		}
-		private sealed class substitute : INotifyPropertyChanged, IExtraViewPropertiesContainer
+		private sealed class Substitute : INotifyPropertyChanged, IExtraViewPropertiesContainer
 		{
 			[NoViewBinding]
 			public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();

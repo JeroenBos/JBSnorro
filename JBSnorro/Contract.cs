@@ -163,21 +163,21 @@ namespace JBSnorro.Diagnostics
 			Contract.Requires(condition, string.Format(message, i, i + 1));
 		}
 		[DebuggerHidden, Conditional("DEBUG")]
-		public static void RequiresForAny<T>(IEnumerable<T> elements, Func<T, bool> predicate, string message = "Requirement not met for any element")
+		public static void RequiresForAny<T>(IEnumerable<T> elements, Func<T, bool> predicate, string message = "Requirement not met for any element", [CallerArgumentExpression("predicate")] string callerExpression = "")
 		{
 			Contract.Requires(elements != null);
 			Contract.RequiresIsNotEnumeratorEncapsulate(elements);
 
-			Requires(elements.Any(predicate), message);
+			Requires(elements.Any(predicate), message, callerExpression);
 		}
 		[DebuggerHidden, Conditional("DEBUG")]
-		public static void RequiresForAny<T>(ref IEnumerable<T> elements, Func<T, bool> predicate, string message = "Requirement not met for any element")
+		public static void RequiresForAny<T>(ref IEnumerable<T> elements, Func<T, bool> predicate, string message = "Requirement not met for any element", [CallerArgumentExpression("predicate")] string callerExpression = "")
 		{
 			Contract.Requires(elements != null);
 
 
 			elements = elements.EnsureSingleEnumerationDEBUG();
-			Requires(elements.Any(predicate), message);
+			Requires(elements.Any(predicate), message, callerExpression);
 		}
 		[DebuggerHidden]
 		private static void RequiresIsNotEnumeratorEncapsulate<T>(IEnumerable<T> elements)
@@ -243,33 +243,30 @@ namespace JBSnorro.Diagnostics
 		[DebuggerHidden]
 		[ContractAnnotation("halt <= assumption: false")]
 		[AssertionMethod("assumption")]
-		public static void Assume([DoesNotReturnIf(false)] bool assumption, string message = "Assertion failed")
+		public static void Assume([DoesNotReturnIf(false)] bool assumption, string message = "False assumption: '{0}'", [CallerArgumentExpression("assumption")] string callerExpression = "")
 		{
-			if (!assumption) throw new ContractException(message);
+			if (!assumption)
+				throw new ContractException(string.Format(message, callerExpression));
 		}
 		[DebuggerHidden]
 		[ContractAnnotation("halt <= invariant: false")]
 		[AssertionMethod("assumption")]
-		public static void Invariant([DoesNotReturnIf(false)] bool invariant, string message = "Invariant broken")
+		public static void Invariant([DoesNotReturnIf(false)] bool invariant, string message = "Invariant broken: '{0}'", [CallerArgumentExpression("invariant")] string callerExpression = "")
 		{
-			if (!invariant) throw new ContractException(message);
+			if (!invariant)
+				throw new ContractException(string.Format(message, callerExpression));
 		}
 		[DebuggerHidden]
-		public static void InvariantForAll<T>(IEnumerable<T> sequence, Func<T, bool> predicate, string message = "Invariant broken")
+		public static void InvariantForAll<T>(IEnumerable<T> sequence, Func<T, bool> predicate, string message = "Invariant broken: '{0}'", [CallerArgumentExpression("predicate")] string callerExpression = "")
 		{
-			foreach (T element in sequence)
-			{
-				Invariant(predicate(element), message);
-			}
+			InvariantForAll(sequence, [DebuggerHidden] (element, i) => predicate(element), message, callerExpression);
 		}
 		[DebuggerHidden]
-		public static void InvariantForAll<T>(IEnumerable<T> sequence, Func<T, int, bool> predicate, string message = "Invariant broken at index {0}")
+		public static void InvariantForAll<T>(IEnumerable<T> sequence, Func<T, int, bool> predicate, string message = "Invariant broken: '{0}[{1}]'", [CallerArgumentExpression("predicate")] string callerExpression = "")
 		{
-			int i = 0;
-			foreach (T element in sequence)
+			foreach (var (element, i) in sequence.WithIndex())
 			{
-				Invariant(predicate(element, i), string.Format(message, i));
-				i++;
+				Invariant(predicate(element, i), string.Format(message, callerExpression, i));
 			}
 		}
 
@@ -288,16 +285,16 @@ namespace JBSnorro.Diagnostics
 		/// <param name="predicate"> The predicate function to be asserted for all elements. </param>
 		/// <param name="message"> The error message to be shown on an assertion failure. {0} is the index of the element that failed the assertion. </param>
 		[DebuggerHidden, Conditional("DEBUG")]
-		public static void AssertForAll<T>(this IEnumerable<T> sequence, Func<T, bool> predicate, string message = "The element at index {0} does not match the predicate")
+		public static void AssertForAll<T>(this IEnumerable<T> sequence, Func<T, bool> predicate, string message = "The element at index {0} does not match the predicate", [CallerArgumentExpression("predicate")] string callerExpression = "")
 		{
-			sequence.AssertForAll((element, i) => predicate(element), message);
+			sequence.AssertForAll((element, i) => predicate(element), message, callerExpression);
 		}
 		/// <summary> Asserts the predicate for all elements in the specified sequence. </summary>
 		/// <param name="sequence"> The elements to check for matching the predicate. </param>
 		/// <param name="predicate"> The predicate function to be asserted for all elements. </param>
 		/// <param name="message"> The error message to be shown on an assertion failure. {0} is the index of the element that failed the assertion. </param>
 		[DebuggerHidden, Conditional("DEBUG")]
-		public static void AssertForAll<T>(this IEnumerable<T> sequence, Func<T, int, bool> predicate, string message = "The element at index {0} does not match the predicate")
+		public static void AssertForAll<T>(this IEnumerable<T> sequence, Func<T, int, bool> predicate, string message = "Assertion failed: '{0}[{1}]'", [CallerArgumentExpression("predicate")] string callerExpression = "")
 		{
 			Requires(sequence != null);
 			Requires(predicate != null);
@@ -307,15 +304,15 @@ namespace JBSnorro.Diagnostics
 			foreach (T element in sequence)
 			{
 				if (!predicate(element, i))
-					throw new ContractException(string.Format(message ?? "The element at index {0} does not match the predicate", i, (object)element ?? "null"));
+					throw new ContractException(string.Format(message, callerExpression, i));
 				i++;
 			}
 		}
 		/// <summary> Documents an assumption, on elements in the specified sequence, used by the calling code. </summary>
 		[DebuggerHidden, Conditional("DEBUG")]
-		public static void AssumeForAll<T>(this IEnumerable<T> sequence, Func<T, bool> predicate, string message = "The element at index {0} does not match the predicate")
+		public static void AssumeForAll<T>(this IEnumerable<T> sequence, Func<T, bool> predicate, string message = "False assumption: '{0}[{1}]'", [CallerArgumentExpression("predicate")] string callerExpression = "")
 		{
-			AssertForAll(sequence, predicate, message);
+			AssertForAll(sequence, predicate, message, callerExpression);
 		}
 
 		/// <summary> Asserts that the specified predicate holds for all elements and throws otherwise. </summary>
@@ -324,7 +321,7 @@ namespace JBSnorro.Diagnostics
 		/// <param name="message"> The error message to be shown on an assertion failure. {0} is the index of the element that failed the assertion. </param>
 		/// <returns> the original sequence</returns>
 		[DebuggerHidden]
-		public static IEnumerable<T> LazilyAssertForAll<T>(this IEnumerable<T> sequence, Func<T, bool> predicate, string message = "The element at index {0} does not match the predicate")
+		public static IEnumerable<T> LazilyAssertForAll<T>(this IEnumerable<T> sequence, Func<T, bool> predicate, string message = "Assertion failed: '{0}[{1}]'", [CallerArgumentExpression("predicate")] string callerExpression = "")
 		{
 #if DEBUG
 			Requires(sequence != null);
@@ -335,7 +332,7 @@ namespace JBSnorro.Diagnostics
 			foreach (T element in sequence)
 			{
 				if (!predicate(element))
-					throw new ContractException(string.Format(message, i));
+					throw new ContractException(string.Format(message, callerExpression, i));
 				i++;
 				yield return element;
 			}
@@ -591,21 +588,21 @@ namespace JBSnorro.Diagnostics
 
 			var debug = sequence.ToList();
 			var assertingSequence = sequence.Select(element =>
-													{
+			{
 
-														T selected = selector(element);
-														if (!first && !equalityComparer.Equals(previousSelected, selected))
-														{
-															throw new ContractException(string.Format(message ?? "The selected object at index {0} didn't equal the precedencing selected elements. ", index));
-														}
+				T selected = selector(element);
+				if (!first && !equalityComparer.Equals(previousSelected, selected))
+				{
+					throw new ContractException(string.Format(message ?? "The selected object at index {0} didn't equal the precedencing selected elements. ", index));
+				}
 
-														//side effects:
-														first = false;
-														previousSelected = selected;
-														index++;
+				//side effects:
+				first = false;
+				previousSelected = selected;
+				index++;
 
-														return element;
-													});
+				return element;
+			});
 
 			bool lazinessCanBeAvoided = sequence is IList || sequence is IReadOnlyCollection<T>;
 			if (lazinessCanBeAvoided)
@@ -664,6 +661,7 @@ namespace JBSnorro.Diagnostics
 		{
 			return i => start <= i && i < start + count;
 		}
+#nullable enable
 		/// <summary>
 		/// Asserts that the specified sequences are equality according to the default element equality comparer.
 		/// </summary>
@@ -681,19 +679,37 @@ namespace JBSnorro.Diagnostics
 			Contract.Requires(equalityComparer != null);
 			AssertSequenceEqual(sequence, expectedSequence, equalityComparer.Equals);
 		}
-		/// <summary>
-		/// Asserts that the specified sequences are equality according to the specified element equality comparer.
-		/// </summary>
-		[DebuggerHidden, Conditional("DEBUG")]
+        /// <summary>
+        /// Asserts that the specified sequences are equality according to the specified element equality comparer.
+        /// </summary>
+        [DebuggerHidden, Conditional("DEBUG")]
+        public static void AssertSequenceEqual<T>(IEnumerable<T> sequence,
+                                                  IEnumerable<T> expectedSequence,
+                                                  string? baseMessage = null)
+        {
+            AssertSequenceEqual<T, T>(sequence, expectedSequence, EqualityComparer<T>.Default.Equals, baseMessage);
+		}
+
+        /// <summary>
+        /// Asserts that the specified sequences are equality according to the specified element equality comparer.
+        /// </summary>
+        [DebuggerHidden, Conditional("DEBUG")]
 		public static void AssertSequenceEqual<T, U>(IEnumerable<T> sequence,
 													 IEnumerable<U> expectedSequence,
-													 Func<T, U, bool> equalityComparer)
+													 Func<T, U, bool> equalityComparer,
+													 string? baseMessage = null)
 		{
 			Contract.Requires(sequence != null);
 			Contract.Requires(expectedSequence != null);
 			Contract.Requires(equalityComparer != null);
 
-			int index = 0;
+			if (baseMessage is not null)
+			{
+				baseMessage.TrimEnd(' ', '.', ',');
+				baseMessage += ". ";
+			}
+
+            int index = 0;
 			using (IEnumerator<T> enumerator1 = sequence.GetEnumerator())
 			using (IEnumerator<U> enumerator2 = expectedSequence.GetEnumerator())
 			{
@@ -705,11 +721,12 @@ namespace JBSnorro.Diagnostics
 						while (enumerator1.MoveNext())
 							expectedCount++;
 
-						throw new ContractException($"The sequence has more elements than expected (received {index}/{expectedCount})");
+						throw new ContractException($"{baseMessage}The sequence has more elements than expected (received {index}/{expectedCount})");
 					}
-					if (!equalityComparer(enumerator1.Current, enumerator2.Current))
+
+                    if (!equalityComparer(enumerator1.Current, enumerator2.Current))
 					{
-						throw new ContractException($"The element at index {index} didn't match the expected element: received '{enumerator1.Current}', but expected '{enumerator2.Current}'");
+						throw new ContractException($"{baseMessage}The element at index {index} didn't match the expected element: received '{enumerator1.Current}', but expected '{enumerator2.Current}'");
 					}
 					index++;
 				}
@@ -719,7 +736,7 @@ namespace JBSnorro.Diagnostics
 					while (enumerator2.MoveNext())
 						expectedCount++;
 
-					throw new ContractException($"The sequence has fewer elements than expected (received {index}/{expectedCount})");
+					throw new ContractException($"{baseMessage}The sequence has fewer elements than expected (received {index}/{expectedCount})");
 				}
 			}
 		}
@@ -731,7 +748,7 @@ namespace JBSnorro.Diagnostics
 		[DebuggerHidden]
 		public static void AssertSetEqual<T>(IEnumerable<T> sequence,
 											 IEnumerable<T> expectedSequence,
-											 out (IReadOnlyCollection<T> Sequence, IReadOnlyCollection<T> Expected) remainder)
+											 out (IReadOnlyCollection<T>? Sequence, IReadOnlyCollection<T>? Expected) remainder)
 		{
 			AssertSetEqual(sequence, expectedSequence, EqualityComparer<T>.Default.Equals, out remainder);
 		}
@@ -742,9 +759,9 @@ namespace JBSnorro.Diagnostics
 		/// </summary>
 		[DebuggerHidden]
 		public static void AssertSetEqual<T, U>(IEnumerable<T> sequence,
-												 IEnumerable<U> expectedSequence,
-												 Func<T, U, bool> equals,
-												 out (IReadOnlyCollection<T> Sequence, IReadOnlyCollection<U> Expected) remainder)
+												IEnumerable<U> expectedSequence,
+												Func<T, U, bool> equals,
+												out (IReadOnlyCollection<T>? Sequence, IReadOnlyCollection<U>? Expected) remainder)
 		{
 
 #if DEBUG
@@ -792,7 +809,7 @@ namespace JBSnorro.Diagnostics
 
 	public sealed class AppSettingNotFoundException : ContractException
 	{
-		public AppSettingNotFoundException(string key = null) : base($"AppSetting key {(key == null ? "" : $"'{key}' ")} not found. ") { }
+		public AppSettingNotFoundException(string? key = null) : base($"AppSetting key {(key == null ? "" : $"'{key}' ")} not found. ") { }
 	}
 
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0</TargetFrameworks>
-		<LangVersion>10</LangVersion>
+		<TargetFrameworks>net7.0</TargetFrameworks>
+		<LangVersion>11</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>false</IsPackable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -23,6 +23,13 @@
 		<DefineConstants Condition=" '$(OS)' == 'Windows_NT' ">$(DefineConstants);WINDOWS</DefineConstants>
 		<DefineConstants Condition=" '$(OS)' != 'Windows_NT' ">$(DefineConstants);LINUX</DefineConstants>
 	</PropertyGroup>
+	
+	<ItemGroup>
+	  <Watch Remove="Graphs\GreenNodeStub.cs" />
+	  <Watch Remove="Graphs\IGreenNodeTests.cs" />
+	  <Watch Remove="Graphs\IRedNodeTests.cs" />
+	  <Watch Remove="Graphs\RedNodeStub.cs" />
+	</ItemGroup>
 	
 	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">
