@@ -42,13 +42,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Install dependencies
-        if: ${{ env.PUBLISH == 'true' }}
-        run: dotnet restore
-
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release
 
       - name: Wait for ${{ matrix.project }} ubuntu CI
         uses: fountainhead/action-wait-for-check@v1.1.0
