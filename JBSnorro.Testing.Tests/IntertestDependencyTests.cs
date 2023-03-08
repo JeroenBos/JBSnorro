@@ -74,7 +74,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
             return $@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
@@ -89,9 +89,9 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
     </PackageReference>
 	<PackageReference Include=""Xunit.SkippableFact"" Version=""1.4.13"" />
 
-    <!-- I'm including these, see https://stackoverflow.com/a/67976906/308451 -->
+    <!-- I'm including these, see https://stackoverflow.com/a/67976906/308451 
     <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""6.0.0-preview.6.21355.2"" />
-	<PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.DevServer"" Version=""6.0.0-preview.6.21355.2"" PrivateAssets=""all"" />
+	<PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.DevServer"" Version=""6.0.0-preview.6.21355.2"" PrivateAssets=""all"" /> -->
   </ItemGroup>
   <ItemGroup>
     <Reference Include=""{jbsnorroTestingAssembly.GetName().Name}"">
@@ -128,7 +128,8 @@ namespace TestProject1
 }");
 
         // Act
-        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""));
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""), cts.Token);
 
         // Assert
         Contract.Assert(output.ExitCode == 0, output.ErrorOutput);
