@@ -7,6 +7,7 @@
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<GenerateProgramFile>false</GenerateProgramFile>
 		<IsTestProject>true</IsTestProject>
+		<PublishWithAspNetCoreTargetManifest>False</PublishWithAspNetCoreTargetManifest>
 	</PropertyGroup>
 	
 	<ItemGroup>

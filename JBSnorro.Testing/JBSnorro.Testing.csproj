@@ -6,6 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<NoWarn>1701;1702;1591;1573;1712</NoWarn>
+		<PublishWithAspNetCoreTargetManifest>False</PublishWithAspNetCoreTargetManifest>
 	</PropertyGroup>
 	
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">

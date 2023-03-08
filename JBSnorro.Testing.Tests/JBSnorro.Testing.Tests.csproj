@@ -5,6 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsTestProject>true</IsTestProject>
 		<Nullable>enable</Nullable>
+	    <PublishWithAspNetCoreTargetManifest>False</PublishWithAspNetCoreTargetManifest>
 	</PropertyGroup>
 	
 	<PropertyGroup>
@@ -22,6 +23,7 @@
 		<PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
 		<PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
 		<PackageReference Include="Nito.AsyncEx.Context" Version="5.1.2" />
+	    <!-- Validation 2.5.51? -->
 	</ItemGroup>
 
 
