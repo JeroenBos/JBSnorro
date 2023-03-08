@@ -21,7 +21,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        include:
+        - os: ubuntu-latest
+          configuration: Debug
+        - os: ubuntu-latest
+          configuration: Release
+        - os: windows-latest
+          configuration: Debug
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET Core
@@ -31,7 +37,7 @@ jobs:
     - name: build
       run: dotnet build JBSnorro.Testing/JBSnorro.Testing.csproj
     - name: build tests
-      run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj
+      run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --configuration ${{ matrix.configuration }}
     - name: test
-      run: dotnet test JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --framework net7.0
+      run: dotnet test JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --framework net7.0 --configuration ${{ matrix.configuration }}
       timeout-minutes: 10
