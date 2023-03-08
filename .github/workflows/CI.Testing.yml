@@ -9,6 +9,10 @@ on:
     paths-ignore:
     - '**.md'
 
+env:
+  DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -24,14 +28,14 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.101  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/6.0/releases.json
+        dotnet-version: ${{ env.DOTNET_VERSION }}
     - name: build
       run: dotnet build JBSnorro.Testing/JBSnorro.Testing.csproj
     - name: build tests
       run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj
     - name: test
       shell: bash
-      run: dotnet test 'JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj' --runtime ${{ matrix.runtime }} --framework net6.0
+      run: dotnet test 'JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj' --runtime ${{ matrix.runtime }} --framework net7.0
       timeout-minutes: 10
 
 
@@ -65,7 +69,7 @@ jobs:
       if: ${{ steps.up-to-date.outcome != 'failure' }}
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.101
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Install dependencies
       if: ${{ steps.up-to-date.outcome != 'failure' }}

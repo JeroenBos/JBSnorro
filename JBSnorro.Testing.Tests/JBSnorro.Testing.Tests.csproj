@@ -15,13 +15,13 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="JBSnorro" Version="0.0.15"   Condition="'$(Configuration)'!='Debug'" />
+		<PackageReference Include="JBSnorro" Version="0.0.15" Condition="'$(Configuration)'!='Debug'" />
 		<ProjectReference Include="..\JBSnorro\JBSnorro.csproj" Condition="'$(Configuration)'=='Debug'" />
 		<ProjectReference Include="..\JBSnorro.Testing\JBSnorro.Testing.csproj" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-		<PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
-		<PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
-		<PackageReference Include="Nito.AsyncEx.Context" Version="5.0.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+		<PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
+		<PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
+		<PackageReference Include="Nito.AsyncEx.Context" Version="5.1.2" />
 	</ItemGroup>
 
 

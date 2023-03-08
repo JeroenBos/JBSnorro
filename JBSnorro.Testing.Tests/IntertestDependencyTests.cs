@@ -109,7 +109,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
     public async Task Test_can_run_dotnet_test_on_tmp_setup()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory();
+        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
         File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
         File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
             @"
@@ -141,7 +141,7 @@ namespace TestProject1
     public async Task Test_can_compile_with_DependsOn()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory();
+        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
         File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
         File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
             @"
@@ -181,7 +181,7 @@ namespace TestProject1
     public async Task Test_depending_on_failing_test_raises_skip_exception()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory();
+        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
         File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
         File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
             @"
@@ -220,7 +220,7 @@ namespace TestProject1
     public async Task Test_skip_when_dependency_test_fails()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory();
+        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
         File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
         File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
             @"
@@ -261,7 +261,7 @@ namespace TestProject1
     public async Task Test_does_not_stackoverflow_DependsOn_self()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory();
+        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
         File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
         File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
             @"
@@ -297,7 +297,7 @@ namespace TestProject1
     public async Task Test_depends_circularly_on_Type_throws()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory();
+        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
         File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
         File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
             @"
@@ -337,7 +337,7 @@ namespace TestProject1
     public async Task Test_depending_on_failing_test_type_skips()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory();
+        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
         File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
         File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
             @"
@@ -379,7 +379,7 @@ namespace TestProject1
     public async Task Test_depending_on_asynchronously_failing_test_type_skips()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory();
+        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
         File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
         File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
             @"
