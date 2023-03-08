@@ -6,6 +6,7 @@
 		<IsPackable>false</IsPackable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<GenerateProgramFile>False</GenerateProgramFile>
+		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 	
 	<ItemGroup>

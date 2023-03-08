@@ -3,11 +3,12 @@
 		<TargetFrameworks>net6.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 	
 	<PropertyGroup>
 		<!-- Publishing properties-->
-		<IsPackable>false</IsPackable>
+		<IsPackable>false</IsPackable> 
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<GenerateProgramFile>False</GenerateProgramFile>
 	</PropertyGroup>
