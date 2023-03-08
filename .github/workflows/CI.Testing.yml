@@ -17,7 +17,7 @@ defaults:
   run:
     shell: bash
 jobs:
-  test:
+  test-testing:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -33,54 +33,5 @@ jobs:
     - name: build tests
       run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj
     - name: test
-      run: dotnet test 'JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj' --framework net7.0
+      run: dotnet test JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --framework net7.0
       timeout-minutes: 10
-
-
-
-  publish:
-    needs: test
-    if: ${{ github.ref == 'refs/heads/master' }}
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Detect if version changed
-      continue-on-error: true
-      id: up-to-date
-      run: | 
-        current_version=$(bash .github/get_current_version.sh "JBSnorro.Testing" | xargs)
-        published_version=$(bash .github/get_published_version.sh "JBSnorro.Testing" | xargs)
-        echo "current_version: \"$current_version\""
-        echo "published_version: \"$published_version\""
-
-        is_up_to_date=$([[ "$current_version" == "$published_version" ]] && echo true || echo false)
-        echo "is_up_to_date: $is_up_to_date"
-
-        if [ "$is_up_to_date" = "true" ]; then
-            echo "Up-to-date"
-            exit 1
-        else
-            echo "Publishing"
-        fi
-
-    - name: Setup .NET Core
-      if: ${{ steps.up-to-date.outcome != 'failure' }}
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-
-    - name: Install dependencies
-      if: ${{ steps.up-to-date.outcome != 'failure' }}
-      run: dotnet restore
-
-    - name: Build
-      if: ${{ steps.up-to-date.outcome != 'failure' }}
-      run: dotnet build --configuration Release  # --no-restore doesn't seem to work
-
-    - name: Publish
-      if: ${{ steps.up-to-date.outcome != 'failure' }}
-      uses: alirezanet/publish-nuget@v3.0.0  # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
-      with:
-          PROJECT_FILE_PATH: JBSnorro.Testing/JBSnorro.Testing.csproj
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          INCLUDE_SYMBOLS: true

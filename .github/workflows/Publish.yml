@@ -13,18 +13,23 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        include:
+        - project: JBSnorro
+          checkname: test
+        - project: JBSnorro.Testing
+          checkname: test-testing
     steps:
       - uses: actions/checkout@v3
       - name: Detect if version changed
         run: |
-          current_version=$(bash .github/get_current_version.sh | xargs)
-          published_version=$(bash .github/get_published_version.sh | xargs)
+          current_version=$(bash .github/get_current_version.sh '${{ matrix.project }}' | xargs)
+          published_version=$(bash .github/get_published_version.sh '${{ matrix.project }}' | xargs)
           echo "current_version: \"$current_version\""
           echo "published_version: \"$published_version\""
 
-          is_up_to_date=$([[ "$current_version" == "$published_version" ]] && echo true || echo false)
-
-          if [[ "${is_up_to_date}" == "true" ]]; then
+          if [[ "$current_version" == "$published_version" ]]; then
               echo "Up-to-date"
           else
               echo "PUBLISH=true" >> $GITHUB_ENV
@@ -45,24 +50,24 @@ jobs:
         if: ${{ env.PUBLISH == 'true' }}
         run: dotnet build --configuration Release --no-restore
 
-      - name: Wait for ubuntu CI
+      - name: Wait for ${{ matrix.project }} ubuntu CI
         uses: fountainhead/action-wait-for-check@v1.1.0
         if: ${{ env.PUBLISH == 'true' }}
         id: wait-for-test-ubuntu
         with:
-          checkName: test (ubuntu-latest)
+          checkName: ${{ matrix.checkname }} (ubuntu-latest)
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fail if ubuntu CI failed
         if: ${{ env.PUBLISH == 'true' && steps.wait-for-test-ubuntu.outputs.conclusion != 'success' }}
         run: echo "Conclusion=${{ steps.wait-for-ubuntu-test.outputs.conclusion }}" && exit 1
 
-      - name: Wait for windows CI
+      - name: Wait for ${{ matrix.project }} windows CI
         uses: fountainhead/action-wait-for-check@v1.1.0
         if: ${{ env.PUBLISH == 'true' }}
         id: wait-for-test-windows
         with:
-          checkName: test (windows-latest)
+          checkName: ${{ matrix.checkname }} (windows-latest)
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fail if windows CI failed
@@ -73,6 +78,7 @@ jobs:
         if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
         uses: alirezanet/publish-nuget@v3.0.4 # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
         with:
-          PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+          PROJECT_FILE_PATH: '${{ matrix.project }}/${{ matrix.project }}.csproj'
           INCLUDE_SYMBOLS: true
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+          
