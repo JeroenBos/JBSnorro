@@ -1980,7 +1980,7 @@ namespace JBSnorro
 		/// <param name="array">The source array.</param>
         public static TResult[] CastAll<T, TResult>(this T[] array) where TResult : class
         {
-			return Array.ConvertAll<T, TResult>(array, element => (TResult)(object)element);
+			return Array.ConvertAll<T, TResult>(array, element => (TResult)(object)element!);
         }
         /// <summary> Maps an array into another array of the same size using a specified mapping function depending also on the elements index. </summary>
         /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
