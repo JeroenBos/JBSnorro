@@ -46,29 +46,12 @@ jobs:
         if: ${{ env.PUBLISH == 'true' }}
         run: dotnet build --configuration Release
 
-      - name: Wait for ${{ matrix.project }} ubuntu CI
-        uses: fountainhead/action-wait-for-check@v1.1.0
+      - name: Wait for CI
+        uses: deepinsight-io/action-wait-on-workflow@v2.1.1
         if: ${{ env.PUBLISH == 'true' }}
-        id: wait-for-test-ubuntu
         with:
-          checkName: ${{ matrix.checkname }} (ubuntu-latest)
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          workflow: ${{ matrix.workflowName }}
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Fail if ubuntu CI failed
-        if: ${{ env.PUBLISH == 'true' && steps.wait-for-test-ubuntu.outputs.conclusion != 'success' }}
-        run: echo "Conclusion=${{ steps.wait-for-ubuntu-test.outputs.conclusion }}" && exit 1
-
-      - name: Wait for ${{ matrix.project }} windows CI
-        uses: fountainhead/action-wait-for-check@v1.1.0
-        if: ${{ env.PUBLISH == 'true' }}
-        id: wait-for-test-windows
-        with:
-          checkName: ${{ matrix.checkname }} (windows-latest)
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Fail if windows CI failed
-        if: ${{ env.PUBLISH == 'true' && steps.wait-for-test-windows.outputs.conclusion != 'success' }}
-        run: echo "Conclusion=${{ steps.wait-for-windows-test.outputs.conclusion }}" && exit 1
 
       - name: Publish
         if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
