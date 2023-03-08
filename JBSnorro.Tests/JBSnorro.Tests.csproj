@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>false</IsPackable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<GenerateProgramFile>False</GenerateProgramFile>
+		<GenerateProgramFile>false</GenerateProgramFile>
 		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 	
