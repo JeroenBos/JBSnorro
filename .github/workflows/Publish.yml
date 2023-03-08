@@ -11,15 +11,16 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest]
         include:
         - project: JBSnorro
-          checkname: test
+          workflowName: CI
         - project: JBSnorro.Testing
-          checkname: test-testing
+          workflowName: CI (JBSnorro.Testing)
     steps:
       - uses: actions/checkout@v3
       - name: Detect if version changed
