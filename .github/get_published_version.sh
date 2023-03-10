@@ -9,7 +9,7 @@ if [[ "$#" -ne 1 ]]; then
     exit 1;
 fi
 
-version=$(nuget list "id:$1"   \
+version=$(nuget list "packageid:$1"   \
         | grep -v "$1\."             \
         | sed "s/$1//"               \
         | xargs                      \
