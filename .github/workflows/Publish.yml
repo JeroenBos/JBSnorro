@@ -31,8 +31,8 @@ jobs:
       - name: Detect if version changed
         run: |
           current_version=$(bash .github/get_current_version.sh '${{ env.CSPROJ_PATH }}' | xargs)
-          published_version=$(bash .github/get_published_version.sh '${{ matrix.PROJECT }}' | xargs)
           echo "current_version: \"$current_version\""
+          published_version=$(bash .github/get_published_version.sh '${{ matrix.PROJECT }}' | xargs)
           echo "published_version: \"$published_version\""
 
           if [[ "$current_version" == "$published_version" ]]; then
