@@ -9,6 +9,9 @@ on:
     paths:
       - ".github/workflows/Publish.yml"
 
+defaults:
+  run:
+    shell: bash
 jobs:
   publish:
     runs-on: ${{ matrix.os }}
