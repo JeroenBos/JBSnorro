@@ -4,6 +4,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace JBSnorro;
 
 
+#if DEBUG
+
 [TestClass]
 public class ContractTests
 {
@@ -53,3 +55,5 @@ public class ContractTests
         Contract.Throw();
     }
 }
+
+#endif
