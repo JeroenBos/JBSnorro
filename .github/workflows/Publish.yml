@@ -24,12 +24,14 @@ jobs:
           workflowName: CI
         - project: JBSnorro.Testing
           workflowName: CI (JBSnorro.Testing)
+    env:
+      CSPROJ_PATH: '${{ matrix.project }}/${{ matrix.project }}.csproj'
     steps:
       - uses: actions/checkout@v3
       - name: Detect if version changed
         run: |
-          current_version=$(bash .github/get_current_version.sh '${{ matrix.project }}' | xargs)
-          published_version=$(bash .github/get_published_version.sh '${{ matrix.project }}' | xargs)
+          current_version=$(bash .github/get_current_version.sh '${{ env.CSPROJ_PATH }}' | xargs)
+          published_version=$(bash .github/get_published_version.sh '${{ env.CSPROJ_PATH }}' | xargs)
           echo "current_version: \"$current_version\""
           echo "published_version: \"$published_version\""
 
@@ -39,6 +41,7 @@ jobs:
               echo "PUBLISH=true" >> $GITHUB_ENV
               echo "Publishing"
           fi
+
 
       - name: Setup .NET Core
         if: ${{ env.PUBLISH == 'true' }}
@@ -61,7 +64,7 @@ jobs:
         if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
         uses: alirezanet/publish-nuget@v3.0.4 # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
         with:
-          PROJECT_FILE_PATH: '${{ matrix.project }}/${{ matrix.project }}.csproj'
+          PROJECT_FILE_PATH: ${{ env.CSPROJ_PATH }}
           INCLUDE_SYMBOLS: true
           NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
           
