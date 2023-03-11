@@ -16,7 +16,6 @@
 		<PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
 		<PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
 		<PackageReference Include="Nito.AsyncEx.Context" Version="5.1.2" />
-		<PackageReference Include="xunit.extensibility.execution" Version="2.4.2" />
 
 		<Watch Include="../JBSnorro/**/*.cs;../JBSnorro.csproj;**/*.cs;**/*.csproj" Exclude="../**/obj/**" />
 	</ItemGroup>
