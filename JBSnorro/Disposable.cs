@@ -40,7 +40,10 @@ public class AsyncDisposable : IAsyncDisposable
 	{
 		this.dispose = dispose ?? throw new ArgumentNullException(nameof(dispose));
 	}
-	public virtual async ValueTask DisposeAsync()
+    public AsyncDisposable(Func<ValueTask> dispose) : this(() => dispose().AsTask())
+    {
+    }
+    public virtual async ValueTask DisposeAsync()
 	{
 		await dispose();
 	}
@@ -51,7 +54,7 @@ public class AsyncDisposable : IAsyncDisposable
 	}
 	public virtual AsyncDisposable WithAfter(Func<Task> anotherDisposalTask)
 	{
-		return new AsyncDisposable(async () =>
+		return new AsyncDisposable(async Task () =>
 		{
 			try
 			{
@@ -65,7 +68,7 @@ public class AsyncDisposable : IAsyncDisposable
 	}
 	public virtual AsyncDisposable WithBefore(Func<Task> anotherDisposalTask)
 	{
-		return new AsyncDisposable(async () =>
+		return new AsyncDisposable(async Task () =>
 		{
 			try
 			{
@@ -123,12 +126,15 @@ public class AsyncDisposable<T> : AsyncDisposable
 	public AsyncDisposable(T value, Func<Task> dispose) : base(dispose)
 	{
 		this.Value = value;
-
 	}
-	public override AsyncDisposable<T> With(Func<Task> anotherDisposalTask)
+    public AsyncDisposable(T value, Func<ValueTask> dispose) : base(dispose)
+    {
+        this.Value = value;
+    }
+    public override AsyncDisposable<T> With(Func<Task> anotherDisposalTask)
 	{
 		 return new AsyncDisposable<T>(this.Value,
-			 async () =>
+			 async Task () =>
 			 {
 				 try
 				 {
@@ -143,7 +149,7 @@ public class AsyncDisposable<T> : AsyncDisposable
 	public override AsyncDisposable<T> WithAfter(Func<Task> anotherDisposalTask)
 	{
 		return new AsyncDisposable<T>(this.Value,
-			async () =>
+			async Task () =>
 			{
 				try
 				{

@@ -71,7 +71,7 @@ public static class IOExtensions
 	{
 		string tempDirectory = CreateTempDirectory();
 		var cleanupDisposable = TempFileCleanup.Register(tempDirectory + (tempDirectory.EndsWith('/') ? "" : "/"));
-		return new AsyncDisposable<string>(tempDirectory, async () => { if (cleanupDisposable != null) await cleanupDisposable.DisposeAsync(); });
+		return new AsyncDisposable<string>(tempDirectory, async Task () => { if (cleanupDisposable != null) await cleanupDisposable.DisposeAsync(); });
 	}
 	/// <summary>
 	/// Normalizes the path. On case-insensitive file systems, equality should still be compared case-insensitively.
