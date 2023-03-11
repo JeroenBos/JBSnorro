@@ -70,6 +70,9 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
     {
         get
         {
+#if DEBUG
+            var jbsnorroTestingAssembly = typeof(IIntertestDependencyTracker).Assembly;
+#endif
             return """
               <Project Sdk="Microsoft.NET.Sdk.Razor">
                   <PropertyGroup>
@@ -90,7 +93,19 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
                   </ItemGroup>
                   
                   <ItemGroup>
-                      <PackageReference Include="JBSnorro" Version="0.0.15" />
+              """ +
+#if DEBUG
+              $"""
+                      <Reference Include="{jbsnorroTestingAssembly.GetName().Name}">
+                          <HintPath>{jbsnorroTestingAssembly.Location}</HintPath>
+                      </Reference>
+              """
+#else
+              """
+                      <PackageReference Include="JBSnorro.Testing" Version="0.0.2.1" />
+              """
+#endif
+            + """
                   </ItemGroup>
               </Project>
               """;
