@@ -71,7 +71,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         get
         {
             return """
-              <Project Sdk="" Microsoft.NET.Sdk.Razor"">
+              <Project Sdk="Microsoft.NET.Sdk.Razor">
                   <PropertyGroup>
                       <TargetFramework>net7.0</TargetFramework>
                       <Nullable>enable</Nullable>
