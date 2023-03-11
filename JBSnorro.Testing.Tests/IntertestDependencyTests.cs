@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using JBSnorro.Csx;
+using System.Diagnostics;
 
 namespace JBSnorro.Testing.IntertestDependency.Tests;
 
@@ -58,7 +59,6 @@ public class IntertestDependencyIntegrationTestsBase
     {
         return $"{(failed == 0 ? "Passed" : "Failed")}!  - Failed:     {failed}, Passed:     {passed}, Skipped:     {skipped}";
     }
-
 }
 public class IntertestXunitDependencyIntegrationTests : IntertestDependencyIntegrationTestsBase
 {
@@ -95,7 +95,17 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
               </Project>
               """;
         }
+    }
 
+    private static async Task<AsyncDisposable<ProcessOutput>> RunDotnetTest(string csContents)
+    {
+        AsyncDisposable<string> tmpDir = IOExtensions.CreateTemporaryDirectory();
+        File.WriteAllText(Path.Combine(tmpDir.Value, "tests.csproj"), csprojContents);
+        File.WriteAllText(Path.Combine(tmpDir.Value, "tests.cs"), csContents);
+
+        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir.Value}/tests.csproj\""));
+
+        return new AsyncDisposable<ProcessOutput>(output, () => tmpDir.DisposeAsync().AsTask());
     }
 
 
@@ -103,152 +113,141 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
     public async Task Test_can_run_dotnet_test_on_tmp_setup()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
-        File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
-        File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
-            @"
-using Xunit;
+        string csContents = """
+            using Xunit;
 
-namespace TestProject1
-{
-    public class UnitTest1
-    {
-        [Fact]
-        public void Test1()
-        {
+            namespace TestProject1;
+            
+            public class UnitTest1
+            {
+                [Fact]
+                public void Test1()
+                {
 
-        }
-    }
-}");
+                }
+            }
+            """;
 
         // Act
-        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""), cts.Token);
+        await using var dotnetTestOutput = await RunDotnetTest(csContents);
+        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        // Assert
-        Contract.Assert(output.ExitCode == 0, output.ErrorOutput);
-        Assert.Contains(TestsStartedExpected, output.StandardOutput);
-        Assert.Contains(TestsStartedExpected2, output.StandardOutput);
-        Assert.Contains(ExpectedTally(passed: 1), output.StandardOutput);
+        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+        Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 1)));
     }
 
     [@Fact]
     public async Task Test_can_compile_with_DependsOn()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
-        File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
-        File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
-            @"
-using System.Threading.Tasks;
-using Xunit;
-using JBSnorro.Testing.IntertestDependency;
-
-namespace TestProject1
-{
-    public class UnitTest1
-    {
-        [Fact]
-        public async Task TestMethod1()
-        {
-            await this.DependsOn(nameof(TestMethod2));
-        }
-        [Fact]
-        public void TestMethod2()
-        {
-        }
-    }
-}
-");
+        string csContents = """
+            using System.Threading.Tasks;
+            using Xunit;
+            using JBSnorro.Testing.IntertestDependency;
+            
+            namespace TestProject1;
+            
+            public class UnitTest1
+            {
+                [Fact]
+                public async Task TestMethod1()
+                {
+                    await this.DependsOn(nameof(TestMethod2));
+                }
+                [Fact]
+                public void TestMethod2()
+                {
+                }
+            }
+            """;
 
         // Act
-        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""));
+        await using var dotnetTestOutput = await RunDotnetTest(csContents);
+        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Contract.Assert(output.ExitCode == 0, output.ErrorOutput);
-        Assert.Contains(TestsStartedExpected, output.StandardOutput);
-        Assert.Contains(TestsStartedExpected2, output.StandardOutput);
-        Assert.Contains(ExpectedTally(passed: 2), output.StandardOutput);
-
+        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+        Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 2)));
     }
 
     [@Fact]
     public async Task Test_depending_on_failing_test_raises_skip_exception()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
-        File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
-        File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
-            @"
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using JBSnorro.Testing.IntertestDependency;
+        string csContents = """
+            using System;
+            using System.Threading.Tasks;
+            using Xunit;
+            using JBSnorro.Testing.IntertestDependency;
+            
+            namespace TestProject1;
+            
+            public class UnitTest1
+            {
+                [Fact]
+                public async Task TestMethod1()
+                {
+                    await Assert.ThrowsAsync<SkipException>(async () => await this.DependsOn(nameof(TestMethod2)));
+                }
+                [Fact]
+                public async Task TestMethod2()
+                {
+                    throw new Exception();
+                }
+            }
+            """;
 
-namespace TestProject1
-{
-    public class UnitTest1
-    {
-        [Fact]
-        public async Task TestMethod1()
-        {
-            await Assert.ThrowsAsync<SkipException>(async () => await this.DependsOn(nameof(TestMethod2)));
-        }
-        [Fact]
-        public void TestMethod2()
-        {
-            throw new Exception();
-        }
-    }
-}
-");
         // Act
-        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""));
+        await using var dotnetTestOutput = await RunDotnetTest(csContents);
+        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Assert.Contains(TestsStartedExpected, output.StandardOutput);
-        Assert.Contains(TestsStartedExpected2, output.StandardOutput);
-        Assert.Contains(ExpectedTally(passed: 1, failed: 1), output.StandardOutput);
+        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+        Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 1, failed: 1)));
     }
 
     [@Fact]
     public async Task Test_skip_when_dependency_test_fails()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
-        File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
-        File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
-            @"
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using JBSnorro.Testing.IntertestDependency;
+        string csContents = """
+            using System;
+            using System.Threading.Tasks;
+            using Xunit;
+            using JBSnorro.Testing.IntertestDependency;
+            
+            namespace TestProject1;
+            
+            public class UnitTest1
+            {
+                [SkippableFact]
+                public async Task TestMethod1()
+                {
+                    await this.DependsOn(nameof(TestMethod2));
+                }
+                [Fact]
+                public void TestMethod2()
+                {
+                    throw new Exception();
+                }
+            }
+            """;
 
-namespace TestProject1
-{
-    public class UnitTest1
-    {
-        [SkippableFact]
-        public async Task TestMethod1()
-        {
-            await this.DependsOn(nameof(TestMethod2));
-        }
-        [Fact]
-        public void TestMethod2()
-        {
-            throw new Exception();
-        }
-    }
-}
-");
         // Act
-        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""));
+        await using var dotnetTestOutput = await RunDotnetTest(csContents);
+        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Assert.Contains(TestsStartedExpected, output.StandardOutput);
-        Assert.Contains(TestsStartedExpected2, output.StandardOutput);
-        Assert.Contains(ExpectedTally(failed: 1, skipped: 1), output.StandardOutput);
-
+        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
     }
 
 
@@ -256,35 +255,32 @@ namespace TestProject1
     public async Task Test_does_not_stackoverflow_DependsOn_self()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
-        File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
-        File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
-            @"
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using JBSnorro.Testing.IntertestDependency;
-
-namespace TestProject1
-{
-    public class UnitTest1
-    {
-        [SkippableFact]
-        public async Task TestMethod1()
-        {
-            await this.DependsOn(nameof(TestMethod1));
-        }
-    }
-}
-");
+        string csContents = """
+            using System;
+            using System.Threading.Tasks;
+            using Xunit;
+            using JBSnorro.Testing.IntertestDependency;
+            
+            namespace TestProject1;
+            
+            public class UnitTest1
+            {
+                [SkippableFact]
+                public async Task TestMethod1()
+                {
+                    await this.DependsOn(nameof(TestMethod1));
+                }
+            }
+            """;
         // Act
-        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""));
+        await using var dotnetTestOutput = await RunDotnetTest(csContents);
+        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Assert.Contains(TestsStartedExpected, output.StandardOutput);
-        Assert.Contains(TestsStartedExpected2, output.StandardOutput);
-        Assert.Contains(ExpectedTally(failed: 1), output.StandardOutput);
-
+        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1)));
     }
 
 
@@ -292,39 +288,37 @@ namespace TestProject1
     public async Task Test_depends_circularly_on_Type_throws()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
-        File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
-        File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
-            @"
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using JBSnorro.Testing.IntertestDependency;
-
-namespace TestProject1
-{
-    public class UnitTest1
-    {
-        // public UnitTest1() { IIntertestDependencyTracker.TestAssemblies = new [] { typeof(UnitTest1).Assembly }; }
-
-        [SkippableFact]
-        public async Task TestMethod1()
-        {
-            await this.DependsOn(nameof(UnitTest1));
-        }
-    }
-}
-");
+        string csContents = """
+            using System;
+            using System.Threading.Tasks;
+            using Xunit;
+            using JBSnorro.Testing.IntertestDependency;
+            
+            namespace TestProject1;
+            
+            public class UnitTest1
+            {
+                // public UnitTest1() { IIntertestDependencyTracker.TestAssemblies = new [] { typeof(UnitTest1).Assembly }; }
+            
+                [SkippableFact]
+                public async Task TestMethod1()
+                {
+                    await this.DependsOn(nameof(UnitTest1));
+                }
+            }
+            
+            """;
         // Act
-        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""));
+        await using var dotnetTestOutput = await RunDotnetTest(csContents);
+        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Assert.Contains(TestsStartedExpected, output.StandardOutput);
-        Assert.Contains(TestsStartedExpected2, output.StandardOutput);
-        Assert.Contains(ExpectedTally(failed: 1), output.StandardOutput);
-        Assert.Contains("JBSnorro.Testing.IntertestDependency.InvalidTestConfigurationException", output.StandardOutput);
-        Assert.Contains("'TestProject1.UnitTest1.TestMethod1' is already depended on (indirectly) by TestProject1.UnitTest1", output.StandardOutput);
-
+        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1)));
+        Contract.Assert(stdOutput.Contains("JBSnorro.Testing.IntertestDependency.InvalidTestConfigurationException"));
+        Contract.Assert(stdOutput.Contains("'TestProject1.UnitTest1.TestMethod1' is already depended on (indirectly) by TestProject1.UnitTest1"));
     }
 
 
@@ -332,85 +326,82 @@ namespace TestProject1
     public async Task Test_depending_on_failing_test_type_skips()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
-        File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
-        File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
-            @"
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using JBSnorro.Testing.IntertestDependency;
-
-namespace TestProject1
-{
-    public class UnitTest1
-    {
-        [SkippableFact]
-        public async Task TestMethod1()
-        {
-            await this.DependsOn(nameof(UnitTest2));
-        }
-    }
-    public class UnitTest2
-    {
-        [SkippableFact]
-        public async Task TestMethod1()
-        {
-            throw new Exception();
-        }
-    }
-}
-");
+        string csContents = """
+            using System;
+            using System.Threading.Tasks;
+            using Xunit;
+            using JBSnorro.Testing.IntertestDependency;
+            
+            namespace TestProject1;
+            
+            public class UnitTest1
+            {
+                [SkippableFact]
+                public async Task TestMethod1()
+                {
+                    await this.DependsOn(nameof(UnitTest2));
+                }
+            }
+            public class UnitTest2
+            {
+                [SkippableFact]
+                public void TestMethod1()
+                {
+                    throw new Exception();
+                }
+            }
+            
+            """;
         // Act
-        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""));
+        await using var dotnetTestOutput = await RunDotnetTest(csContents);
+        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Assert.Contains(TestsStartedExpected, output.StandardOutput);
-        Assert.Contains(TestsStartedExpected2, output.StandardOutput);
-        Assert.Contains(ExpectedTally(failed: 1, skipped: 1), output.StandardOutput);
+        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
     }
 
     [@Fact]
     public async Task Test_depending_on_asynchronously_failing_test_type_skips()
     {
         // Arrange
-        string tmpDir = IOExtensions.CreateTemporaryDirectory().Value;
-        File.WriteAllText(Path.Combine(tmpDir, "tests.csproj"), csprojContents);
-        File.WriteAllText(Path.Combine(tmpDir, "tests.cs"),
-            @"
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using JBSnorro.Testing.IntertestDependency;
-
-namespace TestProject1
-{
-    public class UnitTest1
-    {
-        [SkippableFact]
-        public async Task TestMethod1()
-        {
-            await this.DependsOn(nameof(UnitTest2));
-        }
-    }
-    public class UnitTest2
-    {
-        [SkippableFact]
-        public async Task TestMethod1()
-        {
-            await Task.Delay(10);
-            throw new Exception();
-        }
-    }
-}
-");
+        string csContents = """
+            using System;
+            using System.Threading.Tasks;
+            using Xunit;
+            using JBSnorro.Testing.IntertestDependency;
+            
+            namespace TestProject1;
+            
+            public class UnitTest1
+            {
+                [SkippableFact]
+                public async Task TestMethod1()
+                {
+                    await this.DependsOn(nameof(UnitTest2));
+                }
+            }
+            public class UnitTest2
+            {
+                [SkippableFact]
+                public async Task TestMethod1()
+                {
+                    await Task.Delay(10);
+                    throw new Exception();
+                }
+            }
+            """;
         // Act
-        var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir}/tests.csproj\""));
+        await using var dotnetTestOutput = await RunDotnetTest(csContents);
+        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Assert.Contains(TestsStartedExpected, output.StandardOutput);
-        Assert.Contains(TestsStartedExpected2, output.StandardOutput);
-        Assert.Contains(ExpectedTally(failed: 1, skipped: 1), output.StandardOutput);
+        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
     }
 }
 
