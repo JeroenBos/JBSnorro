@@ -147,7 +147,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         await using var dotnetTestOutput = await RunDotnetTest(csContents);
         var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(exitCode == 0, stdOutput);
         Contract.Assert(stdOutput.Contains(TestsStartedExpected));
         Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
         Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 1)));
@@ -183,7 +183,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(exitCode == 0, stdOutput);
         Contract.Assert(stdOutput.Contains(TestsStartedExpected));
         Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
         Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 2)));
@@ -221,7 +221,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(exitCode == 0, stdOutput);
         Contract.Assert(stdOutput.Contains(TestsStartedExpected));
         Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
         Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 1, failed: 1)));
@@ -259,7 +259,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(exitCode == 0, stdOutput);
         Contract.Assert(stdOutput.Contains(TestsStartedExpected));
         Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
         Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
@@ -292,7 +292,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(exitCode == 0, stdOutput);
         Contract.Assert(stdOutput.Contains(TestsStartedExpected));
         Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
         Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1)));
@@ -328,7 +328,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(exitCode == 0, stdOutput);
         Contract.Assert(stdOutput.Contains(TestsStartedExpected));
         Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
         Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1)));
@@ -372,7 +372,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(exitCode == 0, stdOutput);
         Contract.Assert(stdOutput.Contains(TestsStartedExpected));
         Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
         Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
@@ -413,7 +413,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
         // Assert
-        Contract.Assert(exitCode == 0, errorOutput);
+        Contract.Assert(exitCode == 0, stdOutput);
         Contract.Assert(stdOutput.Contains(TestsStartedExpected));
         Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
         Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
