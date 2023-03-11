@@ -114,7 +114,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         }
     }
 
-    private static async Task<AsyncDisposable<ProcessOutput>> RunDotnetTest(string csContents)
+    protected static async Task<AsyncDisposable<ProcessOutput>> RunDotnetTest(string csContents)
     {
         AsyncDisposable<string> tmpDir = IOExtensions.CreateTemporaryDirectory();
         File.WriteAllText(Path.Combine(tmpDir.Value, "tests.csproj"), csprojContents);
@@ -125,12 +125,14 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         return new AsyncDisposable<ProcessOutput>(output, () => tmpDir.DisposeAsync().AsTask());
     }
 
-
-    [@Fact]
-    public async Task Test_can_run_dotnet_test_on_tmp_setup()
+    public class IntertestXunitDependencyIntegrationTestsParallel1 : IntertestXunitDependencyIntegrationTests
     {
-        // Arrange
-        string csContents = """
+
+        [@Fact]
+        public async Task Test_can_run_dotnet_test_on_tmp_setup()
+        {
+            // Arrange
+            string csContents = """
             using Xunit;
 
             namespace TestProject1;
@@ -145,21 +147,23 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
             }
             """;
 
-        // Act
-        await using var dotnetTestOutput = await RunDotnetTest(csContents);
-        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
+            // Act
+            await using var dotnetTestOutput = await RunDotnetTest(csContents);
+            var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        Contract.Assert(exitCode == 0, stdOutput);
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
-        Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 1)));
+            Contract.Assert(exitCode == 0, stdOutput);
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+            Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 1)));
+        }
     }
-
-    [@Fact]
-    public async Task Test_can_compile_with_DependsOn()
+    public class IntertestXunitDependencyIntegrationTestsParallel121 : IntertestXunitDependencyIntegrationTests
     {
-        // Arrange
-        string csContents = """
+        [@Fact]
+        public async Task Test_can_compile_with_DependsOn()
+        {
+            // Arrange
+            string csContents = """
             using System.Threading.Tasks;
             using Xunit;
             using JBSnorro.Testing.IntertestDependency;
@@ -180,22 +184,24 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
             }
             """;
 
-        // Act
-        await using var dotnetTestOutput = await RunDotnetTest(csContents);
-        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
+            // Act
+            await using var dotnetTestOutput = await RunDotnetTest(csContents);
+            var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        // Assert
-        Contract.Assert(exitCode == 0, stdOutput);
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
-        Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 2)));
+            // Assert
+            Contract.Assert(exitCode == 0, stdOutput);
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+            Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 2)));
+        }
     }
-
-    [@Fact]
-    public async Task Test_depending_on_failing_test_raises_skip_exception()
+    public class IntertestXunitDependencyIntegrationTestsParallel21 : IntertestXunitDependencyIntegrationTests
     {
-        // Arrange
-        string csContents = """
+        [@Fact]
+        public async Task Test_depending_on_failing_test_raises_skip_exception()
+        {
+            // Arrange
+            string csContents = """
             using System;
             using System.Threading.Tasks;
             using Xunit;
@@ -218,21 +224,23 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
             }
             """;
 
-        // Act
-        await using var dotnetTestOutput = await RunDotnetTest(csContents);
-        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
+            // Act
+            await using var dotnetTestOutput = await RunDotnetTest(csContents);
+            var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        // Assert
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
-        Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 1, failed: 1)));
+            // Assert
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+            Contract.Assert(stdOutput.Contains(ExpectedTally(passed: 1, failed: 1)));
+        }
     }
-
-    [@Fact]
-    public async Task Test_skip_when_dependency_test_fails()
+    public class IntertestXunitDependencyIntegrationTestsParallel41 : IntertestXunitDependencyIntegrationTests
     {
-        // Arrange
-        string csContents = """
+        [@Fact]
+        public async Task Test_skip_when_dependency_test_fails()
+        {
+            // Arrange
+            string csContents = """
             using System;
             using System.Threading.Tasks;
             using Xunit;
@@ -255,22 +263,24 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
             }
             """;
 
-        // Act
-        await using var dotnetTestOutput = await RunDotnetTest(csContents);
-        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
+            // Act
+            await using var dotnetTestOutput = await RunDotnetTest(csContents);
+            var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        // Assert
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
-        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
+            // Assert
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+            Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
+        }
     }
-
-
-    [@Fact]
-    public async Task Test_does_not_stackoverflow_DependsOn_self()
+    public class IntertestXunitDependencyIntegrationTestsParallel11 : IntertestXunitDependencyIntegrationTests
     {
-        // Arrange
-        string csContents = """
+
+        [@Fact]
+        public async Task Test_does_not_stackoverflow_DependsOn_self()
+        {
+            // Arrange
+            string csContents = """
             using System;
             using System.Threading.Tasks;
             using Xunit;
@@ -287,22 +297,24 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
                 }
             }
             """;
-        // Act
-        await using var dotnetTestOutput = await RunDotnetTest(csContents);
-        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
+            // Act
+            await using var dotnetTestOutput = await RunDotnetTest(csContents);
+            var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        // Assert
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
-        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1)));
+            // Assert
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+            Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1)));
+        }
     }
-
-
-    [@Fact]
-    public async Task Test_depends_circularly_on_Type_throws()
+    public class IntertestXunitDependencyIntegrationTestsParallel231 : IntertestXunitDependencyIntegrationTests
     {
-        // Arrange
-        string csContents = """
+
+        [@Fact]
+        public async Task Test_depends_circularly_on_Type_throws()
+        {
+            // Arrange
+            string csContents = """
             using System;
             using System.Threading.Tasks;
             using Xunit;
@@ -322,24 +334,26 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
             }
             
             """;
-        // Act
-        await using var dotnetTestOutput = await RunDotnetTest(csContents);
-        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
+            // Act
+            await using var dotnetTestOutput = await RunDotnetTest(csContents);
+            var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        // Assert
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
-        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1)));
-        Contract.Assert(stdOutput.Contains("JBSnorro.Testing.IntertestDependency.InvalidTestConfigurationException"));
-        Contract.Assert(stdOutput.Contains("'TestProject1.UnitTest1.TestMethod1' is already depended on (indirectly) by TestProject1.UnitTest1"));
+            // Assert
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+            Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1)));
+            Contract.Assert(stdOutput.Contains("JBSnorro.Testing.IntertestDependency.InvalidTestConfigurationException"));
+            Contract.Assert(stdOutput.Contains("'TestProject1.UnitTest1.TestMethod1' is already depended on (indirectly) by TestProject1.UnitTest1"));
+        }
     }
-
-
-    [@Fact]
-    public async Task Test_depending_on_failing_test_type_skips()
+    public class IntertestXunitDependencyIntegrationTestsParallel311 : IntertestXunitDependencyIntegrationTests
     {
-        // Arrange
-        string csContents = """
+
+        [@Fact]
+        public async Task Test_depending_on_failing_test_type_skips()
+        {
+            // Arrange
+            string csContents = """
             using System;
             using System.Threading.Tasks;
             using Xunit;
@@ -365,21 +379,23 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
             }
             
             """;
-        // Act
-        await using var dotnetTestOutput = await RunDotnetTest(csContents);
-        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
+            // Act
+            await using var dotnetTestOutput = await RunDotnetTest(csContents);
+            var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        // Assert
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
-        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
+            // Assert
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+            Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
+        }
     }
-
-    [@Fact]
-    public async Task Test_depending_on_asynchronously_failing_test_type_skips()
+    public class IntertestXunitDependencyIntegrationTestsParallel411 : IntertestXunitDependencyIntegrationTests
     {
-        // Arrange
-        string csContents = """
+        [@Fact]
+        public async Task Test_depending_on_asynchronously_failing_test_type_skips()
+        {
+            // Arrange
+            string csContents = """
             using System;
             using System.Threading.Tasks;
             using Xunit;
@@ -405,14 +421,15 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
                 }
             }
             """;
-        // Act
-        await using var dotnetTestOutput = await RunDotnetTest(csContents);
-        var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
+            // Act
+            await using var dotnetTestOutput = await RunDotnetTest(csContents);
+            var (exitCode, stdOutput, errorOutput) = dotnetTestOutput.Value;
 
-        // Assert
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected));
-        Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
-        Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
+            // Assert
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected));
+            Contract.Assert(stdOutput.Contains(TestsStartedExpected2));
+            Contract.Assert(stdOutput.Contains(ExpectedTally(failed: 1, skipped: 1)));
+        }
     }
 }
 
