@@ -93,6 +93,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
                   </ItemGroup>
                   
                   <ItemGroup>
+              
               """ +
 #if DEBUG
               $"""
@@ -106,6 +107,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
               """
 #endif
             + """
+
                   </ItemGroup>
               </Project>
               """;
