@@ -9,7 +9,7 @@
 		<PublishWithAspNetCoreTargetManifest>False</PublishWithAspNetCoreTargetManifest>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
-
+	
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<!-- Publishing properties-->
 		<Version>0.0.2.1</Version>
@@ -24,7 +24,7 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="JBSnorro" Version="0.0.15" Condition="'$(Configuration)'!='Debug'" />
+		<PackageReference Include="JBSnorro" Version="0.0.15"   Condition="'$(Configuration)'!='Debug'" />
 		<ProjectReference Include="..\JBSnorro\JBSnorro.csproj" Condition="'$(Configuration)'=='Debug'" />
 	</ItemGroup>
 
@@ -36,6 +36,5 @@
 		</PackageReference>
 		<PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
-		<PackageReference Include="xunit.extensibility.execution" Version="2.4.1" />
 	</ItemGroup>
 </Project>
