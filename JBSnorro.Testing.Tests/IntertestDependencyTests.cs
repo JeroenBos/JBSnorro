@@ -70,36 +70,30 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
     {
         get
         {
-            var jbsnorroTestingAssembly = typeof(IIntertestDependencyTracker).Assembly;
-            return $@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version=""16.11.0"" />
-    <PackageReference Include=""xunit"" Version=""2.4.1"" />
-    <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.4.3"">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-	<PackageReference Include=""Xunit.SkippableFact"" Version=""1.4.13"" />
-
-    <!-- I'm including these, see https://stackoverflow.com/a/67976906/308451 
-    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""6.0.0-preview.6.21355.2"" />
-	<PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.DevServer"" Version=""6.0.0-preview.6.21355.2"" PrivateAssets=""all"" /> -->
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include=""{jbsnorroTestingAssembly.GetName().Name}"">
-      <HintPath>{jbsnorroTestingAssembly.Location}</HintPath>
-    </Reference>
-  </ItemGroup>
-
-</Project>";
+            return """
+              <Project Sdk="" Microsoft.NET.Sdk.Razor"">
+                  <PropertyGroup>
+                      <TargetFramework>net7.0</TargetFramework>
+                      <Nullable>enable</Nullable>
+                      <IsPackable>false</IsPackable>
+                      <IsTestProject>true</IsTestProject>
+                  </PropertyGroup>
+                  
+                  <ItemGroup>
+                      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+                      <PackageReference Include="xunit" Version="2.4.1" />
+                      <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+                          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+                          <PrivateAssets>all</PrivateAssets>
+                      </PackageReference>
+                      <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
+                  </ItemGroup>
+                  
+                  <ItemGroup>
+                      <PackageReference Include="JBSnorro" Version="0.0.15" />
+                  </ItemGroup>
+              </Project>
+              """;
         }
 
     }
