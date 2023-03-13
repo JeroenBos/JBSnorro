@@ -473,5 +473,39 @@ namespace JBSnorro.Extensions
 			int secondIndex = s.IndexOf(item, firstIndex + 1);
 			return secondIndex != -1;
 		}
+
+		private readonly static IReadOnlyList<Func<TimeSpan, string?>> toNiceStringSteps = new[] {
+            createStep(TimeSpan.FromDays, t => t.TotalDays, "d"),
+            createStep(TimeSpan.FromHours, t => t.Hours, "h"),
+            createStep(TimeSpan.FromMinutes, t => t.Minutes, "m"),
+            createStep(TimeSpan.FromSeconds, t => t.Seconds, "s"),
+        };
+        private static Func<TimeSpan, string?> createStep(Func<double, TimeSpan> createTimespan, Func<TimeSpan, double> getCount, string delimiter)
+        {
+            return impl;
+            string? impl(TimeSpan span)
+            {
+                if (span >= createTimespan(1))
+                {
+                    int count = (int)getCount(span);
+                    var remaining = span - createTimespan(count);
+                    return $"{count}{delimiter}{remaining.ToNiceString()}";
+                }
+                return null;
+            }
+        }
+        public static string ToNiceString(this TimeSpan span, int millisecondsPrecision = 0)
+		{
+			foreach (var step in toNiceStringSteps)
+			{
+				var result = step(span);
+				if (result is not null)
+					return result;
+			}
+
+			if (millisecondsPrecision == 0)
+				return "";
+			return "." + span.TotalMilliseconds.ToString()[0..millisecondsPrecision];
+        }
 	}
 }
