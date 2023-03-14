@@ -62,10 +62,6 @@ public class IntertestDependencyIntegrationTestsBase
 }
 public class IntertestXunitDependencyIntegrationTests : IntertestDependencyIntegrationTestsBase
 {
-    public IntertestXunitDependencyIntegrationTests()
-    {
-
-    }
     private static string csprojContents
     {
         get
