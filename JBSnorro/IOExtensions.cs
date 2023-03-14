@@ -59,8 +59,13 @@ public static class IOExtensions
 
 		return new Span<byte>(stream.GetBuffer()).Slice(0, (int)stream.Length);
 	}
-	/// <summary> Creates a new temporary directory. </summary>
-	private static string CreateTempDirectory()
+    /// <summary> Creates a new temporary file. </summary>
+    private static string CreateTempFile()
+    {
+		return Path.GetTempFileName();
+    }
+    /// <summary> Creates a new temporary directory. </summary>
+    private static string CreateTempDirectory()
 	{
 		string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 		Directory.CreateDirectory(tempDirectory);
@@ -73,11 +78,18 @@ public static class IOExtensions
 		var cleanupDisposable = TempFileCleanup.Register(tempDirectory + (tempDirectory.EndsWith('/') ? "" : "/"));
 		return new AsyncDisposable<string>(tempDirectory, async Task () => { if (cleanupDisposable != null) await cleanupDisposable.DisposeAsync(); });
 	}
-	/// <summary>
-	/// Normalizes the path. On case-insensitive file systems, equality should still be compared case-insensitively.
-	/// </summary>
-	/// <seealso href="https://stackoverflow.com/a/21058121/308451"/>
-	public static string NormalizePath(this string path)
+    /// <summary> Gets a new temporary directory, and deletes it on disposal. </summary>
+    public static AsyncDisposable<string> CreateTemporaryFile()
+    {
+        string tempFile = CreateTempFile();
+        var cleanupDisposable = TempFileCleanup.Register(tempFile.TrimEnd('/', '\\'));
+        return new AsyncDisposable<string>(tempFile, async Task () => { if (cleanupDisposable != null) await cleanupDisposable.DisposeAsync(); });
+    }
+    /// <summary>
+    /// Normalizes the path. On case-insensitive file systems, equality should still be compared case-insensitively.
+    /// </summary>
+    /// <seealso href="https://stackoverflow.com/a/21058121/308451"/>
+    public static string NormalizePath(this string path)
 	{
 		return Path.GetFullPath(new Uri(path).LocalPath)
 				   .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
