@@ -12,6 +12,7 @@ public interface IIntertestDependencyTracker
     public static Func<IIntertestDependencyTracker> GetDefault { get; set; } = () => IntertestDependencyTracker.singleton;
     /// <summary>
     /// The list of assemblies that can be searched through for types containing tests.
+    /// Defaults to the assembly containing the type depended on.
     /// </summary>
     public static IEnumerable<Assembly>? TestAssemblies { get; set; }
     
