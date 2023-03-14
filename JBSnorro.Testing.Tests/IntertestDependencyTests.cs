@@ -59,10 +59,8 @@ public class IntertestDependencyIntegrationTestsBase
     {
         return $"{(failed == 0 ? "Passed" : "Failed")}!  - Failed:     {failed}, Passed:     {passed}, Skipped:     {skipped}";
     }
-}
-public class IntertestXunitDependencyIntegrationTests : IntertestDependencyIntegrationTestsBase
-{
-    private static string csprojContents
+
+    protected static string csprojContents
     {
         get
         {
@@ -110,7 +108,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         }
     }
 
-    protected static async Task<AsyncDisposable<ProcessOutput>> RunDotnetTest(string csContents)
+    protected static async Task<AsyncDisposable<ProcessOutput>> RunDotnetTest(string csContents, string csprojContents)
     {
         AsyncDisposable<string> tmpDir = IOExtensions.CreateTemporaryDirectory();
         File.WriteAllText(Path.Combine(tmpDir.Value, "tests.csproj"), csprojContents);
@@ -119,6 +117,13 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
         var output = await ProcessExtensions.WaitForExitAndReadOutputAsync(new ProcessStartInfo("dotnet", $"test \"{tmpDir.Value}/tests.csproj\""));
 
         return new AsyncDisposable<ProcessOutput>(output, () => tmpDir.DisposeAsync().AsTask());
+    }
+}
+public class IntertestXunitDependencyIntegrationTests : IntertestDependencyIntegrationTestsBase
+{
+    protected static Task<AsyncDisposable<ProcessOutput>> RunDotnetTest(string csContents)
+    {
+        return IntertestDependencyIntegrationTestsBase.RunDotnetTest(csContents: csContents, csprojContents: csprojContents);
     }
 
     public class IntertestXunitDependencyIntegrationTestsParallel1 : IntertestXunitDependencyIntegrationTests
