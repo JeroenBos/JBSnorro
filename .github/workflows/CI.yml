@@ -5,9 +5,13 @@ on:
     branches: [ main ]
     paths-ignore:
     - '**.md'
+    - 'JBSnorro.Testing/**'
+    - 'JBSnorro.Testing.Tests/**'
   pull_request:
     paths-ignore:
     - '**.md'
+    - 'JBSnorro.Testing/**'
+    - 'JBSnorro.Testing.Tests/**'
 
 env:
     DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
@@ -20,7 +24,13 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        include:
+        - os: ubuntu-latest
+          configuration: Debug
+        - os: ubuntu-latest
+          configuration: Release
+        - os: windows-latest
+          configuration: Debug
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
@@ -49,7 +59,7 @@ jobs:
 
           ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
-    - run: dotnet build
+    - run: dotnet build --configuration ${{ matrix.configuration }}
 
     - id: should-test-gh
       uses: tj-actions/changed-files@v35
@@ -62,8 +72,9 @@ jobs:
 
     - name: Unit test
       if: ${{ ! steps.should-test-gh.outputs.all_changed_and_modified_files }}
-      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration"
+      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration" --configuration ${{ matrix.configuration }}
 
     - name: Unit test + integration tests
       if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
-      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj
+      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --configuration ${{ matrix.configuration }}
+

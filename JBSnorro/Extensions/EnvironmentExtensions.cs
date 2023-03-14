@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿#nullable enable
+using JBSnorro.IO;
+using System.Diagnostics;
 
 namespace JBSnorro.Extensions;
 
@@ -34,6 +36,49 @@ public class EnvironmentExtensions
         get
         {
             return bool.Parse(Environment.GetEnvironmentVariable("CI") ?? "false");
+        }
+    }
+
+    private static string? debugOutputPath = null;
+    public static string GetDebugOutputPath
+    {
+        get
+        {
+            const string ENV_VAR = "DEBUG_OUT";
+            var env_var = Environment.GetEnvironmentVariable(ENV_VAR);
+            if (env_var is null)
+            {
+                if (debugOutputPath is null)
+                {
+                    // first time calling:
+                    debugOutputPath = IOExtensions.CreateTemporaryFile().Value;
+                    OnFirstTime();
+                }
+                else
+                {
+                    // non-first time calling. Just return the value
+                }
+            }
+            else
+            {
+                if (debugOutputPath is null)
+                {
+                    debugOutputPath = env_var;
+                    OnFirstTime();
+                }
+                else if (debugOutputPath != env_var)
+                {
+                    throw new InvalidOperationException($"Environment variable '{ENV_VAR}' is not allowed to change");
+                }
+            }
+            return debugOutputPath;
+
+            static void OnFirstTime()
+            {
+                Console.WriteLine($"Outputting logs to {debugOutputPath}");
+                using StreamWriter writer = File.AppendText(debugOutputPath!);
+                writer.WriteLine ("--------------------------------------------------------------------------------");
+            }
         }
     }
 }
