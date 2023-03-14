@@ -1,16 +1,12 @@
-﻿using Microsoft.VisualStudio.TestPlatform.Common.Utilities;
-using System.Diagnostics;
-using static JBSnorro.Extensions.EnvironmentExtensions;
+﻿using System.Diagnostics;
 
-namespace JBSnorro.Tests;
+namespace JBSnorro.Testing.Tests;
 
 class Program
 {
     [DebuggerHidden]
     public static Task Main(string[] args)
     {
-        RunSettingsUtilities.LoadEnvironmentVariables(runSettingsXmlPath: GetRequiredEnvironmentVariable("RUNSETTINGS_PATH"));
-
         return Testing.TestExtensions.DefaultMainTestProjectImplementation(args);
     }
 }
