@@ -476,34 +476,37 @@ namespace JBSnorro.Extensions
 		/// <summary>
 		/// Converts timespans to formats like 1h26m.
 		/// </summary>
-		public static string ToNiceString(this TimeSpan span, int millisecondsPrecision = 0)
+		public static string ToNiceString(this TimeSpan span, int remainingSignificantParts = 1, int millisecondsPrecision = 0)
 		{
 			if (millisecondsPrecision < 0 || millisecondsPrecision > 9) throw new ArgumentOutOfRangeException(nameof(millisecondsPrecision));
             if (millisecondsPrecision > 6) throw new NotImplementedException(nameof(millisecondsPrecision) + ". Need to implement nanoseconds");
 
+			if (remainingSignificantParts <= 0)
+				return "";
+
             if (span >= TimeSpan.FromDays(1))
 			{
-				int daysCount = (int)span.TotalDays;
-				var remaining = span - TimeSpan.FromDays(daysCount);
-				return $"{daysCount}d{remaining.ToNiceString()}";
+				int count = (int)span.TotalDays;
+				var remaining = span - TimeSpan.FromDays(count);
+                return $"{count}d{remaining.ToNiceString(remainingSignificantParts: count == 1 ? remainingSignificantParts : remainingSignificantParts - 1)}";
 			}
             if (span >= TimeSpan.FromHours(1))
             {
                 int count = (int)span.TotalHours;
                 var remaining = span - TimeSpan.FromHours(count);
-                return $"{count}h{remaining.ToNiceString()}";
+                return $"{count}h{remaining.ToNiceString(remainingSignificantParts: count == 1 ? remainingSignificantParts : remainingSignificantParts - 1)}";
             }
             if (span >= TimeSpan.FromMinutes(1))
             {
                 int count = (int)span.TotalMinutes;
                 var remaining = span - TimeSpan.FromMinutes(count);
-                return $"{count}m{remaining.ToNiceString()}";
+                return $"{count}m{remaining.ToNiceString(remainingSignificantParts: count == 1 ? remainingSignificantParts : remainingSignificantParts - 1)}";
             }
-            if (span >= TimeSpan.FromHours(1))
+            if (span >= TimeSpan.FromSeconds(1))
             {
                 int count = (int)span.TotalSeconds;
                 var remaining = span - TimeSpan.FromSeconds(count);
-                return $"{count}s{remaining.ToNiceString()}";
+                return $"{count}s{remaining.ToNiceString(remainingSignificantParts: count < 10 ? remainingSignificantParts : remainingSignificantParts - 1)}";
             }
             if (millisecondsPrecision == 0)
                 return "";
