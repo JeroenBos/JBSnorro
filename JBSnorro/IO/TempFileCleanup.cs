@@ -2,12 +2,14 @@
 using JBSnorro.Csx;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
+using JBSnorro.Logging;
 using static JBSnorro.Extensions.TaskExtensions;
 
 namespace JBSnorro.IO;
 
 public static class TempFileCleanup
 {
+    private static ILogger? logger = ILogger.CreateFileLogger(EnvironmentExtensions.GetDebugOutputPath);
     /// <summary>
     /// Gets whether the environment is configured for temporary file cleanup.
     /// </summary>
@@ -74,6 +76,7 @@ public static class TempFileCleanup
             return Task.CompletedTask; // No need to do cleanup in CI
         }
 
+        logger?.LogInfo($"{fullpath}: explicitly cleaning up");
         return CleanupLine(ToLine(fullpath, TimeSpan.Zero), ignoreTimestamp: true);
     }
 
@@ -105,8 +108,9 @@ public static class TempFileCleanup
     {
         string line = ToLine(path, lifetime);
         return Retry(Append);
-        Task Append()
+        Task Append(int attempt)
         {
+            logger?.LogDebug($"{path}: Appending line (#{attempt})");
             return File.AppendAllLinesAsync(configPath, new[] { line });
         }
     }
@@ -121,25 +125,32 @@ public static class TempFileCleanup
             path = Path.Join(Path.GetTempPath(), relativePath);
             if (!Path.Exists(path))
             {
+                logger?.LogDebug($"{path}: Was already deleted");
                 return true;
             }
             if (!ignoreTimestamp && DateTime.UtcNow < expirationTime)
             {
+                logger?.LogDebug($"{path}: Not ready for deletion (ETA {(expirationTime - DateTime.UtcNow).ToNiceString()})");
                 return false;
             }
 
             if (path.EndsWith('/'))
             {
+                logger?.LogDebug($"{path}: Going to delete directory");
                 Directory.Delete(path, recursive: true);
+                logger?.LogInfo($"{path}: Successfully deleted directory");
             }
             else
             {
+                logger?.LogDebug($"{path}: Going to delete file");
                 File.Delete(path);
+                logger?.LogInfo($"{path}: Successfully deleted file");
             }
             return true;
         }
         catch (UnauthorizedAccessException ex) when (path != null && ex.Message.StartsWith("Access to the path '"))
         {
+            logger?.LogError($"{path}: UnauthorizedAccessException in deleting");
             string fileName = ex.Message["Access to the path '".Length..].SubstringUntil("'");
 
             if (recursing)
@@ -148,49 +159,55 @@ public static class TempFileCleanup
 
                 if (paths.Length == 0)
                 {
-                    // don't have access and can't even find path
+                    logger?.LogWarning($"{path}: Don't have access and can't even find path");
                     return false;
                 }
 
-                // just outputting some debug info here:
-
                 string filePath = Path.Combine(path, paths[0]);
-                Console.WriteLine($"Access to the path '{filePath}' denied");
-                Console.Write("These process IDS are locking it ");
-
-                var processes = ProcessExtensions.GetLockingProcesses(filePath);
-                Console.WriteLine($"(Count = {processes.Count}):");
-                foreach (var lockingProcess in processes)
-                {
-                    Console.Write("- ");
-                    Console.WriteLine(lockingProcess.Id.ToString());
-                }
+                LogDebug(filePath);
                 return false;
             }
             else
             {
-                // -R is recursive
-                // 701 is full control to everybody
                 try
                 {
+                    // -R is recursive
+                    // 701 is full control to everybody
+                    logger?.LogInfo($"{path}: chmodding");
                     await $"chmod -R 701 '{path}'".Execute();
+                    logger?.LogInfo($"{path}: chmodded");
                 }
                 catch
                 {
+                    logger?.LogError($"{path}: chmod failed");
                     return false;
                 }
 
+                logger?.LogInfo($"{path}: chmod succeeded. Recursing");
                 return await CleanupLine(line, ignoreTimestamp, recursing: true);
             }
         }
         catch (Exception ex)
         {
+            logger?.LogError($"'{path}': deleting resulted in {ex.GetType().Name}.\n{ex.Message}");
             Console.WriteLine(ex.Message);
             return false;
+        }
+
+        static void LogDebug(string filePath)
+        {
+            var processes = ProcessExtensions.GetLockingProcesses(filePath);
+            logger?.LogDebug($"{filePath}: Access denied");
+            logger?.LogDebug($"These process IDS are locking it (Count = {processes.Count}):");
+            foreach (var lockingProcess in processes)
+            {
+                logger?.LogDebug("- " + lockingProcess.Id.ToString());
+            }
         }
     }
     private static async Task Cleanup(string configPath, int lifetime_minutes)
     {
+        logger?.LogInfo("Starting cleanup");
         string[] lines;
         try
         {
@@ -198,9 +215,11 @@ public static class TempFileCleanup
         }
         catch
         {
+            logger?.LogError("Error reading cleanup config");
             return; // couldn't do clean up; just skip it
         }
 
+        logger?.LogInfo($"Cleanup config contained {lines.Length} lines");
         // this section shouldn't be able to crash
         var removalTasks = lines.Map(line => CleanupLine(line, ignoreTimestamp: false));
         await Task.WhenAll(removalTasks);
@@ -208,13 +227,17 @@ public static class TempFileCleanup
                                    .Where(_ => !_.Second.Result)
                                    .Select(_ => _.First)
                                    .ToList();
+        logger?.LogInfo($"Cleanup config: {notRemovedLines.Count} lines were't removed");
+
         if (notRemovedLines.Count != 0)
         {
             await Retry(RestoreRemainder);
         }
         async Task RestoreRemainder()
         {
+            logger?.LogDebug("Reappending those lines");
             await File.AppendAllLinesAsync(configPath, notRemovedLines);
+            logger?.LogDebug("Reappended those lines");
         }
     }
 

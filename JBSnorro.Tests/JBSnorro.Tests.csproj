@@ -5,15 +5,17 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>false</IsPackable>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<GenerateProgramFile>False</GenerateProgramFile>
+		<GenerateProgramFile>false</GenerateProgramFile>
+		<IsTestProject>true</IsTestProject>
+		<PublishWithAspNetCoreTargetManifest>False</PublishWithAspNetCoreTargetManifest>
 	</PropertyGroup>
 	
 	<ItemGroup>
 		<ProjectReference Include="../JBSnorro/JBSnorro.csproj" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-		<PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
-		<PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
-		<PackageReference Include="Nito.AsyncEx.Context" Version="5.0.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+		<PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
+		<PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
+		<PackageReference Include="Nito.AsyncEx.Context" Version="5.1.2" />
 
 		<Watch Include="../JBSnorro/**/*.cs;../JBSnorro.csproj;**/*.cs;**/*.csproj" Exclude="../**/obj/**" />
 	</ItemGroup>
@@ -24,12 +26,6 @@
 		<DefineConstants Condition=" '$(OS)' != 'Windows_NT' ">$(DefineConstants);LINUX</DefineConstants>
 	</PropertyGroup>
 	
-	<ItemGroup>
-	  <Watch Remove="Graphs\GreenNodeStub.cs" />
-	  <Watch Remove="Graphs\IGreenNodeTests.cs" />
-	  <Watch Remove="Graphs\IRedNodeTests.cs" />
-	  <Watch Remove="Graphs\RedNodeStub.cs" />
-	</ItemGroup>
 	
 	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">

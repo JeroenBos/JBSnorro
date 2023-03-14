@@ -84,20 +84,32 @@ namespace JBSnorro.Extensions
         /// <param name="retryCount">The maximum number of times the delegate is invoked.</param>
         /// <param name="wait_ms">The number of milliseconds to wait in between of invocations.</param>
         /// <returns>The result of awaiting the delegate that didn't fail.</returns>
-        public static async Task<T> Retry<T>(Func<Task<T>> func, int retryCount = 3, int wait_ms = 250)
+        public static Task<T> Retry<T>(Func<Task<T>> func, int retryCount = 3, int wait_ms = 250)
         {
-            for (int i = 0; i < retryCount - 1; i++)
+            return Retry(attempt => func(), retryCount, wait_ms);
+        }
+        /// <summary>
+        /// Retries the specified delegate on exceptions.
+        /// </summary>
+        /// <param name="func">The delegate to invoke.</param>
+        /// <param name="retryCount">The maximum number of times the delegate is invoked.</param>
+        /// <param name="wait_ms">The number of milliseconds to wait in between of invocations.</param>
+        /// <returns>The result of awaiting the delegate that didn't fail.</returns>
+        public static async Task<T> Retry<T>(Func<int, Task<T>> func, int retryCount = 3, int wait_ms = 250)
+        {
+            int i;
+            for (i = 0; i < retryCount - 1; i++)
             {
                 try
                 {
-                    return await func();
+                    return await func(i);
                 }
                 catch
                 {
-                    Thread.Sleep(wait_ms);
+                    Thread.Sleep(ComputeWait(wait_ms));
                 }
             }
-            return await func();
+            return await func(i);
         }
         /// <summary>
         /// Retries the specified delegate on exceptions.
@@ -108,18 +120,36 @@ namespace JBSnorro.Extensions
         /// <returns>The result of the delegate that didn't fail.</returns>
         public static T Retry<T>(Func<T> func, int retryCount = 3, int wait_ms = 250)
         {
-            for (int i = 0; i < retryCount - 1; i++)
+            return Retry(attempt => func(), retryCount, wait_ms);
+        }
+        /// <summary>
+        /// Retries the specified delegate on exceptions.
+        /// </summary>
+        /// <param name="func">The delegate to invoke.</param>
+        /// <param name="retryCount">The maximum number of times the delegate is invoked.</param>
+        /// <param name="wait_ms">The number of milliseconds to wait in between of invocations.</param>
+        /// <returns>The result of the delegate that didn't fail.</returns>
+        public static T Retry<T>(Func<int, T> func, int retryCount = 3, int wait_ms = 250)
+        {
+            int i;
+            for (i = 0; i < retryCount - 1; i++)
             {
                 try
                 {
-                    return func();
+                    return func(i);
                 }
                 catch
                 {
-                    Thread.Sleep(wait_ms);
+                    Thread.Sleep(ComputeWait(wait_ms));
                 }
             }
-            return func();
+            return func(i);
+        }
+        private static int ComputeWait(int wait_ms)
+        {
+            const int varationSize = 2; // bigger is smaller variation
+            var aroundOne = 1 + (Random.Shared.NextSingle() - 0.5) / varationSize;
+            return (int)(wait_ms * aroundOne);
         }
         /// <summary>
         /// Retries the specified delegate on exceptions.

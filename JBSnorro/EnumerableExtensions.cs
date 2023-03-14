@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -1974,6 +1975,15 @@ namespace JBSnorro
 			Contract.Ensures(result.Length == array.Length);
 			return result;
 		}
+		/// <summary>
+		/// Casts the entire array from <typeparamref name="T"/> to <typeparamref name="TResult"/>.
+		/// </summary>
+		/// <param name="array">The source array.</param>
+		public static TResult[] CastAll<T, TResult>(this T[] array) where TResult : class
+        {
+			return Array.ConvertAll<T, TResult>(array, element => (TResult)(object)element!);
+        }
+
 		/// <summary> Maps an array into another array of the same size using a specified mapping function depending also on the elements index. </summary>
 		/// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
 		/// <typeparam name="TResult"> The type of the elements in the resulting array.</typeparam>
@@ -1997,7 +2007,7 @@ namespace JBSnorro
 		/// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
 		/// <param name="list"> The list to map. </param>
 		/// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
-		public static List<TResult> Map<T, TResult>([NotNull] this List<T> list, Func<T, TResult> resultSelector)
+		public static List<TResult> Map<T, TResult>(this List<T> list, Func<T, TResult> resultSelector)
 		{
 			return ((IList<T>)list).Map(resultSelector);
 		}
@@ -2016,7 +2026,7 @@ namespace JBSnorro
 		/// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
 		/// <param name="list"> The list to map. </param>
 		/// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
-		public static List<TResult> Map<T, TResult>([NotNull] this IList<T> list, Func<T, TResult> resultSelector)
+		public static List<TResult> Map<T, TResult>(this IList<T> list, Func<T, TResult> resultSelector)
 		{
 			Contract.Requires(list != null);
 			Contract.Requires(resultSelector != null);

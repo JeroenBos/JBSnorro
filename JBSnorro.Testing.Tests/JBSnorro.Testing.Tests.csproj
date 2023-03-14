@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net7.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsTestProject>true</IsTestProject>
+		<Nullable>enable</Nullable>
+	    <PublishWithAspNetCoreTargetManifest>False</PublishWithAspNetCoreTargetManifest>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<!-- Publishing properties-->
+		<IsPackable>false</IsPackable> 
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<GenerateProgramFile>False</GenerateProgramFile>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="JBSnorro" Version="0.0.15" Condition="'$(Configuration)'!='Debug'" />
+		<ProjectReference Include="..\JBSnorro\JBSnorro.csproj" Condition="'$(Configuration)'=='Debug'" />
+		<ProjectReference Include="..\JBSnorro.Testing\JBSnorro.Testing.csproj" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+		<PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
+		<PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
+		<PackageReference Include="Nito.AsyncEx.Context" Version="5.1.2" />
+	    <!-- Validation 2.5.51? -->
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="xunit" Version="2.4.1" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
+	</ItemGroup>
+	
+	<PropertyGroup>
+		<DefineConstants Condition="'$(Configuration)' == 'CI'">$(DefineConstants);CI</DefineConstants>
+		<DefineConstants Condition=" '$(OS)' == 'Windows_NT' ">$(DefineConstants);WINDOWS</DefineConstants>
+		<DefineConstants Condition=" '$(OS)' != 'Windows_NT' ">$(DefineConstants);LINUX</DefineConstants>
+	</PropertyGroup>
+</Project>

@@ -1,0 +1,43 @@
+name: CI (JBSnorro.Testing)
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+    - '**.md'
+  pull_request:
+    paths-ignore:
+    - '**.md'
+
+env:
+  DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+defaults:
+  run:
+    shell: bash
+jobs:
+  test-testing:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          configuration: Debug
+        - os: ubuntu-latest
+          configuration: Release
+        - os: windows-latest
+          configuration: Debug
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: build
+      run: dotnet build JBSnorro.Testing/JBSnorro.Testing.csproj
+    - name: build tests
+      run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --configuration ${{ matrix.configuration }}
+    - name: test
+      run: dotnet test JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --framework net7.0 --configuration ${{ matrix.configuration }}
+      timeout-minutes: 10

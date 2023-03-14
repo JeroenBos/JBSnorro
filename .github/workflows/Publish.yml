@@ -9,27 +9,40 @@ on:
     paths:
       - ".github/workflows/Publish.yml"
 
+defaults:
+  run:
+    shell: bash
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+        - project: JBSnorro
+          workflowName: CI
+        - project: JBSnorro.Testing
+          workflowName: CI (JBSnorro.Testing)
+    env:
+      CSPROJ_PATH: '${{ matrix.project }}/${{ matrix.project }}.csproj'
+      LANG: 'C.UTF-8'  # necessary for grep on Windows
     steps:
       - uses: actions/checkout@v3
       - name: Detect if version changed
         run: |
-          current_version=$(bash .github/get_current_version.sh | xargs)
-          published_version=$(bash .github/get_published_version.sh | xargs)
+          current_version=$(bash .github/get_current_version.sh '${{ env.CSPROJ_PATH }}' | xargs)
           echo "current_version: \"$current_version\""
+          published_version=$(bash .github/get_published_version.sh '${{ matrix.project }}' | xargs)
           echo "published_version: \"$published_version\""
 
-          is_up_to_date=$([[ "$current_version" == "$published_version" ]] && echo true || echo false)
-
-          if [[ "${is_up_to_date}" == "true" ]]; then
+          if [[ "$current_version" == "$published_version" ]]; then
               echo "Up-to-date"
           else
               echo "PUBLISH=true" >> $GITHUB_ENV
               echo "Publishing"
           fi
+
 
       - name: Setup .NET Core
         if: ${{ env.PUBLISH == 'true' }}
@@ -37,42 +50,22 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Install dependencies
-        if: ${{ env.PUBLISH == 'true' }}
-        run: dotnet restore
-
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release
 
-      - name: Wait for ubuntu CI
-        uses: fountainhead/action-wait-for-check@v1.1.0
+      - name: Wait for CI
+        uses: deepinsight-io/action-wait-on-workflow@v2.1.1
         if: ${{ env.PUBLISH == 'true' }}
-        id: wait-for-test-ubuntu
         with:
-          checkName: test (ubuntu-latest)
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          workflowName: ${{ matrix.workflowName }}
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Fail if ubuntu CI failed
-        if: ${{ env.PUBLISH == 'true' && steps.wait-for-test-ubuntu.outputs.conclusion != 'success' }}
-        run: echo "Conclusion=${{ steps.wait-for-ubuntu-test.outputs.conclusion }}" && exit 1
-
-      - name: Wait for windows CI
-        uses: fountainhead/action-wait-for-check@v1.1.0
-        if: ${{ env.PUBLISH == 'true' }}
-        id: wait-for-test-windows
-        with:
-          checkName: test (windows-latest)
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Fail if windows CI failed
-        if: ${{ env.PUBLISH == 'true' && steps.wait-for-test-windows.outputs.conclusion != 'success' }}
-        run: echo "Conclusion=${{ steps.wait-for-windows-test.outputs.conclusion }}" && exit 1
 
       - name: Publish
         if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
         uses: alirezanet/publish-nuget@v3.0.4 # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
         with:
-          PROJECT_FILE_PATH: JBSnorro/JBSnorro.csproj
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+          PROJECT_FILE_PATH: ${{ env.CSPROJ_PATH }}
           INCLUDE_SYMBOLS: true
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+          
