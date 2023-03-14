@@ -16,12 +16,13 @@ namespace JBSnorro.Graphs;
 public class CircularDependencyTracker<T> where T : notnull
 {
     private ImmutableDictionary<T, ImmutableHashSet<T>> dependencies;
-    private readonly IEqualityComparer<T> comparer;
+    protected IEqualityComparer<T> EqualityComparer { get; private set; }
+    protected ImmutableDictionary<T, ImmutableHashSet<T>> Dependencies => dependencies;
 
     public CircularDependencyTracker(IEqualityComparer<T>? equalityComparer = null)
     {
-        this.comparer = equalityComparer ?? EqualityComparer<T>.Default;
-        this.dependencies = ImmutableDictionary.Create<T, ImmutableHashSet<T>>(this.comparer);
+        this.EqualityComparer = equalityComparer ?? EqualityComparer<T>.Default;
+        this.dependencies = ImmutableDictionary.Create<T, ImmutableHashSet<T>>(this.EqualityComparer);
     }
 
 
@@ -54,7 +55,7 @@ public class CircularDependencyTracker<T> where T : notnull
             return false;
         }
 
-        var visited = new HashSet<T>(new[] { dependency }, this.comparer);
+        var visited = new HashSet<T>(new[] { dependency }, this.EqualityComparer);
         var path = Dijkstra<T>.FindPath(nodes, getLinks, IsTarget);
         return path != null;
 
@@ -109,7 +110,7 @@ public class CircularDependencyTracker<T> where T : notnull
             {
                 throw CircularDependencyException(key, dependencies);
             }
-            return ImmutableHashSet.CreateRange(this.comparer, dependencies);
+            return ImmutableHashSet.CreateRange(this.EqualityComparer, dependencies);
         }
 
         ImmutableHashSet<T> updateValueFactory(T key, ImmutableHashSet<T> currentValue)
