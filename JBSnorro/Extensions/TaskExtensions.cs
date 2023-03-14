@@ -106,7 +106,7 @@ namespace JBSnorro.Extensions
                 }
                 catch
                 {
-                    Thread.Sleep(wait_ms);
+                    Thread.Sleep(ComputeWait(wait_ms));
                 }
             }
             return await func(i);
@@ -140,10 +140,16 @@ namespace JBSnorro.Extensions
                 }
                 catch
                 {
-                    Thread.Sleep(wait_ms);
+                    Thread.Sleep(ComputeWait(wait_ms));
                 }
             }
             return func(i);
+        }
+        private static int ComputeWait(int wait_ms)
+        {
+            const int varationSize = 2; // bigger is smaller variation
+            var aroundOne = 1 + (Random.Shared.NextSingle() - 0.5) / varationSize;
+            return (int)(wait_ms * aroundOne);
         }
         /// <summary>
         /// Retries the specified delegate on exceptions.
