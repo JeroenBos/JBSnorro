@@ -558,5 +558,32 @@ namespace JBSnorro.Extensions
 				}
 			}
 		}
-	}
+
+        /// <summary>
+        /// Looks in all loaded assemblies for the given type.
+        /// </summary>
+        /// <param name="fullName">The full name of the type.</param>
+        /// <returns>The <see cref="Type"/> found; null if not found.</returns>
+        /// <seealso cref="https://stackoverflow.com/a/20862223/308451"/>
+        [DebuggerHidden]
+        public static Type? FindQualifiedType(string fullyQualifiedName)
+        {
+			return AppDomain.CurrentDomain.GetAssemblies()
+				                          .Where(a => !a.IsDynamic)
+				                          .FindQualifiedType(fullyQualifiedName);
+        }
+
+        /// <summary>
+        /// Looks in all specified assemblies for the given type by fully qualified name.
+        /// </summary>
+        /// <param name="fullName">The full name of the type.</param>
+        /// <returns>The <see cref="Type"/> found; null if not found.</returns>
+		/// <seealso cref="https://stackoverflow.com/a/20862223/308451"/>
+        [DebuggerHidden]
+        public static Type? FindQualifiedType(this IEnumerable<Assembly> assemblies, string fullyQualifiedName)
+        {
+            return assemblies.SelectMany(a => a.GetTypes())
+                             .FirstOrDefault(t => fullyQualifiedName.Equals(t.FullName, StringComparison.Ordinal));
+        }
+    }
 }
