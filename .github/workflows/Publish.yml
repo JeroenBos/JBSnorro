@@ -1,0 +1,71 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    paths:
+      - ".github/workflows/Publish.yml"
+
+defaults:
+  run:
+    shell: bash
+jobs:
+  publish:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+        - project: JBSnorro
+          workflowName: CI
+        - project: JBSnorro.Testing
+          workflowName: CI (JBSnorro.Testing)
+    env:
+      CSPROJ_PATH: '${{ matrix.project }}/${{ matrix.project }}.csproj'
+      LANG: 'C.UTF-8'  # necessary for grep on Windows
+    steps:
+      - uses: actions/checkout@v3
+      - name: Detect if version changed
+        run: |
+          current_version=$(bash .github/get_current_version.sh '${{ env.CSPROJ_PATH }}' | xargs)
+          echo "current_version: \"$current_version\""
+          published_version=$(bash .github/get_published_version.sh '${{ matrix.project }}' | xargs)
+          echo "published_version: \"$published_version\""
+
+          if [[ "$current_version" == "$published_version" ]]; then
+              echo "Up-to-date"
+          else
+              echo "PUBLISH=true" >> $GITHUB_ENV
+              echo "Publishing"
+          fi
+
+
+      - name: Setup .NET Core
+        if: ${{ env.PUBLISH == 'true' }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build
+        if: ${{ env.PUBLISH == 'true' }}
+        run: dotnet build --configuration Release
+
+      - name: Wait for CI
+        uses: deepinsight-io/action-wait-on-workflow@v2.1.1
+        if: ${{ env.PUBLISH == 'true' }}
+        with:
+          workflowName: ${{ matrix.workflowName }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish
+        if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
+        uses: alirezanet/publish-nuget@v3.0.4 # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
+        with:
+          PROJECT_FILE_PATH: ${{ env.CSPROJ_PATH }}
+          INCLUDE_SYMBOLS: true
+          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+          

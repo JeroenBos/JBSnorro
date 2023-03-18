@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -452,59 +453,6 @@ namespace JBSnorro
 			}
 		}
 
-		/// <summary> Gets the leaves that are in the specified tree. A leaf is one where getChildren returns null. </summary>
-		/// <param name="getChildren"> The function getting the children of some specified root. Return an empty collection if it is a leaf. </param>
-		public static IEnumerable<T> GetLeaves<T>(this T root, Func<T, IEnumerable<T>> getChildren) where T : class
-		{
-			Contract.Requires(root != null);
-			Contract.Requires(getChildren != null);
-
-			HashSet<T> usedNodes = new HashSet<T>(ReferenceEqualityComparer.Instance); // debugging purposes only
-
-			var result = GetLeaves(root).EnsureSingleEnumerationDEBUG();
-			Contract.Ensures(result.All(resultNode => resultNode != null));
-			return result;
-
-			IEnumerable<T> GetLeaves(T node)
-			{
-				Contract.Requires(node != null);
-				Contract.Requires(usedNodes.Add(node), "Circular reference in tree");
-
-				var children = getChildren(node).EnsureSingleEnumerationDEBUG();
-				if (children == null) throw new Exception($"The return value of '{getChildren}' may not be null");
-				bool isLeaf = IsEmpty(ref children);
-				if (isLeaf)
-				{
-					return node.ToSingleton();
-				}
-				else
-				{
-					Contract.Assert(children != null);
-					Contract.AssertForAll(children, child => child != null);
-					return children.SelectMany(child => GetLeaves(child));
-				}
-			}
-		}
-		/// <summary> Gets the root of a tree. </summary>
-		/// <param name="node"> The node of the tree for which to get the root. </param>
-		/// <param name="getParent"> The function that gets the parent of its argument; or null if the argument is the root node. </param>
-		public static T GetRoot<T>(this T node, Func<T, T> getParent) where T : class
-		{
-			Contract.Requires(node != null);
-			Contract.Requires(getParent != null);
-			Contract.Requires(node.Unfold(t => getParent(t) ?? Option<T>.None).AreUnique(ReferenceEqualityComparer.Instance), "Circular reference");
-
-			var parent = getParent(node);
-			while (parent != null)
-			{
-				node = parent;
-				parent = getParent(node);
-			}
-
-			Contract.Ensures(node != null);
-			return node;
-		}
-
 		/// <summary> Determines whether all elements of a sequence satisfy a condition. </summary>
 		/// <param name="source"> An <see cref="IEnumerable{T}"/> to filter. </param>
 		/// <param name="predicate"> A function to test each source element for a condition; the second parameter of the function represents the index of the source element. </param>
@@ -882,27 +830,6 @@ namespace JBSnorro
 			}
 			return Enumerate();
 		}
-		/// <summary> Returns the first element of the sequence that satisfies a condition or a specified default value if no such element is found. </summary>
-		/// <param name="source"> An <see cref="IEnumerable{T}"/> to return an element from. </param>
-		/// <param name="predicate"> A function to test each element for a condition. </param>
-		/// <param name="defaultValue"> The default value to be returned. </param>
-		[DebuggerHidden]
-		public static T FirstOrDefault<T>(this IEnumerable<T> source, Func<T, bool> predicate, T defaultValue)
-		{
-			Contract.Requires(source != null);
-			Contract.Requires(predicate != null);
-
-			foreach (T element in source)
-			{
-				if (predicate(element))
-				{
-					return element;
-				}
-			}
-			return defaultValue;
-		}
-
-
 
 		/// <summary> Gives the indices in the specified sequence that are minimal according to the specified comparison function. </summary>
 		/// <typeparam name="T"> The elements of the sequence to find the minima of. </typeparam>
@@ -1040,9 +967,26 @@ namespace JBSnorro
 			}
 			return Enumerate();
 		}
-		/// <summary> Returns the specified sequence except the last element. </summary>
-		/// <param name="source"> The sequence to skip the last element of. </param>
-		public static IEnumerable<T> ExceptLast<T>(this IEnumerable<T> source)
+        /// <summary> Returns the specified sequence except the elements in the specified range. </summary>
+        /// <param name="source"> The sequence to skip an element of. </param>
+        /// <param name="rangeToSkip"> The range of the elements to skip. </param>
+        public static IEnumerable<T> ExceptAt<T>(this IEnumerable<T> source, Range rangeToSkip)
+        {
+            if (!source.TryGetNonEnumeratedCount(out int sourceCount))
+            {
+                Contract.Requires<NotImplementedException>(!rangeToSkip.Start.IsFromEnd);
+                Contract.Requires<NotImplementedException>(!rangeToSkip.End.IsFromEnd);
+            }
+
+            var range = rangeToSkip.GetOffsetAndLength(sourceCount);
+            var min = range.Offset;
+            var max = range.Offset + range.Length;
+            return source.Where((element, elementIndex) => !(min <= elementIndex && elementIndex < max));
+        }
+      
+        /// <summary> Returns the specified sequence except the last element. </summary>
+        /// <param name="source"> The sequence to skip the last element of. </param>
+        public static IEnumerable<T> ExceptLast<T>(this IEnumerable<T> source)
 		{
 			return source.WithIsLast()
 						 .Where(element => !element.IsLast)
@@ -1418,11 +1362,33 @@ namespace JBSnorro
 				yield return element;
 			}
 		}
-		/// <summary> Prepends the specified elements to the specified sequence. </summary>
-		/// <param name="sequence"> The sequence to be prepended. </param>
-		/// <param name="elements"> The elements to prepend to the sequence. </param>
-		/// <returns> the sequence containing first the specified elements and then the original sequence. </returns>
-		public static IEnumerable<T> Prepend<T>(this IEnumerable<T> sequence, params T[] elements)
+		/// <summary>
+		/// Returns a new sequence with the the specified elements inserted at the specified index.
+		/// </summary>
+        public static IEnumerable<T> InsertAt<T>(this IEnumerable<T> sequence, int index, IEnumerable<T> items)
+        {
+            if (sequence is null) throw new ArgumentNullException(nameof(sequence));
+            if (items is null) throw new ArgumentNullException(nameof(items));
+            if (index < 0) throw new ArgumentOutOfRangeException(nameof(index));
+			if (sequence.TryGetNonEnumeratedCount(out int sequenceCount) && index > sequenceCount) throw new ArgumentOutOfRangeException(nameof(index));
+
+            int i = 0;
+            foreach (T element in sequence)
+            {
+                if (i == index)
+                {
+                    foreach (T insertion in items)
+                        yield return insertion;
+                }
+                yield return element;
+            }
+        }
+
+        /// <summary> Prepends the specified elements to the specified sequence. </summary>
+        /// <param name="sequence"> The sequence to be prepended. </param>
+        /// <param name="elements"> The elements to prepend to the sequence. </param>
+        /// <returns> the sequence containing first the specified elements and then the original sequence. </returns>
+        public static IEnumerable<T> Prepend<T>(this IEnumerable<T> sequence, params T[] elements)
 		{
 			Contract.Requires(sequence != null);
 			Contract.Requires(elements != null);
@@ -1996,6 +1962,7 @@ namespace JBSnorro
 		/// <typeparam name="TResult"> The type of the elements in the resulting array.</typeparam>
 		/// <param name="array"> The array to map. </param>
 		/// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
+		[DebuggerHidden]
 		public static TResult[] Map<T, TResult>(this T[] array, Func<T, TResult> resultSelector)
 		{
 			Contract.Requires(array != null);
@@ -2009,6 +1976,15 @@ namespace JBSnorro
 			Contract.Ensures(result.Length == array.Length);
 			return result;
 		}
+		/// <summary>
+		/// Casts the entire array from <typeparamref name="T"/> to <typeparamref name="TResult"/>.
+		/// </summary>
+		/// <param name="array">The source array.</param>
+		public static TResult[] CastAll<T, TResult>(this T[] array) where TResult : class
+        {
+			return Array.ConvertAll<T, TResult>(array, element => (TResult)(object)element!);
+        }
+
 		/// <summary> Maps an array into another array of the same size using a specified mapping function depending also on the elements index. </summary>
 		/// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
 		/// <typeparam name="TResult"> The type of the elements in the resulting array.</typeparam>
@@ -2032,7 +2008,7 @@ namespace JBSnorro
 		/// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
 		/// <param name="list"> The list to map. </param>
 		/// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
-		public static List<TResult> Map<T, TResult>([NotNull] this List<T> list, Func<T, TResult> resultSelector)
+		public static List<TResult> Map<T, TResult>(this List<T> list, Func<T, TResult> resultSelector)
 		{
 			return ((IList<T>)list).Map(resultSelector);
 		}
@@ -2051,7 +2027,7 @@ namespace JBSnorro
 		/// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
 		/// <param name="list"> The list to map. </param>
 		/// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
-		public static List<TResult> Map<T, TResult>([NotNull] this IList<T> list, Func<T, TResult> resultSelector)
+		public static List<TResult> Map<T, TResult>(this IList<T> list, Func<T, TResult> resultSelector)
 		{
 			Contract.Requires(list != null);
 			Contract.Requires(resultSelector != null);
@@ -2092,7 +2068,7 @@ namespace JBSnorro
 			Contract.Requires(list != null);
 			Contract.Requires(resultSelector != null);
 
-			return new LazyArray<TSource, TResult>(list, resultSelector);
+			throw new NotImplementedException(); // return new LazyArray<TSource, TResult>(list, resultSelector);
 		}
 		/// <summary> Maps the specified list lazily: each mapped element is computed on demand (and is not cached). </summary>
 		/// <typeparam name="TSource"> The type of the elements to map. </typeparam>
@@ -2129,7 +2105,25 @@ namespace JBSnorro
 			};
 			return new LazyReadOnlyArray<TResult>(selector, list.Count);
 		}
-		[DebuggerHidden]
+        /// <summary> Maps the specified list lazily: each mapped element is computed on demand (and is not cached). </summary>
+        /// <typeparam name="TSource"> The type of the elements to map. </typeparam>
+        /// <typeparam name="TResult"> The type of the elements to map to. </typeparam>
+        /// <param name="list"> The list to map. </param>
+        /// <param name="resultSelector"> The function applying the map to each element. </param>
+        [DebuggerHidden]
+        public static IReadOnlyList<TResult> MapLazily<TSource, TResult>(this IReadOnlyList<TSource> list, Func<TSource, int, TResult> resultSelector)
+        {
+            Contract.Requires(list != null);
+            Contract.Requires(resultSelector != null);
+
+            Func<int, TResult> selector = index =>
+            {
+                var element = list[index];
+                return resultSelector(element, index);
+            };
+            return new LazyReadOnlyArray<TResult>(selector, list.Count);
+        }
+        [DebuggerHidden]
 		public static IReadOnlyList<TResult> CastLazily<TSource, TResult>(this IReadOnlyList<TSource> list)
 		{
 			return list.MapLazily(element => (TResult)(object)element!);
@@ -2165,15 +2159,31 @@ namespace JBSnorro
 				result[i++] = resultSelector(t);
 			return new ReadOnlyCollection<TResult>(result);
 		}
+        /// <summary> Maps a readonly collection into another of the same size using a specified mapping function. </summary>
+        /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+        /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
+        /// <param name="list"> The collection to map. </param>
+        /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
+        public static ReadOnlyCollection<TResult> Map<T, TResult>(this IReadOnlyList<T> list, Func<T, int, TResult> resultSelector)
+        {
+            var result = new TResult[list.Count];
+            int i = 0;
+			foreach (T t in list)
+			{
+				result[i] = resultSelector(t, i);
+				i++;
+			}
+            return new ReadOnlyCollection<TResult>(result);
+        }
 
-		/// <summary> Returns whether the sequence contains the specified items in order of their occurrence. 
-		/// Any number of elements may be in between though. </summary>
-		/// <typeparam name="T"> The type of the elements. </typeparam>
-		/// <param name="enumerable"> The sequence to check whether it has all items in their order. </param>
-		/// <param name="items"> The items to look for in the sequence. </param>
-		/// <param name="equalityComparer"> The equality comparer. When null, the default is used. </param>
-		/// <returns> If items is empty, true is returned. </returns>
-		public static bool ContainsOrdered<T>(this IEnumerable<T> enumerable, IEnumerable<T> items, IEqualityComparer<T>? equalityComparer = null)
+        /// <summary> Returns whether the sequence contains the specified items in order of their occurrence. 
+        /// Any number of elements may be in between though. </summary>
+        /// <typeparam name="T"> The type of the elements. </typeparam>
+        /// <param name="enumerable"> The sequence to check whether it has all items in their order. </param>
+        /// <param name="items"> The items to look for in the sequence. </param>
+        /// <param name="equalityComparer"> The equality comparer. When null, the default is used. </param>
+        /// <returns> If items is empty, true is returned. </returns>
+        public static bool ContainsOrdered<T>(this IEnumerable<T> enumerable, IEnumerable<T> items, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(enumerable != null);
 			Contract.Requires(items != null);

@@ -1,14 +1,10 @@
-﻿using JBSnorro.Collections;
-using JBSnorro.Diagnostics;
+﻿using JBSnorro.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace JBSnorro.Tests;
+namespace JBSnorro;
 
+
+#if DEBUG
 
 [TestClass]
 public class ContractTests
@@ -59,3 +55,5 @@ public class ContractTests
         Contract.Throw();
     }
 }
+
+#endif

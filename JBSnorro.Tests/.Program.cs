@@ -1,11 +1,15 @@
 ﻿using System.Diagnostics;
-using System.Threading.Tasks;
+using static JBSnorro.Extensions.EnvironmentExtensions;
 
-namespace JBSnorro.Tests
+namespace JBSnorro.Tests;
+
+class Program
 {
-	class Program
-	{
-		// [DebuggerHidden] // If you do this debugging in VS is really slow
-		public static Task Main(string[] args) => Testing.TestExtensions.DefaultMainTestProjectImplementation(args);
-	}
+    [DebuggerHidden]
+    public static Task Main(string[] args)
+    {
+        RunSettingsUtilities.LoadEnvironmentVariables(runSettingsXmlPath: GetRequiredEnvironmentVariable("RUNSETTINGS_PATH"));
+
+        return Testing.TestExtensions.DefaultMainTestProjectImplementation(args);
+    }
 }
