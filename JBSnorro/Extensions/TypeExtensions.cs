@@ -523,18 +523,20 @@ namespace JBSnorro.Extensions
 		/// Finds all types in all loaded assemblies that have the specified unqualified name.
 		/// </summary>
 		[DebuggerHidden]
-		public static IEnumerable<Type> FindType(string name)
+		public static IEnumerable<Type> FindType(string unqualifiedName)
 		{
-			return AppDomain.CurrentDomain.GetAssemblies().Reverse().FindType(name);
+			return AppDomain.CurrentDomain.GetAssemblies()
+				                          .Reverse()
+				                          .FindType(unqualifiedName);
 		}
 		/// <summary>
 		/// Finds all types in all loaded assemblies that have the specified unqualified name.
 		/// </summary>
 		[DebuggerHidden]
-		public static IEnumerable<Type> FindType(this IEnumerable<Assembly> assemblies, string name)
+		public static IEnumerable<Type> FindType(this IEnumerable<Assembly> assemblies, string fullyQualifiedName)
 		{
-			var typeName = name.SubstringAfterLast(".");
-			var @namespace = typeName.Length == name.Length ? null : name.SubstringUntilLast(".");
+			var typeName = fullyQualifiedName.SubstringAfterLast(".");
+			var @namespace = typeName.Length == fullyQualifiedName.Length ? null : fullyQualifiedName.SubstringUntilLast(".");
 			foreach (var assembly in assemblies)
 			{
 				Type[] types;
