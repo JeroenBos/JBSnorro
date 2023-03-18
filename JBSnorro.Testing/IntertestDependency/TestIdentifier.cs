@@ -24,12 +24,18 @@ internal class TestIdentifier : ITestIdentifier
             this.testName = FullName.SubstringAfterLast(".");
         }
     }
+    /// <summary>
+    /// Resolves an identifier. If fully qualified, resolves in the assemblies in <see cref="IIntertestDependencyTracker.TestAssemblies"/> or the assembly of <paramref name="callerType"/>.
+    /// If not fully qualified, resolves it as a method in the specified type, or as a type in the assembly of <paramref name="callerType"/>.
+    /// </summary>
+    /// <param name="identifier">A method or type identifier, optionally fully qualified. </param>
+    /// <param name="callerType">The type in which to resolve methods, or whose assembly to resolve types in. </param>
     public static TestIdentifier From(string identifier, Type callerType)
     {
-        bool isDefinitelyQualifiedIdentifier = identifier.Contains('.');
-        if (isDefinitelyQualifiedIdentifier)
+        bool isQualified = identifier.Contains('.');
+        if (isQualified)
         {
-            var type = ResolveType(identifier, callerType);
+            var type = ResolveType(identifier, callerType.Assembly);
             if (type != null)
             {
                 return From(type);
@@ -37,7 +43,7 @@ internal class TestIdentifier : ITestIdentifier
 
             // if may be a fully qualified method
             string containingTypeName = identifier.SubstringUntilLast(".");
-            var containingType = ResolveType(containingTypeName, callerType);
+            var containingType = ResolveType(containingTypeName, callerType.Assembly);
             if (containingType != null)
             {
                 string methodName = identifier.SubstringAfterLast(".");
@@ -57,7 +63,7 @@ internal class TestIdentifier : ITestIdentifier
                 return From(mi);
             }
 
-            var type = ResolveType(identifier, callerType);
+            var type = ResolveType(identifier, callerType.Assembly);
             if (type != null)
             {
                 return From(type);
@@ -65,16 +71,21 @@ internal class TestIdentifier : ITestIdentifier
         }
         throw new InvalidTestConfigurationException($"The identifier '{identifier}' could not be located from type '{callerType.FullName}'");
 
-        static Type? ResolveType(string typeName, Type callerType)
+        static Type? ResolveType(string typeName, Assembly callingAssembly)
         {
-            // first try finding type using .NET way, which requires full qualified
-            var type = callerType.Assembly.GetType(typeName);
-            if (type != null)
-            {
-                return type;
-            }
 
-            var assemblies = IIntertestDependencyTracker.TestAssemblies ?? new[] { callerType.Assembly };
+            var assemblies = IIntertestDependencyTracker.TestAssemblies ?? callingAssembly.ToSingleton();
+                          // ?? throw new InvalidOperationException($"Either the argument '{nameof(callingAssembly)}' or '{nameof(IIntertestDependencyTracker)}.{nameof(IIntertestDependencyTracker.TestAssemblies)}' must be provided");
+
+            // first try finding type using .NET way, which requires fully qualified
+            foreach (var assembly in assemblies)
+            {
+                var type = assembly.GetType(typeName);
+                if (type != null)
+                {
+                    return type;
+                }
+            }
 
             // the type name may not be fully qualified. Search some more
             return assemblies.FindType(typeName)
