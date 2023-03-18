@@ -47,7 +47,7 @@ internal class TestIdentifier : ITestIdentifier
             if (containingType != null)
             {
                 string methodName = identifier.SubstringAfterLast(".");
-                var mi = callerType.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var mi = containingType.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 if (mi != null)
                 {
                     return From(mi);
