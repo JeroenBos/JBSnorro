@@ -236,5 +236,5 @@ _Pvt_Extensions
 
 .vscode
 
-JBSnorro.Tests/Properties/**.runsettings
-!JBSnorro.Tests/Properties/__template__.runsettings
+test.runsettings
+!test.runsettings.example
