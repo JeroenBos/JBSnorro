@@ -12,6 +12,7 @@ namespace JBSnorro.Extensions
     /// </summary>
     public static class TaskExtensions
     {
+        private const int default_wait_ms = 250;
         /// <summary> 
         /// Casts a <see cref="Task"/> to a <see cref="Task{TResult}"/>. 
         /// This method will throw an <see cref="InvalidCastException"/> if the specified task 
@@ -84,7 +85,7 @@ namespace JBSnorro.Extensions
         /// <param name="retryCount">The maximum number of times the delegate is invoked.</param>
         /// <param name="wait_ms">The number of milliseconds to wait in between of invocations.</param>
         /// <returns>The result of awaiting the delegate that didn't fail.</returns>
-        public static Task<T> Retry<T>(Func<Task<T>> func, int retryCount = 3, int wait_ms = 250)
+        public static Task<T> Retry<T>(Func<Task<T>> func, int retryCount = 3, int wait_ms = default_wait_ms)
         {
             return Retry(attempt => func(), retryCount, wait_ms);
         }
@@ -95,7 +96,7 @@ namespace JBSnorro.Extensions
         /// <param name="retryCount">The maximum number of times the delegate is invoked.</param>
         /// <param name="wait_ms">The number of milliseconds to wait in between of invocations.</param>
         /// <returns>The result of awaiting the delegate that didn't fail.</returns>
-        public static async Task<T> Retry<T>(Func<int, Task<T>> func, int retryCount = 3, int wait_ms = 250)
+        public static async Task<T> Retry<T>(Func<int, Task<T>> func, int retryCount = 3, int wait_ms = default_wait_ms)
         {
             int i;
             for (i = 0; i < retryCount - 1; i++)
@@ -118,7 +119,7 @@ namespace JBSnorro.Extensions
         /// <param name="retryCount">The maximum number of times the delegate is invoked.</param>
         /// <param name="wait_ms">The number of milliseconds to wait in between of invocations.</param>
         /// <returns>The result of the delegate that didn't fail.</returns>
-        public static T Retry<T>(Func<T> func, int retryCount = 3, int wait_ms = 250)
+        public static T Retry<T>(Func<T> func, int retryCount = 3, int wait_ms = default_wait_ms)
         {
             return Retry(attempt => func(), retryCount, wait_ms);
         }
@@ -129,7 +130,7 @@ namespace JBSnorro.Extensions
         /// <param name="retryCount">The maximum number of times the delegate is invoked.</param>
         /// <param name="wait_ms">The number of milliseconds to wait in between of invocations.</param>
         /// <returns>The result of the delegate that didn't fail.</returns>
-        public static T Retry<T>(Func<int, T> func, int retryCount = 3, int wait_ms = 250)
+        public static T Retry<T>(Func<int, T> func, int retryCount = 3, int wait_ms = default_wait_ms)
         {
             int i;
             for (i = 0; i < retryCount - 1; i++)
@@ -158,7 +159,7 @@ namespace JBSnorro.Extensions
         /// <param name="retryCount">The maximum number of times the delegate is invoked.</param>
         /// <param name="wait_ms">The number of milliseconds to wait in between of invocations.</param>
         /// <returns>The result of awaiting the delegate that didn't fail.</returns>
-        public static async Task Retry(Func<Task> action, int retryCount = 3, int wait_ms = 250)
+        public static async Task Retry(Func<Task> action, int retryCount = 3, int wait_ms = default_wait_ms)
         {
             await Retry<object>(async () => { await action(); return null; }, retryCount, wait_ms);
         }
@@ -169,7 +170,7 @@ namespace JBSnorro.Extensions
         /// <param name="retryCount">The maximum number of times the delegate is invoked.</param>
         /// <param name="wait_ms">The number of milliseconds to wait in between of invocations.</param>
         /// <returns>The result of the delegate that didn't fail.</returns>
-        public static void Retry(Action action, int retryCount = 3, int wait_ms = 250)
+        public static void Retry(Action action, int retryCount = 3, int wait_ms = default_wait_ms)
         {
             Retry<object>(() => { action(); return (object)null; }, retryCount, wait_ms);
         }
