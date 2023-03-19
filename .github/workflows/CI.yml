@@ -72,7 +72,7 @@ jobs:
 
     - name: Unit test
       if: ${{ ! steps.should-test-gh.outputs.all_changed_and_modified_files }}
-      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration" --configuration ${{ matrix.configuration }}
+      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --configuration ${{ matrix.configuration }} --filter "TestCategory!=Integration"
 
     - name: Unit test + integration tests
       if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}

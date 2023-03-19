@@ -39,5 +39,5 @@ jobs:
     - name: build tests
       run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --configuration ${{ matrix.configuration }}
     - name: test
-      run: dotnet test JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --framework net7.0 --configuration ${{ matrix.configuration }}
+      run: dotnet test  JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --configuration ${{ matrix.configuration }} --framework net7.0
       timeout-minutes: 10
