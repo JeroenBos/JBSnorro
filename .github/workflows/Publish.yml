@@ -35,13 +35,12 @@ jobs:
           published_version=$(bash .github/get_published_version.sh '${{ matrix.project }}' | xargs)
           echo "published_version: \"$published_version\""
 
-          # 🚧
-          # if [[ "$current_version" == "$published_version" ]]; then
-          #     echo "Up-to-date"
-          # else
+          if [[ "$current_version" == "$published_version" ]]; then
+              echo "Up-to-date"
+          else
               echo "PUBLISH=true" >> $GITHUB_ENV
               echo "Publishing"
-          # fi
+          fi
 
 
       - name: Setup .NET Core
@@ -54,14 +53,14 @@ jobs:
         if: ${{ env.PUBLISH == 'true' }}
         run: dotnet build --configuration Release
 
-      #- name: Wait for CI
-      #  uses: deepinsight-io/action-wait-on-workflow@v2.1.1
-      #  if: ${{ env.PUBLISH == 'true' }}
-      #  with:
-      #    workflowName: ${{ matrix.workflowName }}
-      #    token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Wait for CI
+        uses: deepinsight-io/action-wait-on-workflow@v2.1.1
+        if: ${{ env.PUBLISH == 'true' }}
+        with:
+          workflowName: ${{ matrix.workflowName }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish
-        if: ${{ env.PUBLISH == 'true' }} # 🚧
+        if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
         run: dotnet nuget push "./JBSnorro/bin/Release/JBSnorro.*.symbols.nupkg" -k '${{ secrets.NUGET_API_KEY }}' -s 'https://api.nuget.org/v3/index.json'
                     
