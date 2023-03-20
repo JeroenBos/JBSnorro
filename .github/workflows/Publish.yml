@@ -14,11 +14,10 @@ defaults:
     shell: bash
 jobs:
   publish:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
         include:
         - project: JBSnorro
           workflowName: CI
@@ -63,9 +62,9 @@ jobs:
 
       - name: Publish
         if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
-        uses: alirezanet/publish-nuget@v3.0.4 # atm, this bugfix is not merged yet: https://github.com/brandedoutcast/publish-nuget/pull/62
-        with:
-          PROJECT_FILE_PATH: ${{ env.CSPROJ_PATH }}
-          INCLUDE_SYMBOLS: true
-          NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push                                              \
+                    ./JBSnorro/bin/Release/JBSnorro.*.symbols.nupkg         \
+                    --api-key ${{ secrets.NUGET_API_KEY }}                  \
+                    --source https://api.nuget.org/v3/index.json            \
+                    --skip-duplicate
           
