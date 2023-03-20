@@ -9,7 +9,7 @@ namespace JBSnorro.IO;
 
 public static class TempFileCleanup
 {
-    private static ILogger? logger = ILogger.CreateFileLogger(EnvironmentExtensions.GetDebugOutputPath);
+    private static ILogger? logger = null!; // = ILogger.CreateFileLogger(EnvironmentExtensions.GetDebugOutputPath);
     /// <summary>
     /// Gets whether the environment is configured for temporary file cleanup.
     /// </summary>
