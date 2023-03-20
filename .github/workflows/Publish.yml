@@ -61,10 +61,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish
-        if: ${{ env.PUBLISH == 'true' }}
+        if: ${{ env.PUBLISH == 'true' }} # 🚧
         run: dotnet nuget push                                              \
                     ./JBSnorro/bin/Release/JBSnorro.*.symbols.nupkg         \
                     --api-key ${{ secrets.NUGET_API_KEY }}                  \
-                    --source https://api.nuget.org/v3/index.json            \
+                    --source 'https://api.nuget.org/v3/index.json'          \
                     --skip-duplicate
           
