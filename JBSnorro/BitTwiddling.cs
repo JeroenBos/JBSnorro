@@ -3,6 +3,7 @@ using JBSnorro.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -126,9 +127,9 @@ namespace JBSnorro
 		/// <param name="values"> The bits to insert. </param>
 		/// <param name="sourceLengthInBits">The length of the source. Defaults to <code>source * 64.</code></param>
 		/// <returns>a new array with the bits inserted. </returns>
-		public static ulong[] InsertBits(this ulong[] source, int[] sortedBitIndices, bool[] values, ulong? sourceLengthInBits = null)
+		public static ulong[] InsertBits(this ulong[] source, ulong[] sortedBitIndices, bool[] values, ulong? sourceLengthInBits = null)
 		{
-			const int nLength = 64;
+			const int N = 64;
 
 			if (sortedBitIndices.Length == 0)
 				return source;
@@ -138,7 +139,7 @@ namespace JBSnorro
 				throw new IndexOutOfRangeException($"{nameof(sortedBitIndices)} indices must not be negative");
 			if (source is ICollection<ulong> collection)
 			{
-				if (sortedBitIndices[^1] > collection.Count * nLength)
+				if (sortedBitIndices[^1] > (ulong)collection.Count * N)
 					throw new IndexOutOfRangeException($"{nameof(sortedBitIndices)} indices must not be after the source length (the very end is allowed)");
 			}
 			else
@@ -147,17 +148,16 @@ namespace JBSnorro
 			if (values.Length != sortedBitIndices.Length)
 				throw new ArgumentException($"{nameof(values)} must contain the same number of elements as {nameof(sortedBitIndices)}");
 
-			ulong bitCount = sourceLengthInBits ?? ((ulong)collection.Count * nLength);
-			if (bitCount > (ulong)collection.Count * nLength)
+			ulong sourceBitCount = sourceLengthInBits ?? ((ulong)collection.Count * N);
+			if (sourceBitCount > (ulong)collection.Count * N)
 				throw new IndexOutOfRangeException(nameof(sourceLengthInBits));
 
+			ulong destBitCount = sourceBitCount + (ulong)values.Length;
+			ulong[] dest = CreateDest(destBitCount, source.Length, values.Length);
 
-
-			ulong[] dest = CreateDest(bitCount, source.Length, values.Length);
-
-			foreach (var (startBitIndex, destBitIndex, length, bit) in GetRanges(sortedBitIndices, values, bitCount))
+			foreach (var (startBitIndex, destBitIndex, length, bit) in GetRanges(sortedBitIndices, values, sourceBitCount))
 			{
-				CopyBits(source, dest, startBitIndex, destBitIndex, length);
+				CopyBitsTo(source, dest, startBitIndex, destBitIndex, length);
 				if (bit != null)
 				{
 					SetBit(dest, destBitIndex + length, bit.Value);
@@ -168,18 +168,15 @@ namespace JBSnorro
 
 			static ulong[] CreateDest(ulong bitCount, int sourceCount, int valuesLength)
 			{
-				ulong uselessBitCount = (ulong)sourceCount * nLength - bitCount;
+				ulong uselessBitCount = (ulong)sourceCount * N - bitCount;
 				Contract.Assert(uselessBitCount >= 0);
-				ulong requiredBitCount = (ulong)sourceCount * nLength + (ulong)valuesLength;
-				ulong requiredCount = ((requiredBitCount - uselessBitCount) + (nLength - 1)) / nLength;
+				ulong requiredBitCount = (ulong)sourceCount * N + (ulong)valuesLength;
+				ulong requiredCount = ((requiredBitCount - uselessBitCount) + (N - 1)) / N;
 				var newLength = requiredCount;
 				return new ulong[newLength];
 			}
-			static IEnumerable<(ulong SourceStartBitIndex, ulong DestBitIndex, ulong Length, bool? Value)> GetRanges(IEnumerable<int> sortedBitIndices, bool[] values, ulong bitCount)
+			static IEnumerable<(ulong SourceStartBitIndex, ulong DestBitIndex, ulong Length, bool? Value)> GetRanges(IEnumerable<ulong> sortedSourceBitIndices, bool[] values, ulong bitCount)
 			{
-				// var sortedSourceBitIndices = sortedBitIndices.Select((val, index) => (ulong)(val - index));
-				var sortedSourceBitIndices = sortedBitIndices.Select(i => (ulong)i);
-
 				// destBitIndex is the index at which the bit is to be set start pasting. The bit is to be set at destBitIndex + length
 				ulong previousSourceBitIndex = 0;
 				uint i = 0;
@@ -194,71 +191,72 @@ namespace JBSnorro
 				}
 				yield return (previousSourceBitIndex, dest, bitCount - previousSourceBitIndex, null);
 			}
-			static void CopyBits(ulong[] source, ulong[] dest, ulong sourceStart, ulong destStart, ulong length)
-			{
-				if (sourceStart + length > (ulong)source.Length * nLength) throw new ArgumentOutOfRangeException(nameof(sourceStart));
-				if (destStart + length > (ulong)dest.Length * nLength) throw new ArgumentOutOfRangeException(nameof(destStart));
-				if (length > long.MaxValue) throw new ArgumentOutOfRangeException(nameof(length));
-
-				ulong currentSource = sourceStart;
-				ulong currentDest = destStart;
-				long remaining = (long)length;
-				while (remaining > 0)
-				{
-					ulong nextDestUlongBoundary = currentDest + (nLength - (currentDest % nLength));
-					if (nextDestUlongBoundary < currentDest) throw new Exception();
-					int sourceIndex = (int)(currentSource / nLength);
-					ulong source1 = source[sourceIndex];
-					ulong source2 = sourceIndex + 1 == source.Length ? 0UL : source[sourceIndex + 1];
-					uint diff = (uint)(nextDestUlongBoundary - currentDest); // Math.Min((ulong)remaining, nextDestUlongBoundary - currentDest);
-					ref var dst = ref dest[(int)(currentDest / nLength)];
-					Copy(source1, source2, ref dst, (int)(currentSource % nLength), (int)(currentDest % nLength), diff);
-
-					remaining -= diff;
-					currentDest += diff;
-					currentSource += diff;
-				}
-
-
-				static void Copy(ulong source1, ulong source2, ref ulong dest, int index, int destIndex, uint length)
-				{
-					ulong orig1 = source1;
-					ulong orig2 = source2;
-					if (index < 0 || index >= nLength) throw new ArgumentOutOfRangeException(nameof(index));
-					if (length < 0 || length > int.MaxValue || length > 2 * nLength) throw new ArgumentOutOfRangeException(nameof(length));
-					if (destIndex + length > nLength) throw new ArgumentOutOfRangeException(nameof(destIndex));
-					if (index + length > 2 * nLength) throw new ArgumentOutOfRangeException(nameof(index));
-
-					if (index == destIndex)
-					{
-						// this is supposed to result in source2 <<= 64, but that's a no-op (which I didn't expect)
-						source2 = 0;
-					}
-					else if (index >= destIndex)
-					{
-						source1 >>= (index - destIndex);
-						source2 <<= 64 - (index - destIndex);
-					}
-					else
-					{
-						source1 <<= (destIndex - index);
-						source2 >>= 64 - (destIndex - index);
-					}
-					ulong mask = CreateULongMask(destIndex, destIndex + (int)length);
-					ulong newDest = (source1 | source2) & mask;
-
-					dest &= ~mask;
-					dest |= newDest;
-				}
-
-			}
+			
 			static void SetBit(ulong[] dest, ulong bitIndex, bool value)
 			{
-				ulong flag = 1UL << (int)(bitIndex % nLength);
+				ulong flag = 1UL << (int)(bitIndex % N);
 				if (value)
-					dest[bitIndex / nLength] |= flag;
+					dest[bitIndex / N] |= flag;
 				else
-					dest[bitIndex / nLength] &= ~flag;
+					dest[bitIndex / N] &= ~flag;
+			}
+		}
+		public static void CopyBitsTo(this ulong[] source, ulong[] dest, ulong sourceStart, ulong destStart, ulong length)
+		{
+			const int N = 64;
+			if (sourceStart + length > (ulong)source.Length * N) throw new ArgumentOutOfRangeException(nameof(sourceStart));
+			if (destStart + length > (ulong)dest.Length * N) throw new ArgumentOutOfRangeException(nameof(destStart));
+			if (length > long.MaxValue) throw new ArgumentOutOfRangeException(nameof(length));
+
+			ulong currentSource = sourceStart;
+			ulong currentDest = destStart;
+			long remaining = (long)length;
+			while (remaining > 0)
+			{
+				ulong nextDestUlongBoundary = currentDest + (N - (currentDest % N));
+				if (nextDestUlongBoundary < currentDest) throw new Exception();
+				int sourceIndex = (int)(currentSource / N);
+				ulong source1 = source[sourceIndex];
+				ulong source2 = sourceIndex + 1 == source.Length ? 0UL : source[sourceIndex + 1];
+				uint diff = (uint)(nextDestUlongBoundary - currentDest); // Math.Min((ulong)remaining, nextDestUlongBoundary - currentDest);
+				ref var dst = ref dest[(int)(currentDest / N)];
+				Copy(source1, source2, ref dst, (int)(currentSource % N), (int)(currentDest % N), Math.Min((uint)remaining, diff));
+
+				remaining -= diff;
+				currentDest += diff;
+				currentSource += diff;
+			}
+
+
+			static void Copy(ulong source1, ulong source2, ref ulong dest, int index, int destIndex, uint length)
+			{
+				ulong orig1 = source1;
+				ulong orig2 = source2;
+				if (index < 0 || index >= N) throw new ArgumentOutOfRangeException(nameof(index));
+				if (length < 0 || length > int.MaxValue || length > 2 * N) throw new ArgumentOutOfRangeException(nameof(length));
+				if (destIndex + length > N) throw new ArgumentOutOfRangeException(nameof(destIndex));
+				if (index + length > 2 * N) throw new ArgumentOutOfRangeException(nameof(index));
+
+				if (index == destIndex)
+				{
+					// this is supposed to result in source2 <<= 64, but that's a no-op (which I didn't expect)
+					source2 = 0;
+				}
+				else if (index >= destIndex)
+				{
+					source1 >>= (index - destIndex);
+					source2 <<= 64 - (index - destIndex);
+				}
+				else
+				{
+					source1 <<= (destIndex - index);
+					source2 >>= 64 - (destIndex - index);
+				}
+				ulong mask = CreateULongMask(destIndex, destIndex + (int)length);
+				ulong newDest = (source1 | source2) & mask;
+
+				dest &= ~mask;
+				dest |= newDest;
 			}
 		}
 		// I want a remainder that returns the positive remainder
@@ -297,6 +295,9 @@ namespace JBSnorro
 			ulong mask = ulong.MaxValue >> numberOfBitsToClear;
 			return bits & mask;
 		}
+		/// <summary>
+		/// Creates a ulong with bits set to one at indices [from, until).
+		/// </summary>
 		/// <param name="until">exclusive.</param>
 		static ulong CreateULongMask(int from, int until)
 		{
@@ -306,12 +307,21 @@ namespace JBSnorro
 			return ClearHighBits(ClearLowBits(ulong.MaxValue, from), 64 - until);
 		}
 		/// <summary>
+		/// Sets the bits from [0, until) and [from, 64] to zero.
+		/// </summary>
+		public static ulong Mask(this ulong value, int until, int from)
+		{
+			var mask = CreateULongMask(until, from);
+			var result = value & mask;
+			return result;
+		}
+		/// <summary>
 		/// Removes bits at specified indices.
 		/// </summary>
 		/// <param name="bytes">The source sequence to remove from.</param>
 		/// <param name="sortedBitIndices"> The indices of the bits to remove. </param>
 		/// <param name="bytesLengthInBits"> The length of the bytes sequence. Defaults to <code>8 * bytes.Count()</code>.</param>
-		public static byte[] RemoveBits(this IEnumerable<byte> bytes, int[] sortedBitIndices, int? bytesLengthInBits = null)
+		public static byte[] RemoveBits(this IEnumerable<byte> bytes, ulong[] sortedBitIndices, int? bytesLengthInBits = null)
 		{
 			BitArray bitArray;
 			if (bytesLengthInBits == null)
@@ -319,7 +329,7 @@ namespace JBSnorro
 			else
 				bitArray = new BitArray(bytes, bytesLengthInBits.Value);
 			bitArray.RemoveAt(sortedBitIndices);
-			var result = new byte[bitArray.Length / 8 + ((bitArray.Length % 8) == 0 ? 0 : 1)];
+			var result = new byte[checked((int)(bitArray.Length / 8 + ((bitArray.Length % 8) == 0 ? 0UL : 1)))];
 			bitArray.CopyTo(result.AsSpan(), 0);
 			return result;
 		}
@@ -330,7 +340,8 @@ namespace JBSnorro
 			return IndexOfBits(data, new[] { item }, itemLength, startIndex, dataLength).BitIndex;
 		}
 		/// <summary> Gets the first bit index in the specified data of any of the specified equilong items. </summary>
-		public static (long BitIndex, int ItemIndex) IndexOfBits(IEnumerable<ulong> data, IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null)
+		/// <param name="returnLastConsecutive"> When true, and when there's a match, the successive places are also checked and the last consecutive will be selected as the result.</param>
+		public static (long BitIndex, int ItemIndex) IndexOfBits(IEnumerable<ulong> data, IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null, bool returnLastConsecutive = false)
 		{
 			const int N = 64;
 			if (data == null) throw new ArgumentNullException(nameof(data));
@@ -343,21 +354,38 @@ namespace JBSnorro
 			itemLength ??= N;
 			dataLength ??= hasCount ? (ulong)(N * count) : null;
 
-			long bitIndex = 0;
-			int elementIndex = 0;
-			foreach (var ((element, nextElement), isLast) in data.Append(0UL).Windowed2().WithIsLast())
+			long bitIndex = (long)startIndex;
+			int elementIndex = (int)(startIndex / N);
+			const int noMatch = -1;
+			int matchedItemIndex = noMatch;
+			foreach (var ((element, nextElement), isLast) in data.Skip(elementIndex).Append(0UL).Windowed2().WithIsLast())
 			{
 				while (Fits(bitIndex, elementIndex, itemLength.Value, dataLength, isLast))
 				{
 					for (int itemIndex = 0; itemIndex < items.Count; itemIndex++)
 					{
 						if (IsMatch(bitIndex, element, nextElement, elementIndex, items[itemIndex], itemLength.Value))
-							return (bitIndex, itemIndex);
+						{
+							// at this point, a -1 return is impossible
+							if (returnLastConsecutive)
+							{
+								matchedItemIndex = itemIndex;
+								// only the currently matched item will be considered in getting the last consecutive
+								if(items.Count != 1)
+									items = new [] { items[itemIndex] };
+							}
+							else
+								return (bitIndex, itemIndex);
+						}
+						else if(matchedItemIndex != noMatch)
+							return (bitIndex - 1, itemIndex);
 					}
 					bitIndex++;
 				}
 				elementIndex++;
 			}
+			if (matchedItemIndex != noMatch)
+				return (bitIndex - 1, matchedItemIndex);
 			return (-1, -1);
 
 
@@ -428,8 +456,90 @@ namespace JBSnorro
 			}
 
 		}
+		[DebuggerHidden]
+		internal static ulong ToULong( this int i)
+		{
+			if (i < 0) throw new ArgumentOutOfRangeException(nameof(i));
+			return (ulong)i;
+		}
+
+		public static Half BitsAsHalf(this short s)
+		{
+			unsafe
+			{
+				short* pointer = &s;
+				Half* halfPointer = (Half*)pointer;
+				Half result = *halfPointer;
+				return result;
+			}
+		}
+		public static float BitsAsSingle(this int i)
+		{
+			unsafe
+			{
+				int* pointer = &i;
+				float* floatPointer = (float*)pointer;
+				float result = *floatPointer;
+				return result;
+			}
+		}
+		public static double BitsAsDouble(this long i)
+		{
+			unsafe
+			{
+				long* pointer = &i;
+				double* doublePointer = (double*)pointer;
+				double result = *doublePointer;
+				return result;
+			}
+		}
+		public static double BitsAsDouble(this ulong i)
+		{
+			unsafe
+			{
+				ulong* pointer = &i;
+				double* doublePointer = (double*)pointer;
+				double result = *doublePointer;
+				return result;
+			}
+		}
 
 
+		/// <summary>
+		/// Gets whether a sequence of bits at in two ulong arrays are equal.
+		/// </summary>
+		/// <param name="length">The number of bits to compare for equality.</param>
+		/// <param name="sourceBitLength"> The number of bits in <paramref name="source"/>. </param>
+		/// <param name="otherBitLength"> The number of bits in <paramref name="other"/>. </param>
+		public static bool BitSequenceEqual(this ulong[] source, ulong[] other, ulong sourceStartBitIndex, ulong otherStartBitIndex, ulong length, ulong? sourceBitLength = null, ulong? otherBitLength = null)
+		{
+			Contract.Requires<NotImplementedException>(length <= 64);
+
+			if(sourceBitLength != null && sourceBitLength > (ulong)source.Length * 64)
+				throw new ArgumentOutOfRangeException(nameof(sourceBitLength));
+			if (otherBitLength != null && otherBitLength > (ulong)source.Length * 64)
+				throw new ArgumentOutOfRangeException(nameof(otherBitLength));
+
+			sourceBitLength ??= (ulong)source.Length * 64;
+			otherBitLength ??= (ulong)other.Length * 64;
+			
+			if (sourceStartBitIndex + length > sourceBitLength)
+				throw new ArgumentOutOfRangeException(nameof(sourceStartBitIndex));
+			if (otherStartBitIndex + length > otherBitLength)
+				throw new ArgumentOutOfRangeException(nameof(otherStartBitIndex));
+
+			var sourceBits = getBits(source, sourceStartBitIndex, length);
+			var otherBits = getBits(other, otherStartBitIndex, length);
+
+			return sourceBits == otherBits;
+
+			static ulong getBits(ulong[] array, ulong bitIndex, ulong bitCount)
+			{
+				return TakeBits(first: array[bitIndex / 64],
+						        second: (int)(bitIndex / 64) + 1 >= array.Length ? 0 : array[(bitIndex / 64) + 1],
+						        start: (int)(bitIndex % 64),
+						        end: (int)(bitIndex % 64) + checked((int)bitCount));
+			}
+		}
 	}
-
 }

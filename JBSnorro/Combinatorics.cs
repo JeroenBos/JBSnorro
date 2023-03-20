@@ -524,18 +524,18 @@ namespace JBSnorro
 			{
 				Contract.Requires(occupation.Count >= toFill.Length);
 
-				for (int i = 0; i < filled.Length; i++)
+				for (ulong i = 0; i < filled.Length; i++)
 				{
 					if (filled[i])
 					{
-						if (occupation[i + toFill.Start])
+						if (occupation[checked((int)(i + (ulong)toFill.Start))])
 						{
 							return false; // bit is doubly filled
 						}
 					}
 					else
 					{
-						filled[i] |= occupation[i + toFill.Start];
+						filled[i] |= occupation[checked((int)(i + (ulong)toFill.Start))];
 					}
 				}
 			}

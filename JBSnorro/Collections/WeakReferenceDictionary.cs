@@ -41,7 +41,7 @@ namespace JBSnorro.Collections
 				}
 				else
 				{
-					throw new KeyNotFoundException("The object with the specified key does not exist");
+					throw new KeyNotFoundException("The object with the specified key does not exist (anymore)");
 				}
 			}
 			[DebuggerHidden]

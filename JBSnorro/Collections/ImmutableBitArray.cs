@@ -1,4 +1,5 @@
-﻿using JBSnorro;
+﻿#nullable enable
+using JBSnorro;
 using JBSnorro.Diagnostics;
 using System;
 using System.Collections;
@@ -78,6 +79,8 @@ namespace JBSnorro.Collections
 			Contract.RequiresForAll(bitArrays, NotNull);
 			Contract.Requires(bitArrays.Select(array => array.Length).AreEqual(), "The specified sequences aren't commensurate");
 
+			this.data = default!; // removes warning for this ctor
+
 			bool first = true;
 			foreach (var array in bitArrays)
 			{
@@ -146,7 +149,7 @@ namespace JBSnorro.Collections
 		public bool IsDisjointFrom(IReadOnlyList<bool> array)
 		{
 			Contract.Requires(array != null);
-			Contract.Requires(array.Count == this.Length);
+			Contract.Requires(array.Count == checked((int)this.Length));
 
 			if (array is ImmutableBitArray iba)
 			{
@@ -186,7 +189,7 @@ namespace JBSnorro.Collections
 			get { return data[index]; }
 		}
 		/// <summary> Gets the number of bits in this collection. </summary>
-		public int Length
+		public ulong Length
 		{
 			get { return data.Length; }
 		}
@@ -194,7 +197,8 @@ namespace JBSnorro.Collections
 		{
 			get
 			{
-				return data.Length;
+				Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
+				return (int)this.Length;
 			}
 		}
 		public IEnumerator<bool> GetEnumerator()
@@ -269,7 +273,7 @@ namespace JBSnorro.Collections
 
 		#region Equality Members
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			throw new NotImplementedException();//Depends on whether you want equality to bit array as well. I.e. is immutability equatable?
 		}
