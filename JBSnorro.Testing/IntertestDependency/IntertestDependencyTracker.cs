@@ -3,7 +3,6 @@ using Xunit;
 using JBSnorro.Algorithms;
 using JBSnorro.Diagnostics;
 using JBSnorro.Graphs;
-using TypeExtensions = JBSnorro.Extensions.TypeExtensions;
 
 namespace JBSnorro.Testing.IntertestDependency;
 

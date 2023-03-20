@@ -1,4 +1,5 @@
 ﻿using JBSnorro.Algorithms;
+using JBSnorro.Diagnostics;
 
 namespace JBSnorro.Testing.IntertestDependency;
 
@@ -24,63 +25,64 @@ internal class TestIdentifier : ITestIdentifier
             this.testName = FullName.SubstringAfterLast(".");
         }
     }
+    /// <summary>
+    /// Resolves an identifier. If fully qualified, resolves in the assemblies in <see cref="IIntertestDependencyTracker.TestAssemblies"/> or the assembly of <paramref name="callerType"/>.
+    /// If not fully qualified, resolves it as a method in the specified type, or as a type in the assembly of <paramref name="callerType"/>.
+    /// </summary>
+    /// <param name="identifier">A method or type identifier, optionally fully qualified. </param>
+    /// <param name="callerType">The type in which to resolve methods, or whose assembly to resolve types in. </param>
     public static TestIdentifier From(string identifier, Type callerType)
     {
-        bool isDefinitelyQualifiedIdentifier = identifier.Contains('.');
-        if (isDefinitelyQualifiedIdentifier)
+        bool isQualified = identifier.Contains('.');
+        if (isQualified)
         {
-            var type = ResolveType(identifier, callerType);
-            if (type != null)
-            {
-                return From(type);
-            }
-
-            // if may be a fully qualified method
-            string containingTypeName = identifier.SubstringUntilLast(".");
-            var containingType = ResolveType(containingTypeName, callerType);
-            if (containingType != null)
-            {
-                string methodName = identifier.SubstringAfterLast(".");
-                var mi = callerType.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (mi != null)
-                {
-                    return From(mi);
-                }
-            }
+            return From(fullyQualifiedIdentifier: identifier, callerType.Assembly.ToSingleton());
         }
-        else
+
+        // try to resolve the identifier as method first (before as type)
+        var mi = callerType.GetMethod(identifier, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (mi != null)
         {
-            // try to resolve the identifier as method first
-            var mi = callerType.GetMethod(identifier, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            return From(mi);
+        }
+
+        var type = ResolveType(identifier, callerType.Assembly.ToSingleton());
+        if (type != null)
+        {
+            return From(type);
+        }
+        throw new InvalidTestConfigurationException($"The identifier '{identifier}' could not be resolved from type '{callerType.FullName}'");
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="fullyQualifiedIdentifier"></param>
+    /// <param name="assembly">If null, <see cref="IIntertestDependencyTracker.TestAssemblies"/> must not be null. </param>
+    /// <returns></returns>
+    public static TestIdentifier From(string fullyQualifiedIdentifier, IEnumerable<Assembly>? assemblies = null)
+    {
+        Contract.Requires(!string.IsNullOrEmpty(fullyQualifiedIdentifier));
+        assemblies ??= IIntertestDependencyTracker.TestAssemblies ?? throw new ContractException($"Either the argument '{nameof(assemblies)}' or '{nameof(IIntertestDependencyTracker)}.{nameof(IIntertestDependencyTracker.TestAssemblies)}' must be provided");
+
+        var type = ResolveType(fullyQualifiedIdentifier, assemblies);
+        if (type != null)
+        {
+            return From(type);
+        }
+
+        // if may be a fully qualified method
+        string containingTypeName = fullyQualifiedIdentifier.SubstringUntilLast(".");
+        var containingType = ResolveType(containingTypeName, assemblies);
+        if (containingType != null)
+        {
+            string methodName = fullyQualifiedIdentifier.SubstringAfterLast(".");
+            var mi = containingType.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             if (mi != null)
             {
                 return From(mi);
             }
-
-            var type = ResolveType(identifier, callerType);
-            if (type != null)
-            {
-                return From(type);
-            }
         }
-        throw new InvalidTestConfigurationException($"The identifier '{identifier}' could not be located from type '{callerType.FullName}'");
-
-        static Type? ResolveType(string typeName, Type callerType)
-        {
-            // first try finding type using .NET way, which requires full qualified
-            var type = callerType.Assembly.GetType(typeName);
-            if (type != null)
-            {
-                return type;
-            }
-
-            var assemblies = IIntertestDependencyTracker.TestAssemblies ?? new[] { callerType.Assembly };
-
-            // the type name may not be fully qualified. Search some more
-            return assemblies.FindType(typeName)
-                             .Where(TestExtensions.IsTestClass)
-                             .FirstOrDefault();
-        }
+        throw new InvalidTestConfigurationException($"The identifier '{fullyQualifiedIdentifier}' could not be resolved"); 
     }
     public static TestIdentifier From(MethodInfo mi)
     {
@@ -102,6 +104,24 @@ internal class TestIdentifier : ITestIdentifier
             throw new InvalidTestConfigurationException($"No method with name '{methodName}' exists in type '{type.FullName}'");
         }
         return From(mi);
+    }
+
+    private static Type? ResolveType(string typeName, IEnumerable<Assembly> assemblies)
+    {
+        // first try finding type using .NET way, which requires fully qualified
+        foreach (var assembly in assemblies)
+        {
+            var type = assembly.GetType(typeName);
+            if (type != null)
+            {
+                return type;
+            }
+        }
+
+        // the type name may not be fully qualified. Search some more
+        return assemblies.FindType(typeName)
+                         .Where(TestExtensions.IsTestClass)
+                         .FirstOrDefault();
     }
 
     public override bool Equals(object? obj)
