@@ -103,13 +103,8 @@ namespace JBSnorro.Testing
 
             return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
                        .Where(AttributeExtensions.HasAttributeDelegate<MethodInfo>(names))
-                       .Where(isNotAbstract)
-                       .Select(toTest);
-
-            [DebuggerHidden]
-            Test toTest(MethodInfo mi) => new Test(type, mi);
-            [DebuggerHidden]
-            static bool isNotAbstract(MemberInfo member) => !member.IsAbstract();
+                       .Where([DebuggerHidden] (mi) => !mi.IsAbstract)
+                       .Select([DebuggerHidden] (mi) => new Test(type, mi));
         }
 
         [DebuggerHidden]

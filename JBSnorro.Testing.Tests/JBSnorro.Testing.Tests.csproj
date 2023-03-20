@@ -40,5 +40,6 @@
 		<DefineConstants Condition="'$(Configuration)' == 'CI'">$(DefineConstants);CI</DefineConstants>
 		<DefineConstants Condition=" '$(OS)' == 'Windows_NT' ">$(DefineConstants);WINDOWS</DefineConstants>
 		<DefineConstants Condition=" '$(OS)' != 'Windows_NT' ">$(DefineConstants);LINUX</DefineConstants>
+		<RunSettingsFilePath>$(MSBuildThisFileDirectory)../test.runsettings</RunSettingsFilePath>
 	</PropertyGroup>
 </Project>

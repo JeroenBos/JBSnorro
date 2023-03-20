@@ -117,23 +117,8 @@ namespace JBSnorro.Diagnostics
 		public static void RequiresForAll<T>(IEnumerable<T> elements, Func<T, bool> predicate, string message = "Requirement not met")
 		{
 			Contract.Requires(predicate != null);
-			Contract.RequiresForAll(elements, new DebHid<T>(predicate).First, message);
+			Contract.RequiresForAll(elements, [DebuggerHidden] (elem, _) => predicate(elem), message);
 		}
-		struct DebHid<T>
-		{
-			private readonly Func<T, bool> predicate;
-			[DebuggerHidden]
-			public DebHid(Func<T, bool> predicate)
-			{
-				this.predicate = predicate;
-			}
-			[DebuggerHidden]
-			public bool First(T first, int second)
-			{
-				return predicate(first);
-			}
-		}
-
 		[DebuggerHidden, Conditional("DEBUG")]
 		public static void RequiresForAll<T>(IEnumerable<T> elements, Func<T, int, bool> predicate, string message = "Precondition for element at index {0} failed")
 		{
@@ -232,6 +217,13 @@ namespace JBSnorro.Diagnostics
 					return false;
 			return true;
 		}
+#nullable enable
+		[DebuggerHidden, Pure]
+		public static bool AllNotNull<T>(IEnumerable<T?> elements)
+        {
+			return ForAll(elements, element => element != null);
+		}
+#nullable restore
 		[DebuggerHidden, Pure]
 		public static bool ForAllCombinations<T>(IEnumerable<T> elements, Func<T, T, bool> predicate)
 		{

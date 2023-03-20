@@ -209,18 +209,18 @@ namespace JBSnorro.Extensions
 		/// <summary>
 		/// Creates a readonly dictionary by mapping the specified sequence to keys and values.
 		/// </summary>
-		public static IReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TSource, TKey, TValue>(this IEnumerable<TSource> sequence, Func<TSource, TKey> selectKey, Func<TSource, TValue> selectValue, IEqualityComparer<TKey> equalityComparer = null)
+		public static IReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TSource, TKey, TValue>(this IEnumerable<TSource> sequence, Func<TSource, TKey> keySelector, Func<TSource, TValue> valueSelector, IEqualityComparer<TKey> equalityComparer = null)
 		{
-			return sequence.ToReadOnlyDictionary(selectKey, (source, key) => selectValue(source), equalityComparer);
+			return sequence.ToReadOnlyDictionary(keySelector, (source, key) => valueSelector(source), equalityComparer);
 		}
 		/// <summary>
 		/// Creates a readonly dictionary by mapping the specified sequence to keys and values.
 		/// </summary>
-		public static IReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TSource, TKey, TValue>(this IEnumerable<TSource> sequence, Func<TSource, TKey> selectKey, Func<TSource, TKey, TValue> selectValue, IEqualityComparer<TKey> equalityComparer = null)
+		public static IReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TSource, TKey, TValue>(this IEnumerable<TSource> sequence, Func<TSource, TKey> keySelector, Func<TSource, TKey, TValue> valueSelector, IEqualityComparer<TKey> equalityComparer = null)
 		{
 			Contract.Requires(sequence != null);
-			Contract.Requires(selectKey != null);
-			Contract.Requires(selectValue != null);
+			Contract.Requires(keySelector != null);
+			Contract.Requires(valueSelector != null);
 
 			equalityComparer = equalityComparer ?? EqualityComparer<TKey>.Default;
 
@@ -232,8 +232,8 @@ namespace JBSnorro.Extensions
 
 				foreach (var source in sequence)
 				{
-					TKey key = selectKey(source);
-					TValue value = selectValue(source, key);
+					TKey key = keySelector(source);
+					TValue value = valueSelector(source, key);
 
 					result[key] = value;
 				}

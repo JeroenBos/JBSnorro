@@ -32,8 +32,8 @@ namespace JBSnorro.Geometry
 		public override bool Contains(Point point)
 		{
 			return base.Contains(point) //the base case returns whether the point lies on (the extrapolation of) this line segment 
-				&& FloatingTypeEqualityComparisonHelper.InToleranceInterval(point.X, this.A.X, this.B.X) // point.X ∈ (-ε + min(A.X, B.X), max(A.X, B.X) + ε)
-				&& FloatingTypeEqualityComparisonHelper.InToleranceInterval(point.X, this.A.X, this.B.X); // point.Y ∈ (-ε + min(A.Y, B.Y), max(A.Y, B.Y) + ε)
+				&& EqualityExtensions.ApproximatelyInInterval(point.X, this.A.X, this.B.X) // point.X ∈ (-ε + min(A.X, B.X), max(A.X, B.X) + ε)
+				&& EqualityExtensions.ApproximatelyInInterval(point.X, this.A.X, this.B.X); // point.Y ∈ (-ε + min(A.Y, B.Y), max(A.Y, B.Y) + ε)
 		}
 
 		/// <summary> Determines whether the specified object is equal to the current. </summary>
@@ -62,7 +62,7 @@ namespace JBSnorro.Geometry
 			if (ReferenceEquals(null, other)) return false;
 			if (ReferenceEquals(this, other)) return true;
 
-			return this.A.EqualByTolerance(other.A) && this.B.EqualByTolerance(other.B);
+			return this.A.ApproximatelyEquals(other.A) && this.B.ApproximatelyEquals(other.B);
 		}
 	}
 }

@@ -30,7 +30,7 @@ namespace JBSnorro.Text.Json
 					Contract.Requires(timpl != typeof(T));
 			}
 
-			this.implementationTypes = derivedTypePairs.ToReadOnlyDictionary(selectKey: t => t.T, selectValue: t => t.TImpl);
+			this.implementationTypes = derivedTypePairs.ToReadOnlyDictionary(keySelector: t => t.T, valueSelector: t => t.TImpl);
 		}
 		public IEnumerable<JsonConverter> IntroducedConverters
 		{

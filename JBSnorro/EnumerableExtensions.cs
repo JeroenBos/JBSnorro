@@ -1877,7 +1877,7 @@ namespace JBSnorro
 
 			return true;
 		}
-
+		[DebuggerHidden]
 		public static bool AreUnique<T>(this IEnumerable<T> sequence, Func<T, T, bool> equalityComparer)
 		{
 			return sequence.AreUnique(equalityComparer.ToEqualityComparer());
@@ -1887,6 +1887,7 @@ namespace JBSnorro
 		/// <typeparam name="T"> The type of the elements in the sequence. </typeparam>
 		/// <param name="sequence"> The sequence to get all unique elements of. </param>
 		/// <param name="equalityComparer"> The comparer determining equality between elements in the sequence. Specify null to use the default comparer. </param>
+		[DebuggerHidden]
 		public static IEnumerable<T?> Unique<T>(this IEnumerable<T> sequence, Func<T?, T?, bool>? equalityComparer = null)
 		{
 			return sequence.Distinct(equalityComparer);
@@ -1895,12 +1896,12 @@ namespace JBSnorro
 		/// <typeparam name="T"> The type of the elements in the sequence. </typeparam>
 		/// <param name="sequence"> The sequence to get all unique elements of. </param>
 		/// <param name="equalityComparer"> The comparer determining equality between elements in the sequence. Specify null to use the default comparer. </param>
+		[DebuggerHidden]
 		public static IEnumerable<T?> Distinct<T>(this IEnumerable<T> sequence, Func<T?, T?, bool>? equalityComparer)
 		{
 			Contract.Requires(sequence != null);
-			equalityComparer = equalityComparer ?? EqualityComparer<T>.Default.Equals;
-
-			return sequence.Distinct(equalityComparer.ToEqualityComparer());
+			
+			return sequence.Distinct(equalityComparer?.ToEqualityComparer() ?? EqualityComparer<T>.Default);
 		}
 
 		/// <summary> Gets whether all elements in the specified sequence are the same element. For the empty sequence, true is returned. </summary>
@@ -3151,6 +3152,56 @@ namespace JBSnorro
 
 			list.Sort(Comparer<T>.Create((Comparison<T>)((x, y) => comparer(x, y))));
 		}
+		/// <summary>
+		/// Gets the standard deviation of the specified numbers.
+		/// </summary>
+		/// <param name="average">Provide the average as performance optimization.</param>
+		public static float StandardDeviation(this IEnumerable<float> numbers, float? average = null)
+		{
+			float μ = average ?? numbers.Average();
+
+			int count = 0;
+			float sum = 0;
+			foreach (var number in numbers)
+			{
+				sum += (number - μ) * (number - μ);
+				count++;
+			}
+			if (count == 0)
+				return 0;
+			return (float)Math.Sqrt(sum / count);
+		}
+		/// <summary>
+		/// Shuffles the specified list.
+		/// </summary>
+		public static void Shuffle<T>(this IList<T> list, Random? random = null)
+		{
+			Contract.Requires(list != null);
+
+			random ??= new Random(Random.Shared.Next());
+
+			for (int n = list.Count - 1; n > 1; n--)
+			{
+				int k = random.Next(n + 1);
+				T temp = list[k];
+				list[k] = list[n];
+				list[n] = temp;
+			}
+		}
+		/// <inheritdoc cref="System.Linq.Enumerable.Sum{TSource}(IEnumerable{TSource}, Func{TSource, long})"/>
+		public static ulong Sum<T>(this IEnumerable<T> source, Func<T, ulong> selector)
+        {
+			Contract.Requires(source != null);
+			Contract.Requires(selector != null);
+
+			ulong sum = 0;
+			foreach (T t in source)
+            {
+				ulong projected = selector(t);
+				sum = checked(sum + projected);
+            }
+			return sum;
+        }
 
 		/// <summary>
 		/// Gets an IEnumerable that throws on enumeration.

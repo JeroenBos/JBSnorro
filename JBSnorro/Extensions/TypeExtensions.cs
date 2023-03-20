@@ -523,18 +523,20 @@ namespace JBSnorro.Extensions
 		/// Finds all types in all loaded assemblies that have the specified unqualified name.
 		/// </summary>
 		[DebuggerHidden]
-		public static IEnumerable<Type> FindType(string name)
+		public static IEnumerable<Type> FindType(string unqualifiedName)
 		{
-			return AppDomain.CurrentDomain.GetAssemblies().Reverse().FindType(name);
+			return AppDomain.CurrentDomain.GetAssemblies()
+				                          .Reverse()
+				                          .FindType(unqualifiedName);
 		}
 		/// <summary>
 		/// Finds all types in all loaded assemblies that have the specified unqualified name.
 		/// </summary>
 		[DebuggerHidden]
-		public static IEnumerable<Type> FindType(this IEnumerable<Assembly> assemblies, string name)
+		public static IEnumerable<Type> FindType(this IEnumerable<Assembly> assemblies, string fullyQualifiedName)
 		{
-			var typeName = name.SubstringAfterLast(".");
-			var @namespace = typeName.Length == name.Length ? null : name.SubstringUntilLast(".");
+			var typeName = fullyQualifiedName.SubstringAfterLast(".");
+			var @namespace = typeName.Length == fullyQualifiedName.Length ? null : fullyQualifiedName.SubstringUntilLast(".");
 			foreach (var assembly in assemblies)
 			{
 				Type[] types;
@@ -556,5 +558,32 @@ namespace JBSnorro.Extensions
 				}
 			}
 		}
-	}
+
+        /// <summary>
+        /// Looks in all loaded assemblies for the given type.
+        /// </summary>
+        /// <param name="fullName">The full name of the type.</param>
+        /// <returns>The <see cref="Type"/> found; null if not found.</returns>
+        /// <seealso cref="https://stackoverflow.com/a/20862223/308451"/>
+        [DebuggerHidden]
+        public static Type? FindQualifiedType(string fullyQualifiedName)
+        {
+			return AppDomain.CurrentDomain.GetAssemblies()
+				                          .Where(a => !a.IsDynamic)
+				                          .FindQualifiedType(fullyQualifiedName);
+        }
+
+        /// <summary>
+        /// Looks in all specified assemblies for the given type by fully qualified name.
+        /// </summary>
+        /// <param name="fullName">The full name of the type.</param>
+        /// <returns>The <see cref="Type"/> found; null if not found.</returns>
+		/// <seealso cref="https://stackoverflow.com/a/20862223/308451"/>
+        [DebuggerHidden]
+        public static Type? FindQualifiedType(this IEnumerable<Assembly> assemblies, string fullyQualifiedName)
+        {
+            return assemblies.SelectMany(a => a.GetTypes())
+                             .FirstOrDefault(t => fullyQualifiedName.Equals(t.FullName, StringComparison.Ordinal));
+        }
+    }
 }

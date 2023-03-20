@@ -70,13 +70,11 @@ namespace JBSnorro
 			Contract.Requires(sequence != null);
 			using (var enumerator = sequence.GetEnumerator())
 			{
-				Contract.Requires(enumerator != null);
-
 				if (!enumerator.MoveNext())
 					return null;
 
-				//now create a new enumerable with first the current element, and then the rest of the enumerator (so that the specified enumerable isn't enumerated over twice)
-				return enumerator.Current.ToSingleton().Concat(enumerator.ToEnumerable(false));
+				// now create a new enumerable with first the current element, and then the rest of the enumerator (so that the specified enumerable isn't enumerated over twice)
+				return enumerator.Current.ToSingleton().Concat(enumerator.ToEnumerable(includeCurrent: false));
 			}
 		}
 
