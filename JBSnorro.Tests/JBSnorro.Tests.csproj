@@ -28,11 +28,6 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-	  <None Remove="Properties\.runsettings" />
-	</ItemGroup>
-	
-	
-	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
