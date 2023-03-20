@@ -61,6 +61,7 @@ public class EnvironmentExtensions
             }
             else
             {
+                env_var = Environment.ExpandEnvironmentVariables(env_var);
                 if (debugOutputPath is null)
                 {
                     debugOutputPath = env_var;
