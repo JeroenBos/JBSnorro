@@ -41,6 +41,10 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Create dummy runsettings file
+      # in CI env vars are passed in directly, so the runsettings file can be empty
+      run: echo '<RunSettings></RunSettings>' > test.runsettings
+         
     - name: Create NODE_PATH env var
       run: echo "NODE_PATH=$(which node)$([[ '${{ matrix.os }}' == 'windows-latest' ]] && echo -n '.exe')" >> $GITHUB_ENV 
 
@@ -72,7 +76,7 @@ jobs:
 
     - name: Unit test
       if: ${{ ! steps.should-test-gh.outputs.all_changed_and_modified_files }}
-      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --filter "TestCategory!=Integration" --configuration ${{ matrix.configuration }}
+      run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --configuration ${{ matrix.configuration }} --filter "TestCategory!=Integration"
 
     - name: Unit test + integration tests
       if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
