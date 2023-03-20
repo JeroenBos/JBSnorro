@@ -63,5 +63,8 @@ jobs:
 
       - name: Publish
         if: ${{ env.PUBLISH == 'true' }} # 🚧
-        run: dotnet nuget push "./JBSnorro/bin/Release/JBSnorro.*.symbols.nupkg" -k '${{ secrets.NUGET_API_KEY }}' -s 'https://api.nuget.org/v3/index.json'
+        run: dotnet nuget push \
+                    "./JBSnorro/bin/Release/JBSnorro.*.symbols.nupkg" \
+                    -k '${{ secrets.NUGET_API_KEY }}' \
+                    -s 'https://api.nuget.org/v3/index.json'
                     
