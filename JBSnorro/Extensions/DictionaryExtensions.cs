@@ -285,7 +285,7 @@ namespace JBSnorro.Extensions
         /// <summary>
         /// Enumerates the dictionary <see cref="KeyValuePair{TKey, TValue}"/>s as <see cref="(TKey, TValue)"/>-tuples.
         /// </summary>
-        public static IEnumerable<(TKey, TValue)> AsTuples<TKey, TValue>(this Dictionary<TKey, TValue> dict) where TKey : notnull
+        public static IEnumerable<(TKey, TValue)> AsTuples<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dict) where TKey : notnull
         {
             return dict.Select(DictionaryExtensions.ToKeyValuePair<TKey, TValue>);
         }
