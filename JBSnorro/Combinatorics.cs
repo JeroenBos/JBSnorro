@@ -459,11 +459,6 @@ namespace JBSnorro
 			}
 		}
 
-		/// <summary> Caches the specified sorted sequence in a sorted list. </summary>
-		public static SortedList<T> ToSortedList<T>(this ISortedEnumerable<T> sequence)
-		{
-			return new SortedList<T>(sequence.ToList(), sequence.Comparer);
-		}
 
 		/// <summary> Gets all combinations of options that fill the specified length. </summary>
 		/// <param name="options"> The option to fill the interval with. Each option holds the information of which spots it fills. </param>

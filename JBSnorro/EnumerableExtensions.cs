@@ -2452,10 +2452,16 @@ namespace JBSnorro
 			}
 			return result;
 		}
-		/// <summary> Sorts the specified sequence and wraps it is a sorted list. </summary>
-		/// <param name="sequence"> The sequence to sort and wrap. </param>
-		/// <param name="comparer"> The comparer determing the order to sort in. Specify null to use the default comparer. </param>
 		[DebuggerHidden]
+        /// <summary> Caches the specified sorted sequence in a sorted list. </summary>
+        public static SortedList<T> ToSortedList<T>(this ISortedEnumerable<T> sequence)
+        {
+            return new SortedList<T>(sequence.ToList(), sequence.Comparer);
+        }
+        /// <summary> Sorts the specified sequence and wraps it is a sorted list. </summary>
+        /// <param name="sequence"> The sequence to sort and wrap. </param>
+        /// <param name="comparer"> The comparer determing the order to sort in. Specify null to use the default comparer. </param>
+        [DebuggerHidden]
 		public static SortedList<T> ToSortedList<T>(this IEnumerable<T> sequence, Func<T, T, int>? comparer = null)
 		{
 			Contract.Requires(sequence != null);
