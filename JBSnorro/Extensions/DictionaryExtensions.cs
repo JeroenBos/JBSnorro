@@ -289,5 +289,12 @@ namespace JBSnorro.Extensions
         {
             return dict.Select(DictionaryExtensions.ToKeyValuePair<TKey, TValue>);
         }
+        /// <summary>
+        /// Allows operating the Linq Select method on <see cref="(TKey, TValue)"/>-tuples, rather than <see cref="KeyValuePair{TKey, TValue}"/>s.
+        /// </summary>
+        public static IEnumerable<TResult> AsTuplesSelect<TKey, TValue, TResult>(this IReadOnlyDictionary<TKey, TValue> dict, Func<TKey, TValue, TResult> selector) where TKey : notnull
+        {
+            return dict.Select(kvp => selector(kvp.Key, kvp.Value));
+        }
     }
 }
