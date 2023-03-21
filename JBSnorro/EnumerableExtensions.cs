@@ -6,21 +6,9 @@ using JBSnorro.Collections.Sorted;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using JBSnorro.Geometry;
-using JetBrains.Annotations;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using static JBSnorro.Global;
 
 namespace JBSnorro

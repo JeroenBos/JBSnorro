@@ -223,18 +223,14 @@ public class BitReader : IBitReader
         // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
         // but before some bitCount, there simply isn't enough bits to have this strategy. Something more complicated (or simpler) is needed
 
-        if (bitCount < exponentCutoff)
-        {
-            return ReadInt64(bitCount);
-        }
-        else
-        {
-            ulong bits = ReadUInt64(bitCount);
-            ulong shifted = bits << (64 - bitCount);
+        int significantBitCount = Math.Max(2, bitCount / 2);
+        int exponentBitCount = bitCount - significantBitCount;
 
-            var result = BitTwiddling.BitsAsDouble(shifted);
-            return result;
-        }
+        var significant = ReadInt64(significantBitCount);
+        var exponent = exponentBitCount == 1 ? (double)ReadUInt64(exponentBitCount) : (double)ReadInt64(exponentBitCount);
+
+        var value = 2 * significant * double.Pow(2, exponent);
+        return value;
     }
     /// <summary>
     /// Returns whether this reader still has the specified number of bits to read.

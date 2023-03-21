@@ -28,6 +28,10 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
+	  <Watch Remove="BitReaderTests.cs" />
+	</ItemGroup>
+	
+	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>

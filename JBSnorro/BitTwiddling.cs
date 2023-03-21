@@ -346,13 +346,17 @@ namespace JBSnorro
 			const int N = 64;
 			if (data == null) throw new ArgumentNullException(nameof(data));
 			if (items == null) throw new ArgumentNullException(nameof(items));
-			if (items.Count == 0) throw new ArgumentException(nameof(items));
 			if (itemLength != null && (itemLength < 0 || itemLength > N)) throw new ArgumentOutOfRangeException(nameof(itemLength));
 			if (startIndex < 0) throw new ArgumentOutOfRangeException(nameof(startIndex));
 			bool hasCount = data.TryGetNonEnumeratedCount(out int count);
 			if (hasCount && startIndex > N * (ulong)count) throw new ArgumentOutOfRangeException(nameof(startIndex));
 			itemLength ??= N;
 			dataLength ??= hasCount ? (ulong)(N * count) : null;
+
+			if (items.Count == 0)
+			{
+				return (-1, -1);
+			}
 
 			long bitIndex = (long)startIndex;
 			int elementIndex = (int)(startIndex / N);
