@@ -2,6 +2,7 @@
 using JBSnorro.Diagnostics;
 using System.Collections;
 using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace JBSnorro.Collections
 {
@@ -76,7 +77,7 @@ namespace JBSnorro.Collections
 
             this.data.CopyTo(dest, this.start + sourceStartIndex, length, destStartIndex);
         }
-        
+
         public BitArray Insert(ulong data, int dataLength, ulong insertionIndex)
         {
             var result = new BitArray(this.Length + (ulong)dataLength);
@@ -200,7 +201,7 @@ namespace JBSnorro.Collections
         [DebuggerHidden]
         public static BitReader SelectReader(this BitArray array, ulong start, ulong length)
         {
-            return new BitReader(array, start, length); 
+            return new BitReader(array, start, length);
         }
     }
 }

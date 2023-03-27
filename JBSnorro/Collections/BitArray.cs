@@ -4,6 +4,7 @@ using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using System.Collections;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using static JBSnorro.Global;
 
 namespace JBSnorro.Collections
@@ -102,7 +103,7 @@ namespace JBSnorro.Collections
                 return new BitArrayReadOnlySegment(this, (ulong)start, (ulong)length);
             }
         }
-        
+
         /// <summary>
         /// Gets the 64 successive bits at the specified bit index, padded with zeroes if necessary.
         /// </summary>
@@ -185,12 +186,13 @@ namespace JBSnorro.Collections
         /// <param name="bitsToOr"> Specify which bits are to be set. Are OR-ed together, so must have equal sizes. </param>
         public BitArray(IEnumerable<IReadOnlyList<bool>> bitsToOr) : this((IList<bool>)bitsToOr.Or()) { }
         [DebuggerHidden]
-         private BitArray(IEnumerable<bool> bits, int count) : this(bits, count.ToULong())
+        private BitArray(IEnumerable<bool> bits, int count) : this(bits, count.ToULong())
         {
 
         }
         /// <summary> Creates a new bit array from the specified bits with prespecified length. </summary>
-        [DebuggerHidden] private BitArray(IEnumerable<bool> bits, ulong count)
+        [DebuggerHidden]
+        private BitArray(IEnumerable<bool> bits, ulong count)
         {
             Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
             Contract.Requires(bits != null);
@@ -612,7 +614,7 @@ namespace JBSnorro.Collections
         }
         public void RemoveAt(ulong index)
         {
-            this.RemoveAt(new [] { index });
+            this.RemoveAt(new[] { index });
         }
         public void RemoveAt(params ulong[] indices)
         {
