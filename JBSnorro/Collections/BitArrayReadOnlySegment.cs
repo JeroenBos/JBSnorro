@@ -164,31 +164,6 @@ namespace JBSnorro.Collections
         {
             throw new NotImplementedException();
         }
-        internal BitSpan AsSpan()
-        {
-            if (this.Length == 0)
-            {
-                return new BitSpan();
-            }
-
-            var totalArray = this.data.AsSpan();
-
-            return BitTwiddling.GetBitsTo(this.data.GetULong(0), this.start);
-        }
-        internal ref struct BitSpan
-        {
-            public ulong Before { get; }
-            public ReadOnlySpan<ulong> FullULongs { get; }
-            public ulong After { get; }
-
-
-            public BitSpan(ulong before, ReadOnlySpan<ulong> fullULongs, ulong after) : this()
-            {
-                this.Before = before;
-                this.FullULongs = fullULongs;
-                this.After = after;
-            }
-        }
     }
 
     public static class BitArraySegmentExtensions

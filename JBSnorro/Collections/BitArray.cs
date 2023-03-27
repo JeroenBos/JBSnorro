@@ -456,16 +456,6 @@ namespace JBSnorro.Collections
             return result;
         }
 
-        internal BitArrayReadOnlySegment.BitSpan AsSpan()
-        {
-            if (this.Length == 0)
-                return default;
-
-            int endULongIndex = (int)(this.Length / 64UL);
-            int remainder = (int)(this.Length % 64UL);
-            ulong after = remainder == 0 ? 0 : this.data[endULongIndex].Mask(0, remainder);
-            return new(0, this.data.AsSpan(..endULongIndex), after);
-        }
         #region Supported IList<bool> Members
 
         int IReadOnlyCollection<bool>.Count
