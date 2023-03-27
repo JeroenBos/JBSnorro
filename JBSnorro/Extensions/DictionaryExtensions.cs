@@ -296,5 +296,47 @@ namespace JBSnorro.Extensions
         {
             return dict.Select(kvp => selector(kvp.Key, kvp.Value));
         }
+
+        public static bool SetOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value, Func<TValue, TValue> update)
+        {
+            if (dict.TryGetValue(key, out var currentValue))
+            {
+                dict[key] = update(currentValue);
+                return true;
+            }
+            else
+            {
+                dict[key] = value;
+                return false;
+            }
+        }
+        public static bool IncrementCounter<TKey>(this IDictionary<TKey, int> dict, TKey key)
+        {
+            if (dict.TryGetValue(key, out var currentValue))
+            {
+                dict[key] = currentValue + 1;
+                return true;
+            }
+            else
+            {
+                dict[key] = 1;
+                return false;
+            }
+        }
+        public static bool DecrementCounter<TKey>(this IDictionary<TKey, int> dict, TKey key)
+        {
+            if (dict.TryGetValue(key, out var currentValue))
+            {
+                if (currentValue == 1)
+                    dict.Remove(key);
+                else
+                    dict[key] = currentValue - 1;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

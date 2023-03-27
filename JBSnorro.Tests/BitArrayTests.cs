@@ -409,6 +409,52 @@ namespace JBSnorro.Tests
             Contract.Assert(new BitArray(new ulong[] { item, item.Mask(0, 44) }, 65).Equals(new BitArray(new[] { item, item.Mask(0, 44) }, 65)));
             Contract.Assert(new BitArray(new ulong[] { item.Mask(0, 20), item.Mask(0, 44) }, 128).Equals(new BitArray(new[] { item.Mask(0, 20), item.Mask(0, 44) }, 128)));
         }
+        [TestMethod]
+        public void TestBitArrayEqualityToSegment()
+        {
+            const ulong item1 = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            const ulong item2 = 0b11000000_11101010_01010101_10111111_11110000_00010000_01100000_00000000UL;
+            var array = new BitArray(new ulong[] { item1, item2 }, 120);
+            var clone = array.Clone();
+            clone.Insert(0, false);
+            var segment = clone[1..(1 + (int)array.Length)];
+
+            // Act
+            bool equals = array.Equals(segment);
+
+            Contract.Assert(equals);
+        }
+        [TestMethod]
+        public void TestDualULongSegmentEqualityToSegment()
+        {
+            const ulong item1 = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            const ulong item2 = 0b11000000_11101010_01010101_10111111_11110000_00010000_01100000_00000000UL;
+            var array = new BitArray(new ulong[] { item1, item2 }, 120);
+            var secondClone = array.Clone();
+            secondClone.Insert(0, false);
+            secondClone.Insert(0, false);
+            var secondSegment = secondClone[2..(2 + (int)array.Length)];
+
+            // Act
+            bool equals = array.Equals(secondSegment);
+
+            Contract.Assert(equals);
+        }
+        [TestMethod]
+        public void TestMultiULongSegmentEqualityToSegment()
+        {
+            var r = new Random(50);
+            var array = new BitArray(new[] { r.NextInt64(), r.NextInt64(), r.NextInt64(), r.NextInt64() }.Map(l => (ulong)l), 240);
+            var clone = array.Clone();
+            clone.Insert(0, false);
+            clone.Insert(0, true);
+            var secondSegment = clone[2..(2 + (int)array.Length)];
+
+            // Act
+            bool equals = array.Equals(secondSegment);
+
+            Contract.Assert(equals);
+        }
     }
     [TestClass]
     public class BitArrayCopyToTests
@@ -416,7 +462,7 @@ namespace JBSnorro.Tests
         [TestMethod]
         public void TestCopyBits()
         {
-            foreach (var (src, dst, expected, srcIndex, length, dstIndex) in new[] { 
+            foreach (var (src, dst, expected, srcIndex, length, dstIndex) in new[] {
                 (new BitArray(new[] { 0b00001111UL }, 4), new BitArray(length: 8), new BitArray(new[] { 0b00001111UL }, 8), 0UL, 4UL, 0UL),
                 (new BitArray(new[] { 0b00001111UL }, 3), new BitArray(length: 8), new BitArray(new[] { 0b00000111UL }, 8), 0UL, 3UL, 0UL),
                 (new BitArray(new[] { 0b00001111UL }, 3), new BitArray(length: 8), new BitArray(new[] { 0b00001110UL }, 8), 0UL, 3UL, 1UL),

@@ -2,22 +2,18 @@
 using JBSnorro;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static JBSnorro.Global;
 
 namespace JBSnorro.Collections
 {
     /// <summary> Represents the same idea as the BCL <see cref="System.Collections.BitArray"/>, 
     /// only it derives from <see cref="System.Collections.Generic.IList{T}"/> and <see cref="System.Collections.Generic.IReadOnlyList{T}"/>. </summary>
+    [DebuggerDisplay("BitArray(Length={Length})")]
     public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     {
+        public static BitArray Empty { get; } = new BitArray(Array.Empty<bool>());
         private const int bitCountPerInternalElement = 64;
         private static void ToInternalAndBitIndex(int index, out int dataIndex, out int bitIndex)
         {
@@ -477,6 +473,7 @@ namespace JBSnorro.Collections
                 return ((IReadOnlyCollection<bool>)this).Count;
             }
         }
+        [DebuggerHidden]
         public void CopyTo(bool[] array, int arrayIndex)
         {
             Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
@@ -485,10 +482,12 @@ namespace JBSnorro.Collections
                 array[arrayIndex + i] = this[i];
             }
         }
+        [DebuggerHidden]
         public void CopyTo(ulong[] array, int arrayIndex)
         {
             this.data.CopyTo(array, arrayIndex);
         }
+        [DebuggerHidden]
         public void CopyTo(Span<byte> array, int arrayIndex)
         {
             const int bytesPerULong = 8;
@@ -522,6 +521,7 @@ namespace JBSnorro.Collections
                 array[^1] &= mask;
             }
         }
+        [DebuggerHidden]
         public void CopyTo(BitArray array, ulong sourceStartBitIndex, ulong length, ulong destStartBitIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
@@ -532,22 +532,27 @@ namespace JBSnorro.Collections
 
             CopyTo(array.data, sourceStartBitIndex, length, destStartBitIndex);
         }
+        [DebuggerHidden]
         internal void CopyTo(ulong[] array, ulong sourceStartBitIndex, ulong length, ulong destStartBitIndex)
         {
             BitTwiddling.CopyBitsTo(this.data, array, sourceStartBitIndex, destStartBitIndex, length: length);
         }
+        [DebuggerHidden]
         public IEnumerator<bool> GetEnumerator()
         {
             return Enumerable.Range(0, checked((int)this.Length)).Select(i => this[i]).GetEnumerator();
         }
+        [DebuggerHidden]
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
+        [DebuggerHidden]
         public bool IsReadOnly
         {
             get { return false; }
         }
+        [DebuggerHidden]
         public long IndexOf(ulong item, int? itemLength = null, ulong startBitIndex = 0)
         {
             return BitTwiddling.IndexOfBits(this.data, item, itemLength, startBitIndex, this.Length);
@@ -571,7 +576,8 @@ namespace JBSnorro.Collections
         }
         public bool BitSequenceEqual(BitArray other, ulong sourceStartBitIndex, ulong sourceBitLength)
         {
-            return this.data.BitSequenceEqual(other.data, sourceStartBitIndex, 0, other.Length, sourceBitLength, other.Length);
+            var sourceSegment = new BitArrayReadOnlySegment(this, sourceStartBitIndex, sourceBitLength);
+            return sourceSegment.Equals(other);
         }
         public bool BitSequenceEqual(BitArrayReadOnlySegment other)
         {
@@ -671,6 +677,8 @@ namespace JBSnorro.Collections
         {
             if (ReferenceEquals(other, null))
                 return false;
+            if (ReferenceEquals(other, this))
+                return true;
 
             if (this.Length != other.Length)
                 return false;
@@ -693,6 +701,12 @@ namespace JBSnorro.Collections
                 return thisLast == otherLast;
             }
             return true;
+
+        }
+
+        public bool Equals(BitArrayReadOnlySegment segment)
+        {
+            return segment.Equals(this);
         }
         public override int GetHashCode()
         {
@@ -859,6 +873,14 @@ namespace JBSnorro.Collections
             // TODO: perf
             return array.Prepend(prependData, prependDataLength)
                         .Append(appendData, appendDataLength);
+        }
+        public static BitArray ToBitArray(this bool[] bits)
+        {
+            return new BitArray(bits);
+        }
+        public static BitArray ToBitArray(this IEnumerable<bool> bits)
+        {
+            return new BitArray(bits);
         }
     }
 }

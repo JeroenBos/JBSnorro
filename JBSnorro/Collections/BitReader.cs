@@ -21,6 +21,7 @@ public interface IBitReader
 [DebuggerDisplay("{ToDebuggerDisplay()}")]
 public class BitReader : IBitReader
 {
+    public static BitReader Empty { get; } = new BitReader(Array.Empty<ulong>(), 0);
     private readonly BitArray data;
     /// <summary>
     /// The index where this reader actually starts. Cannot be sought beyond.
@@ -196,7 +197,7 @@ public class BitReader : IBitReader
             throw InsufficientBitsException("Half");
 
         // half has 5 bits exponent
-        return (Half)ReadDouble(bitCount, 5 + 5);
+        return (Half)readDouble(bitCount);
     }
     public float ReadSingle(int bitCount)
     {
@@ -206,7 +207,7 @@ public class BitReader : IBitReader
             throw InsufficientBitsException("float");
 
         // float has 8 bits exponent
-        return (float)ReadDouble(bitCount, 8 + 5);
+        return (float)readDouble(bitCount);
     }
     public double ReadDouble(int bitCount)
     {
@@ -216,9 +217,9 @@ public class BitReader : IBitReader
             throw InsufficientBitsException("double");
 
         // double has 11 bits exponent
-        return ReadDouble(bitCount, 11 + 5);
+        return readDouble(bitCount);
     }
-    private double ReadDouble(int bitCount, int exponentCutoff)
+    private double readDouble(int bitCount)
     {
         // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
         // but before some bitCount, there simply isn't enough bits to have this strategy. Something more complicated (or simpler) is needed
@@ -227,7 +228,7 @@ public class BitReader : IBitReader
         int exponentBitCount = bitCount - significantBitCount;
 
         var significant = ReadInt64(significantBitCount);
-        var exponent = exponentBitCount == 1 ? (double)ReadUInt64(exponentBitCount) : (double)ReadInt64(exponentBitCount);
+        var exponent = exponentBitCount == 0 ? 1 : exponentBitCount == 1 ? (double)ReadUInt64(exponentBitCount) : (double)ReadInt64(exponentBitCount);
 
         var value = 2 * significant * double.Pow(2, exponent);
         return value;

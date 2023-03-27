@@ -29,20 +29,44 @@ public class BitReaderTests
     [TestMethod]
     public void SensibilityCheckOnSpecificity()
     {
-        const double init = 5;
+        const double init = 8;
         const double min = 0.5;
-        var ranges = new (int length, double maxAbsoluteRange, double minAbsolutePrecision)[] {
+        // var ranges = Enumerable.Range(3, 8).Select(i => (i, double.Pow(2, i + 4), double.Pow(2, -i)));
+        var ranges =  new (int length, double maxAbsoluteRange, double minAbsolutePrecision)[] {
             (3, init * double.Pow(2, 1), min * double.Pow(2, -1)),
             (4, init * double.Pow(2, 2), min * double.Pow(2, -2)),
-            (5, init * double.Pow(2, 3), min * double.Pow(2, -3)),
+            (5, init * double.Pow(2, 2), min * double.Pow(2, -2)),
             (6, init * double.Pow(2, 4), min * double.Pow(2, -4)),
+            (7, init * double.Pow(2, 7), min * double.Pow(2, -7)),
+            (8, init * double.Pow(2, 8), min * double.Pow(2, -7)),
+            (9, init * double.Pow(2, 16), min * double.Pow(2, -14)),
         };
 
         foreach (var (bitLength, maxRange, minPrecision) in ranges)
         {
-            Combinatorics
-            bool[] bools= new bool[bitLength];
-            
+            int combinationsCount = (int)double.Pow(2, bitLength);
+
+            var allBitCombinations = Enumerable.Range(0, combinationsCount).Select(i => new BitArray(new[] { (ulong)i }, bitLength)).ToList();
+
+            foreach (var bitarray in allBitCombinations)
+            {
+                var bitreader = new BitReader(bitarray);
+                var value = bitreader.ReadDouble(bitLength);
+                var absValue = double.Abs(value);
+
+                if (absValue == 0)
+                    Console.Write("0");
+                else
+                    Console.Write(string.Format("{0:#,0.000}", value).TrimEnd('0', '.'));
+                Console.Write(", ");
+
+                Contract.Assert(absValue <= maxRange);
+                if (absValue != 0)
+                {
+                    Contract.Assert(absValue >= minPrecision);
+                }
+            }
+            Console.WriteLine();
         }
     }
 }

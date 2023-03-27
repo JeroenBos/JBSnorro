@@ -1,16 +1,11 @@
 ﻿#nullable enable
 using JBSnorro.Diagnostics;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JBSnorro.Collections
 {
+    [DebuggerDisplay("BitArrayReadOnlySegment(Length={Length})")]
     public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     {
         internal readonly BitArray data;
@@ -163,7 +158,7 @@ namespace JBSnorro.Collections
         }
         public bool Equals(BitArray other)
         {
-            return this.data.BitSequenceEqual(other, this.start, this.Length);
+            return this.data.BitSequenceEqual(other[Range.All], this.start, this.Length);
         }
         public override int GetHashCode()
         {
