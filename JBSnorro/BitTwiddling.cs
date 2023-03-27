@@ -566,8 +566,8 @@ namespace JBSnorro
 
 
                 // compare bits before comparison full ulongs:
-                var sourceBitsBefore = getBits(source, sourceStartBitIndex, extraLengthBefore);
-                var otherBitsBefore = getBits(other, otherStartBitIndex, extraLengthBefore);
+                var sourceBitsBefore = GetBits(source, sourceStartBitIndex, extraLengthBefore);
+                var otherBitsBefore = GetBits(other, otherStartBitIndex, extraLengthBefore);
                 if (sourceBitsBefore != otherBitsBefore)
                     return false;
 
@@ -575,7 +575,7 @@ namespace JBSnorro
                 for (ulong sourceBitIndex = sourceUlongwiseComparisonStartIndex; sourceBitIndex < sourceUlongwiseComparisonEndIndex; sourceBitIndex += 64)
                 {
                     ulong sourceUlong = source[sourceBitIndex / 64];
-                    ulong otherUlong = getBits(other, otherBitIndex, 64);
+                    ulong otherUlong = GetBits(other, otherBitIndex, 64);
 
                     if (sourceUlong != otherUlong)
                         return false;
@@ -584,21 +584,35 @@ namespace JBSnorro
                 }
 
 
-
-
-                var sourceBitsAfter = getBits(source, sourceUlongwiseComparisonEndIndex, extraLengthAfter);
-                var otherBitsAfter = getBits(other, otherUlongwiseComparisonEndIndex, extraLengthAfter);
+                var sourceBitsAfter = GetBits(source, sourceUlongwiseComparisonEndIndex, extraLengthAfter);
+                var otherBitsAfter = GetBits(other, otherUlongwiseComparisonEndIndex, extraLengthAfter);
 
                 return sourceBitsAfter == otherBitsAfter;
+            }
 
-            }
-            static ulong getBits(ulong[] array, ulong bitIndex, ulong bitCount)
-            {
-                return TakeBits(first: array[bitIndex / 64],
-                                second: (int)(bitIndex / 64) + 1 >= array.Length ? 0 : array[(bitIndex / 64) + 1],
-                                start: (int)(bitIndex % 64),
-                                end: (int)(bitIndex % 64) + checked((int)bitCount));
-            }
+        }
+        internal static ulong GetBits(ulong[] array, ulong bitIndex, ulong bitCount)
+        {
+            return TakeBits(first: array[bitIndex / 64],
+                            second: (int)(bitIndex / 64) + 1 >= array.Length ? 0 : array[(bitIndex / 64) + 1],
+                            start: (int)(bitIndex % 64),
+                            end: (int)(bitIndex % 64) + checked((int)bitCount));
+        }
+        /// <summary>
+        /// Gets the bits in the specified array up to the first ulong boundary. If <paramref name="bitIndex"/> is at a ulong boundary, returns 0.
+        /// </summary>
+        internal static ulong GetBitsFrom(ulong[] array, ulong bitIndex)
+        {
+            var boundary = bitIndex.RoundUpToNearestMultipleOf(64);
+            return GetBits(array, bitIndex, boundary - bitIndex);
+        }
+        /// <summary>
+        /// Gets the bits in the specified array from the nearest ulong boundary before <paramref name="bitIndex"/> to <paramref name="bitIndex"/>. If <paramref name="bitIndex"/> is at a ulong boundary, returns 0.
+        /// </summary>
+        internal static ulong GetBitsTo(ulong[] array, ulong bitIndex)
+        {
+            var boundary = bitIndex.RoundDownToNearestMultipleOf(64);
+            return GetBits(array, boundary, bitIndex - boundary);
         }
     }
 }
