@@ -443,17 +443,32 @@ namespace JBSnorro.Tests
         [TestMethod]
         public void TestMultiULongSegmentEqualityToSegment()
         {
-            var r = new Random(50);
-            var array = new BitArray(new[] { r.NextInt64(), r.NextInt64(), r.NextInt64(), r.NextInt64() }.Map(l => (ulong)l), 240);
-            var clone = array.Clone();
-            clone.Insert(0, false);
-            clone.Insert(0, true);
-            var secondSegment = clone[2..(2 + (int)array.Length)];
+            var (array, shiftedSegment) = CreateShifted(numberOfUlongs: 4, bitLength: 120, shift: 2, seed: 50);
 
             // Act
-            bool equals = array.Equals(secondSegment);
+            bool equals = array.Equals(shiftedSegment);
 
             Contract.Assert(equals);
+        }
+
+        public static (BitArray Array, BitArrayReadOnlySegment Shifted) CreateShifted(ulong numberOfUlongs, ulong bitLength, int shift, int seed)
+        {
+            var r = new Random(seed);
+
+            var data = new ulong[numberOfUlongs];
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = (ulong)r.NextInt64();
+            }
+            var array = new BitArray(data, bitLength);
+            var clone = array.Clone();
+            for (int i = 0; i < shift; i++)
+            {
+            clone.Insert(0, false);
+
+            }
+            var segment = clone[2..(2 + (int)array.Length)];
+            return (array, segment);
         }
     }
     [TestClass]
@@ -476,4 +491,30 @@ namespace JBSnorro.Tests
             }
         }
     }
+
+    [TestClass]
+    public class BitArrayShaTests
+    {
+        [TestMethod]
+        public void TestArrayHasSameShaAsShiftedArray()
+        {
+            var (array, shifted) = BitArrayEqualityTests.CreateShifted(numberOfUlongs: 4, bitLength: 120, shift: 2, seed: 50);
+
+            var arraySha = array.ComputeSHA1();
+            var shiftedSha = shifted.ComputeSHA1();
+
+            Contract.Assert(arraySha == shiftedSha);
+        }
+        [TestMethod]
+        public void TestEmptyArrayHasSameShaAsEmptySegment()
+        {
+            var (array, shifted) = BitArrayEqualityTests.CreateShifted(numberOfUlongs: 4, bitLength: 0, shift: 5, seed: 10);
+
+            var arraySha = array.ComputeSHA1();
+            var shiftedSha = shifted.ComputeSHA1();
+
+            Contract.Assert(arraySha == shiftedSha);
+        }
+    }
+
 }

@@ -165,6 +165,15 @@ namespace JBSnorro.Collections
         {
             throw new NotImplementedException();
         }
+
+        public string ComputeSHA1()
+        {
+            // PERF
+            var copy = new BitArray(this.Length);
+            this.CopyTo(copy, 0);
+
+            return copy.ComputeSHA1();
+        }
     }
 
     public static class BitArraySegmentExtensions

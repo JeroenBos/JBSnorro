@@ -458,6 +458,29 @@ namespace JBSnorro.Collections
             return result;
         }
 
+        public string ComputeSHA1()
+        {
+            // mask the last ulong in case some bits are still set there:
+            int endULongIndex = (int)(this.Length / 64UL);
+            int remainder = (int)(this.Length % 64UL);
+            if (remainder != 0)
+            {
+                this.data[endULongIndex] = this.data[endULongIndex].Mask(0, remainder);
+            }
+
+            var data_bytes = System.Runtime.InteropServices.MemoryMarshal.AsBytes(this.data.AsSpan()[..endULongIndex]);
+            byte[] digest = new byte[20];
+            if (!SHA1.Create().TryComputeHash(data_bytes, digest, out int bytesWritten))
+            {
+                throw new Exception("Couldn't compute SHA1");
+            }
+            if (bytesWritten != digest.Length)
+            {
+                throw new Exception("Bytes not written");
+            }
+            var result = BitConverter.ToString(digest);
+            return result;
+        }
         #region Supported IList<bool> Members
 
         int IReadOnlyCollection<bool>.Count
