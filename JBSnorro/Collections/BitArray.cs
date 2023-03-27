@@ -466,9 +466,13 @@ namespace JBSnorro.Collections
             if (remainder != 0)
             {
                 this.data[endULongIndex] = this.data[endULongIndex].Mask(0, remainder);
+                endULongIndex++;
             }
 
             var data_bytes = System.Runtime.InteropServices.MemoryMarshal.AsBytes(this.data.AsSpan()[..endULongIndex]);
+#if DEBUG
+            var test = data_bytes.ToArray();
+#endif
             byte[] digest = new byte[20];
             if (!SHA1.Create().TryComputeHash(data_bytes, digest, out int bytesWritten))
             {

@@ -464,7 +464,7 @@ namespace JBSnorro.Tests
             var clone = array.Clone();
             for (int i = 0; i < shift; i++)
             {
-            clone.Insert(0, false);
+                clone.Insert(0, false);
 
             }
             var segment = clone[2..(2 + (int)array.Length)];
@@ -496,14 +496,30 @@ namespace JBSnorro.Tests
     public class BitArrayShaTests
     {
         [TestMethod]
-        public void TestArrayHasSameShaAsShiftedArray()
+        public void TestArrayHasSameShaAsShiftedSegment()
         {
-            var (array, shifted) = BitArrayEqualityTests.CreateShifted(numberOfUlongs: 4, bitLength: 120, shift: 2, seed: 50);
+            for (ulong i = 0; i < 150; i += 10)
+            {
+                var (array, shifted) = BitArrayEqualityTests.CreateShifted(numberOfUlongs: 4, bitLength: i, shift: 2, seed: 50);
 
-            var arraySha = array.ComputeSHA1();
-            var shiftedSha = shifted.ComputeSHA1();
+                var arraySha = array.ComputeSHA1();
+                var shiftedSha = shifted.ComputeSHA1();
 
-            Contract.Assert(arraySha == shiftedSha);
+                Contract.Assert(arraySha == shiftedSha);
+            }
+        }
+        [TestMethod]
+        public void TestSubsegmentDoesntHaveSameShaAsShiftedArray()
+        {
+            for (ulong i = 11; i < 150; i += 10)
+            {
+                var (array, shifted) = BitArrayEqualityTests.CreateShifted(numberOfUlongs: 4, bitLength: i, shift: 2, seed: 50);
+
+                var arraySha = array[0..10].ComputeSHA1();
+                var shiftedSha = shifted.ComputeSHA1();
+
+                Contract.Assert(arraySha != shiftedSha);
+            }
         }
         [TestMethod]
         public void TestEmptyArrayHasSameShaAsEmptySegment()
