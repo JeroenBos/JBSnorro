@@ -39,7 +39,10 @@ namespace JBSnorro
                 int result = 1;
                 foreach (T element in obj)
                 {
-                    result += element.GetHashCode() * 17;
+                    if (element is not null)
+                    {
+                        result += element.GetHashCode() * 17;
+                    }
                 }
                 return result;
             }
