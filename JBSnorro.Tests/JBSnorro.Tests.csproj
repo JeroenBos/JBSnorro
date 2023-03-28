@@ -28,12 +28,6 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-	  <Watch Remove="BitReaderTests.cs" />
-	  <Watch Remove="IEquatableIEqualityComparerTests.cs" />
-	  <Watch Remove="TypeExtensions\Overrides.cs" />
-	</ItemGroup>
-	
-	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
