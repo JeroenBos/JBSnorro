@@ -242,5 +242,35 @@ namespace JBSnorro
                 return obj.GetHashCode();
             }
         }
+
+        public static IEqualityComparer<T> Map<T, TComparable>(this IEqualityComparer<TComparable> equalityComparer, Func<T, TComparable> comparableSelector)
+        {
+            return new MappedEqualityComparer<TComparable, T>(equalityComparer, comparableSelector);
+        }
+
+        sealed class MappedEqualityComparer<TComparable, T> : IEqualityComparer<T>
+        {
+            private readonly IEqualityComparer<TComparable> equalityComparer;
+            private readonly Func<T, TComparable> comparableSelector;
+
+            public MappedEqualityComparer(IEqualityComparer<TComparable> equalityComparer, Func<T, TComparable> comparableSelector)
+            {
+                this.equalityComparer = equalityComparer;
+                this.comparableSelector = comparableSelector;
+            }
+
+            public bool Equals(T? x, T? y)
+            {
+                if (x is null) return y is null;
+                if (y is null) return false;
+                return this.equalityComparer.Equals(comparableSelector(x), comparableSelector(y));
+            }
+
+            public int GetHashCode([DisallowNull] T obj)
+            {
+                return this.equalityComparer.GetHashCode(comparableSelector(obj)!);
+            }
+        }
+
     }
 }
