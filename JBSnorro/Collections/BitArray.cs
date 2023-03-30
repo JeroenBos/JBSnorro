@@ -11,7 +11,7 @@ namespace JBSnorro.Collections
 {
     /// <summary> Represents the same idea as the BCL <see cref="System.Collections.BitArray"/>, 
     /// only it derives from <see cref="System.Collections.Generic.IList{T}"/> and <see cref="System.Collections.Generic.IReadOnlyList{T}"/>. </summary>
-    [DebuggerDisplay("BitArray(Length={Length})")]
+    [DebuggerDisplay("BitArray(Length={Length}, {this.ToString()})")]
     public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     {
         public static BitArray Empty { get; } = new BitArray(Array.Empty<bool>());
@@ -759,6 +759,17 @@ namespace JBSnorro.Collections
         {
             if (index < 0) throw new ArgumentOutOfRangeException(nameof(index));
             RemoveAt((ulong)index);
+        }
+
+        [DebuggerHidden]
+        public override string ToString()
+        {
+            return this.ToString(this.Length);
+        }
+        [DebuggerHidden]
+        public string ToString(ulong length)
+        {
+            return this.data.FormatAsBits(length);
         }
     }
 

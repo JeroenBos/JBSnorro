@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace JBSnorro.Collections
 {
-    [DebuggerDisplay("BitArrayReadOnlySegment(Length={Length})")]
+    [DebuggerDisplay("BitArrayReadOnlySegment(Length={Length}, this.ToString())")]
     public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     {
         internal readonly BitArray data;
@@ -173,6 +173,10 @@ namespace JBSnorro.Collections
             this.CopyTo(copy, 0);
 
             return copy.ComputeSHA1();
+        }
+        public override string ToString()
+        {
+            return this.data.ToString(this.Length);
         }
     }
 
