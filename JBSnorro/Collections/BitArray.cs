@@ -629,7 +629,8 @@ namespace JBSnorro.Collections
         }
         public void Insert(ulong index, bool value)
         {
-            this.data = BitTwiddling.InsertBits(this.data, new[] { index }, new[] { value }, (ulong)this.Length);
+            // PERF: create overload that takes `ref this.data` (in case there's sufficient space)
+            this.data = BitTwiddling.InsertBits(this.data, new[] { index }, new[] { value }, this.Length);
             this.Length++;
         }
         /// <summary>
