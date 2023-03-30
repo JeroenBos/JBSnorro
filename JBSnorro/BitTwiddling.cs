@@ -614,5 +614,79 @@ namespace JBSnorro
             var boundary = bitIndex.RoundDownToNearestMultipleOf(64);
             return GetBits(array, boundary, bitIndex - boundary);
         }
+
+        public static string FormatAsBits(this ulong bits, int digits = 64)
+        {
+            if (digits < 0 || digits > 64) throw new ArgumentOutOfRangeException(nameof(digits));
+
+            var builder = new StringBuilder();
+            builder.AppendAsBits(bits, digits);
+            return builder.ToString();
+        }
+        /// <summary>
+        /// Format to bits.
+        /// <seealso cref="https://stackoverflow.com/a/38422245/308451"/>
+        /// </summary>
+        internal static string AppendAsBits(this StringBuilder builder, ulong bits, int digits)
+        {
+            ulong mask = 1UL << digits - 1;
+            for (int i = 0; i < digits; i++)
+            {
+                builder.Append((bits & mask) != 0 ? '1' : '0');
+                mask >>= 1;
+                if ((i % 8) == 7 && i != digits - 1)
+                {
+                    builder.Append('_');
+                }
+            }
+            return builder.ToString();
+        }
+        [DebuggerHidden]
+        public static string FormatAsBits(this ulong[] bits, ulong? digits = null)
+        {
+            return bits.FormatAsBits(digits == null ? null : (int)digits);
+        }
+        public static string FormatAsBits(this ulong[] bits, int? digits = null)
+        {
+            const char ULONG_SEPARATOR = '+';
+            if (bits == null) throw new ArgumentNullException(nameof(bits));
+            if (digits != null && digits < 0) throw new ArgumentOutOfRangeException(nameof(digits));
+            if (digits != null && digits > bits.Length * 64) throw new ArgumentOutOfRangeException(nameof(digits));
+
+            var builder = new StringBuilder();
+
+            int ulongCount = digits == null ? bits.Length : digits.Value / 64;
+            int extraDigits = digits == null ? 0 : digits.Value % 64;
+            if (extraDigits != 0)
+            {
+                int nonFirstBlockDigits = extraDigits - (extraDigits % 8);
+                if (extraDigits % 8 != 0)
+                {
+                    builder.AppendAsBits(bits[ulongCount] >> nonFirstBlockDigits, extraDigits % 8);
+                    if (nonFirstBlockDigits != 0)
+                    {
+                        builder.Append('_');
+                    }
+                }
+
+                builder.AppendAsBits(bits[ulongCount], nonFirstBlockDigits);
+                if (ulongCount != 0)
+                {
+                    builder.Append(ULONG_SEPARATOR);
+                }
+            }
+
+            foreach (var (@ulong, isLast) in bits.Take(ulongCount).Reverse().WithIsLast())
+            {
+                builder.AppendAsBits(@ulong, 64);
+                if (!isLast)
+                {
+                    builder.Append(ULONG_SEPARATOR);
+                }
+            }
+
+
+            return builder.ToString();
+        }
     }
 }
