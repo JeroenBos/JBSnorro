@@ -155,7 +155,7 @@ namespace JBSnorro.Collections
         }
         public bool Equals(BitArrayReadOnlySegment other)
         {
-            return this.data.BitSequenceEqual(other, this.start, this.Length);
+            return this.data.BitSequenceEqual(other, this.start, this.start + this.Length);
         }
         public bool Equals(BitArray other)
         {

@@ -559,22 +559,24 @@ namespace JBSnorro
 
 
         /// <summary>
-        /// Gets whether a sequence of bits at in two ulong arrays are equal.
+        /// Gets whether a bitsequence in two ulong arrays are equal.
         /// </summary>
         /// <param name="length">The number of bits to compare for equality.</param>
-        /// <param name="sourceBitLength"> The number of bits in <paramref name="source"/>. </param>
-        /// <param name="otherBitLength"> The number of bits in <paramref name="other"/>. </param>
-        public static bool BitSequenceEqual(this ulong[] source, ulong[] other, ulong sourceStartBitIndex, ulong otherStartBitIndex, ulong length, ulong? sourceBitLength = null, ulong? otherBitLength = null)
+        /// <param name="sourceBitEnd"> Index of last bit in <paramref name="source"/> that's still considered part of the sequence. </param>
+        /// <param name="otherBitEnd"> Index of last bit in <paramref name="other"/> that's still considered part of the sequence. </param>
+        public static bool BitSequenceEqual(this ulong[] source, ulong[] other, ulong sourceStartBitIndex, ulong otherStartBitIndex, ulong length, ulong? sourceBitEnd = null, ulong? otherBitEnd = null)
         {
-            if (sourceBitLength != null && sourceBitLength > (ulong)source.Length * 64)
-                throw new ArgumentOutOfRangeException(nameof(sourceBitLength));
-            if (otherBitLength != null && otherBitLength > (ulong)other.Length * 64)
-                throw new ArgumentOutOfRangeException(nameof(otherBitLength));
-            if (length > (sourceBitLength ?? (ulong)source.Length * 64))
+            if (sourceBitEnd != null && sourceBitEnd > (ulong)source.Length * 64)
+                throw new ArgumentOutOfRangeException(nameof(sourceBitEnd));
+            if (otherBitEnd != null && otherBitEnd > (ulong)other.Length * 64)
+                throw new ArgumentOutOfRangeException(nameof(otherBitEnd));
+            if (sourceStartBitIndex + length > (sourceBitEnd ?? (ulong)source.Length * 64))
                 return false;
-            if (length > (otherBitLength ?? (ulong)other.Length * 64))
+            if (otherStartBitIndex + length > (otherBitEnd ?? (ulong)other.Length * 64))
                 return false;
-            sourceBitLength = otherBitLength = null; // doesn't make sense to use except for the range checks above
+            if (length == 0)
+                return true;
+            sourceBitEnd = otherBitEnd = null; // doesn't make sense to use except for the range checks above
 
             unchecked
             {
