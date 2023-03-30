@@ -657,6 +657,13 @@ namespace JBSnorro.Collections
             this.data = BitTwiddling.InsertBits(this.data, segment.data.data, index, segment.start, segment.Length, this.Length);
             this.Length += segment.Length;
         }
+        /// <summary>
+        /// Appends the specified segment at the end of this array.
+        /// </summary>
+        public void Add(BitArrayReadOnlySegment segment)
+        {
+            this.Insert(segment, this.Length);
+        }
         public void RemoveAt(ulong index)
         {
             this.RemoveAt(new[] { index });
