@@ -224,6 +224,27 @@ namespace JBSnorro
                     dest[bitIndex / N] &= ~flag;
             }
         }
+        /// <summary>
+        /// Creates a copy of <paramref name="source"/> and inserts a range of <paramref name="insertionBits"/>.
+        /// </summary>
+        /// <param name="source">The sequence to clone and insert into.</param>
+        /// <param name="insertionBits">The container of the sequence to insert.</param>
+        /// <param name="index">The bit index in <paramref name="source"/> to start inserting.</param>
+        /// <param name="startIndex">The index in <paramref name="insertionBits"/> of the first bit to insert. </param>
+        /// <param name="length">The number of bits from <paramref name="insertionBits"/> to insert.</param>
+        /// <param name="sourceLength">The number of bits in <paramref name="source"/> that are relevant, i.e. have to be part of the result.</param>
+        public static ulong[] InsertBits(this ulong[] source, ulong[] insertionBits, ulong index, ulong startIndex, ulong length, ulong? sourceLength)
+        {
+            sourceLength ??= (ulong)source.Length * 64UL;
+            ulong requiredBitLength = sourceLength.Value + length;
+            var result = new ulong[requiredBitLength.RoundUpToNearestMultipleOf(64) / 64];
+
+            source.CopyBitsTo(result, 0, 0, startIndex);
+            insertionBits.CopyBitsTo(result, startIndex, index, length);
+            source.CopyBitsTo(result, startIndex, startIndex + length, requiredBitLength - length - index);
+
+            return result;
+        }
         public static void CopyBitsTo(this ulong[] source, ulong[] dest, ulong sourceStart, ulong destStart, ulong length)
         {
             const int N = 64;

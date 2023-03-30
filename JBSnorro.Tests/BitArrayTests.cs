@@ -183,6 +183,56 @@ namespace JBSnorro.Tests
             var result = data.InsertBits(new[] { 4UL, 64UL + 7 }, new[] { false, false });
             Contract.AssertSequenceEqual(result, new ulong[] { 0b0001_1110_1111, 0b1111_1110, 0 });
         }
+
+        [TestMethod]
+        public void TestInsertSegmentDoesntEnlargeCapacityIfUnneeded()
+        {
+            const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            var data = new BitArray(new ulong[] { item }, 30);
+            var segment = data[0..10]; // = 11110000_10
+
+            data.Insert(segment, 0);
+
+            Contract.Assert(data.Capacity == 64);
+        }
+        [TestMethod]
+        public void TestInsertionMaintainsContinuityOfBitsOverULongs()
+        {
+            const ulong item = 0b11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111UL;
+            var data = new BitArray(new ulong[] { item }, 64);
+
+            data.Insert(new BitArray(new bool[] { false })[Range.All], 0);
+
+            Contract.Assert(data.ToString() == "1+11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111110");
+
+            data.Insert(new BitArray(new bool[] { false })[Range.All], 0);
+            Contract.Assert(data.ToString() == "11+11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111100");
+        }
+
+        [TestMethod]
+        public void TestGettingRangeMaintainsContinuityOfBitsOverULongs()
+        {
+            const ulong item = 0b11111111_11111111_11111111_11111111_11111111_11111111_11111111_11110000UL;
+            var data = new BitArray(new ulong[] { item }, 64);
+
+            // Act
+            var result = data[0..8];
+
+            Contract.Assert(result.ToString() == "11110000");
+        }
+        [TestMethod]
+        public void TestInsertSegment2()
+        {
+            const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            var data = new BitArray(new ulong[] { item }, 64);
+            BitArrayReadOnlySegment segment = data[0..10]; // = 00_11110011
+
+            data.Insert(segment, 0);
+
+            var expected = new BitArray(new[] { 0b11_11000010UL, 0b10101001_01010111_11111111_11000000_00000000_00000011_11001100_11110011UL }.Reverse().ToArray(), 74);
+            Contract.Assert(data.Capacity == 128);
+            Contract.Assert(data.Equals(expected));
+        }
     }
 
     [TestClass]
@@ -532,5 +582,51 @@ namespace JBSnorro.Tests
             Contract.Assert(arraySha == shiftedSha);
         }
     }
+    [TestClass]
+    public class BitArrayToStringTests
+    {
+        [TestMethod]
+        public void TestFormatToBitsSingleUlong()
+        {
+            const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            string expected = "11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011";
+            Contract.Assert(item.FormatAsBits() == expected);
 
+            var array = new BitArray(new[] { item }, 64);
+            Contract.Assert(array.ToString() == expected);
+        }
+        [TestMethod]
+        public void TestFormatToBitsSubstring()
+        {
+            const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            string expected = "10101010_01010101_11111111_11110000_00000000_00000000_11110011";
+            Contract.Assert(item.FormatAsBits(56) == expected);
+
+            var array = new BitArray(new[] { item }, 56);
+            Contract.Assert(array.ToString() == expected);
+        }
+        [TestMethod]
+        public void TestFormatToBitsMulti()
+        {
+            const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
+            const ulong item2 = 0b11110000_11111111_00000000_00000000_11110000_10101010_01010101_11110011UL;
+            const string EXPECTED = "11110000_11111111_00000000_00000000_11110000_10101010_01010101_11110011+11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011";
+
+            foreach (bool withExtraUlong in new[] { false, true })
+            {
+                foreach (var length in new[] { 128, 120, 121, 119, 65, 64, 63 })
+                {
+                    int underscoresToRemoveCount = length switch { 65 => 7, 64 => 8, 63 => 8, <= 120 => 1, _ => 0 };
+                    int digitsToRemoveCount = (128 - length);
+                    var expected = EXPECTED[(digitsToRemoveCount + underscoresToRemoveCount)..];
+
+                    // Act
+
+                    var array = new BitArray(withExtraUlong ? new[] { item, item2, 0UL } : new[] { item, item2 }, length);
+
+                    Contract.Assert(array.ToString() == expected);
+                }
+            }
+        }
+    }
 }

@@ -134,6 +134,13 @@ namespace JBSnorro.Collections
 
         /// <summary> Gets the number of bits in this bit array. </summary>
         public ulong Length { get; private set; }
+        /// <summary>
+        /// Gets the number of bits this bit array can currently hold.
+        /// </summary>
+        public ulong Capacity
+        {
+            get => (ulong)this.data.Length * 64UL;
+        }
 
         /// <summary>
         /// Uses the specified array directly as underlying data source.
@@ -638,6 +645,16 @@ namespace JBSnorro.Collections
             // there's still PERF to be gained by not creating a new array if it would fit, by implementing `ref this.data`
             this.data = BitTwiddling.InsertBits(this.data, sortedIndices, values, (ulong)this.Length);
             this.Length += (ulong)sortedIndices.Length;
+        }
+        /// <summary>
+        /// Inserts the specified bits at the specified index.
+        /// </summary>
+        /// <param name="segment"></param>
+        /// <param name="index"></param>
+        public void Insert(BitArrayReadOnlySegment segment, ulong index)
+        {
+            this.data = BitTwiddling.InsertBits(this.data, segment.data.data, index, segment.start, segment.Length, this.Length);
+            this.Length += segment.Length;
         }
         public void RemoveAt(ulong index)
         {
