@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using JBSnorro.Algorithms;
 using JBSnorro.Diagnostics;
 using System.Collections;
 using System.Diagnostics;
@@ -168,11 +169,21 @@ namespace JBSnorro.Collections
 
         public string ComputeSHA1()
         {
+            using var hasher = ISHAThatCanContinue.Create();
+            ComputeSHA1(hasher);
+            return hasher.ToString();
+        }
+        public void ComputeSHA1(out ISHAThatCanContinue hasher)
+        {
+            ComputeSHA1(hasher = ISHAThatCanContinue.Create());
+        }
+        public void ComputeSHA1(ISHAThatCanContinue hasher)
+        {
             // PERF
             var copy = new BitArray(this.Length);
             this.CopyTo(copy, 0);
 
-            return copy.ComputeSHA1();
+            copy.ComputeSHA1(hasher);
         }
         public override string ToString()
         {

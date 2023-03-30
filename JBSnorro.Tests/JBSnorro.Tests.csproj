@@ -28,6 +28,10 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
+	  <Watch Remove="Algorithms\ISHAThatCanContinueTests.cs" />
+	</ItemGroup>
+	
+	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>

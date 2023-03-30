@@ -1,10 +1,12 @@
 ﻿#nullable enable
 using JBSnorro;
+using JBSnorro.Algorithms;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Security.Cryptography;
+using System.Reflection;
 using static JBSnorro.Global;
 
 namespace JBSnorro.Collections
@@ -467,6 +469,16 @@ namespace JBSnorro.Collections
 
         public string ComputeSHA1()
         {
+            using var hasher = ISHAThatCanContinue.Create();
+            ComputeSHA1(hasher);
+            return hasher.ToString();
+        }
+        public void ComputeSHA1(out ISHAThatCanContinue hasher)
+        {
+            ComputeSHA1(hasher = ISHAThatCanContinue.Create());
+        }
+        public void ComputeSHA1(ISHAThatCanContinue hasher)
+        {
             // mask the last ulong in case some bits are still set there:
             int endULongIndex = (int)(this.Length / 64UL);
             int remainder = (int)(this.Length % 64UL);
@@ -480,18 +492,10 @@ namespace JBSnorro.Collections
 #if DEBUG
             var test = data_bytes.ToArray();
 #endif
-            byte[] digest = new byte[20];
-            if (!SHA1.Create().TryComputeHash(data_bytes, digest, out int bytesWritten))
-            {
-                throw new Exception("Couldn't compute SHA1");
-            }
-            if (bytesWritten != digest.Length)
-            {
-                throw new Exception("Bytes not written");
-            }
-            var result = BitConverter.ToString(digest);
-            return result;
+            hasher.AppendHashData(data_bytes);
         }
+
+
         #region Supported IList<bool> Members
 
         int IReadOnlyCollection<bool>.Count
@@ -949,3 +953,4 @@ namespace JBSnorro.Collections
         }
     }
 }
+
