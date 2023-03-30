@@ -568,7 +568,7 @@ namespace JBSnorro
         {
             if (sourceBitLength != null && sourceBitLength > (ulong)source.Length * 64)
                 throw new ArgumentOutOfRangeException(nameof(sourceBitLength));
-            if (otherBitLength != null && otherBitLength > (ulong)source.Length * 64)
+            if (otherBitLength != null && otherBitLength > (ulong)other.Length * 64)
                 throw new ArgumentOutOfRangeException(nameof(otherBitLength));
             if (length > (sourceBitLength ?? (ulong)source.Length * 64))
                 return false;
