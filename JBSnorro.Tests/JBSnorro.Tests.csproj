@@ -27,9 +27,6 @@
 		<RunSettingsFilePath>$(MSBuildThisFileDirectory)../test.runsettings</RunSettingsFilePath>
 	</PropertyGroup>
 	
-	<ItemGroup>
-	  <Watch Remove="Algorithms\ISHAThatCanContinueTests.cs" />
-	</ItemGroup>
 	
 	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">
