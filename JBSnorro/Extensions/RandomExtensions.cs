@@ -62,6 +62,11 @@ public static class RandomExtensions
     /// <param name="max">Exclusive</param>
     public static ulong[] ManyUnique(this Random random, int drawCount, ulong max, ulong min = 0)
     {
+        if (drawCount == 0)
+        {
+            return Array.Empty<ulong>();
+        }
+
         if (max - min > 10UL * (ulong)drawCount)
         {
             var result = new HashSet<ulong>();
@@ -87,7 +92,7 @@ public static class RandomExtensions
     {
         if (exclusions == null || exclusions.Length == 0)
             return ManyUnique(random, drawCount, max, min);
-        if (drawCount <= 0)
+        if (drawCount < 0)
             throw new ArgumentOutOfRangeException(nameof(drawCount));
         if (min < 0)
             throw new ArgumentOutOfRangeException(nameof(min));
