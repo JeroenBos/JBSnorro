@@ -578,21 +578,24 @@ namespace JBSnorro
                 return true;
             sourceBitEnd = otherBitEnd = null; // doesn't make sense to use except for the range checks above
 
-            unchecked
+            checked
             {
                 ulong sourceUlongwiseComparisonStartIndex = sourceStartBitIndex.RoundUpToNearestMultipleOf(64UL);
                 ulong sourceUlongwiseComparisonEndIndex = (sourceStartBitIndex + length).RoundDownToNearestMultipleOf(64UL);
                 ulong extraLengthBefore = Math.Min(sourceUlongwiseComparisonStartIndex - sourceStartBitIndex, length);
                 ulong extraLengthAfter = sourceStartBitIndex + length - sourceUlongwiseComparisonEndIndex;
                 ulong otherUlongwiseComparisonStartIndex = otherStartBitIndex + extraLengthBefore;
-                ulong otherUlongwiseComparisonEndIndex = otherUlongwiseComparisonStartIndex + sourceUlongwiseComparisonEndIndex - sourceUlongwiseComparisonStartIndex;
-
+                ulong otherUlongwiseComparisonEndIndex;
 
                 // compare bits before comparison full ulongs:
                 var sourceBitsBefore = GetBits(source, sourceStartBitIndex, extraLengthBefore);
                 var otherBitsBefore = GetBits(other, otherStartBitIndex, extraLengthBefore);
                 if (sourceBitsBefore != otherBitsBefore)
                     return false;
+                if (sourceUlongwiseComparisonStartIndex > sourceUlongwiseComparisonEndIndex)
+                    return true;
+                else
+                    otherUlongwiseComparisonEndIndex = otherUlongwiseComparisonStartIndex + (sourceUlongwiseComparisonEndIndex - sourceUlongwiseComparisonStartIndex);
 
                 ulong otherBitIndex = otherUlongwiseComparisonStartIndex;
                 for (ulong sourceBitIndex = sourceUlongwiseComparisonStartIndex; sourceBitIndex < sourceUlongwiseComparisonEndIndex; sourceBitIndex += 64)
@@ -606,7 +609,7 @@ namespace JBSnorro
                     otherBitIndex += 64;
                 }
 
-
+                
                 var sourceBitsAfter = GetBits(source, sourceUlongwiseComparisonEndIndex, extraLengthAfter);
                 var otherBitsAfter = GetBits(other, otherUlongwiseComparisonEndIndex, extraLengthAfter);
 
@@ -669,9 +672,9 @@ namespace JBSnorro
         {
             return bits.FormatAsBits(digits == null ? null : (int)digits);
         }
+        private const char ULONG_SEPARATOR = '+';
         public static string FormatAsBits(this ulong[] bits, int? digits = null)
         {
-            const char ULONG_SEPARATOR = '+';
             if (bits == null) throw new ArgumentNullException(nameof(bits));
             if (digits != null && digits < 0) throw new ArgumentOutOfRangeException(nameof(digits));
             if (digits != null && digits > bits.Length * 64) throw new ArgumentOutOfRangeException(nameof(digits));
@@ -709,6 +712,29 @@ namespace JBSnorro
             }
 
 
+            return builder.ToString();
+        }
+        public static string FormatAsBits(this ulong[] bits, ulong startIndex, ulong length)
+        {
+            // PERF
+            var range = new Range(checked((int)startIndex), checked((int)(startIndex + length)));
+            var segment = new BitArray(bits, bits.Length * 64)[range];
+            var builder = new StringBuilder();
+            foreach (var (bit, bitIndex) in segment.WithIndex().Reverse())
+            {
+                builder.Append(bit ? 1 : 0);
+                if (bitIndex != 0)
+                {
+                    if ((bitIndex % 64) == 0)
+                    {
+                        builder.Append(ULONG_SEPARATOR);
+                    }
+                    else if ((bitIndex % 8) == 0)
+                    {
+                        builder.Append('_');
+                    }
+                }
+            }
             return builder.ToString();
         }
     }

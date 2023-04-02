@@ -625,7 +625,7 @@ namespace JBSnorro.Collections
         }
         public bool BitSequenceEqual(BitArrayReadOnlySegment other, ulong sourceStartBitIndex, ulong sourceBitLength)
         {
-            return this.data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitLength, other.data.Length);
+            return this.data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitEnd: sourceStartBitIndex + sourceBitLength, otherBitEnd: other.start + other.Length);
         }
         public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
         {
@@ -799,6 +799,11 @@ namespace JBSnorro.Collections
         public string ToString(ulong length)
         {
             return this.data.FormatAsBits(length);
+        }
+        [DebuggerHidden]
+        public string ToString(ulong startIndex, ulong length)
+        {
+            return this.data.FormatAsBits(startIndex, length);
         }
     }
 

@@ -471,8 +471,10 @@ namespace JBSnorro.Tests
 
             // Act
             bool equals = array.Equals(segment);
+            bool equals2 = segment.Equals(array);
 
             Contract.Assert(equals);
+            Contract.Assert(equals2);
         }
         [TestMethod]
         public void TestDualULongSegmentEqualityToSegment()

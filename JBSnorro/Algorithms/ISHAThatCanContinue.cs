@@ -7,13 +7,19 @@ namespace JBSnorro.Algorithms;
 
 public interface ISHAThatCanContinue : IDisposable
 {
+    /// <summary>
+    /// Creates a <see cref="ISHAThatCanContinue"/> that cannot continue.
+    /// </summary>
     public static ISHAThatCanContinue CreateOneShot()
     {
         return new SHA1Wrapper();
     }
+    /// <summary>
+    /// Creates a <see cref="ISHAThatCanContinue"/> that can continue, i.e. append data multiple times.
+    /// </summary>
     public static ISHAThatCanContinue Create()
     {
-        return new SHA1CryptoServiceProvider(); // SHA1ImplementationThatCanContinue.Create();
+        return new SHA1CryptoServiceProvider();
     }
 
     void AppendHashData(ReadOnlySpan<byte> source);
@@ -24,7 +30,7 @@ public interface ISHAThatCanContinue : IDisposable
     }
     string ToString();
 
-    public sealed class SHA1CryptoServiceProvider : SHA1, ISHAThatCanContinue
+    private sealed class SHA1CryptoServiceProvider : SHA1, ISHAThatCanContinue
     {
         private readonly IncrementalHash _incrementalHash;
         private bool _running;
@@ -116,102 +122,8 @@ public interface ISHAThatCanContinue : IDisposable
             return result;
         }
     }
-    private sealed class SHA1ImplementationThatCanContinue : SHA1, ISHAThatCanContinue
-    {
-        public new static SHA1ImplementationThatCanContinue Create() => new();
 
-        private readonly byte[] digest = new byte[20];
-        private SHA1ImplementationThatCanContinue()
-        {
-            _hashProvider = new HashProvider("SHA1");
-        }
-        sealed class HashProvider : IDisposable
-        {
-            private delegate void AppendHashDataROS(ReadOnlySpan<byte> source);
-            private static List<Type> x = Assembly.GetAssembly(typeof(SHA1))!.GetTypes().Where(t => t.FullName.Contains("SHA")).ToList();
-            private static readonly Type t = Assembly.GetAssembly(typeof(SHA1))!.GetTypes().Where(t => t.FullName == "System.Security.Cryptography.SHAManagedHashProvider").First()!;
-            private static readonly ConstructorInfo createHashProvider = t.GetConstructor(new[] { typeof(string) })!;
-            private static readonly MethodInfo _appendHashDataAII = t.GetMethod("AppendHashData", new Type[] { typeof(byte[]), typeof(int), typeof(int) })!;
-            private static readonly PropertyInfo hashSizeInBytes = t.GetProperty("hashSizeInBytes")!;
-            private readonly MethodInfo finalizeHashAndReset = t.GetMethod("FinalizeHashAndReset", Array.Empty<Type>())!;
-
-            private readonly AppendHashDataROS _appendHashDataROS;
-            private readonly object obj;
-            public HashProvider(string shaId)
-            {
-                this.obj = createHashProvider.Invoke(new object[] { shaId });
-                this._appendHashDataROS = t.GetMethod("AppendHashData", new Type[] { typeof(ReadOnlySpan<byte>) })!.CreateDelegate<AppendHashDataROS>(this.obj);
-            }
-
-            public void AppendHashData(ReadOnlySpan<byte> source)
-            {
-                _appendHashDataROS(source);
-            }
-            public void AppendHashData(byte[] a, int i, int c)
-            {
-                _appendHashDataAII.Invoke(obj, new object[] { a, i, c });
-            }
-            public int HashSizeInBytes
-            {
-                get => (int)hashSizeInBytes.GetValue(this.obj)!;
-            }
-            public byte[] FinalizeHashAndReset()
-            {
-                return (byte[])finalizeHashAndReset.Invoke(this.obj, Array.Empty<object>())!;
-            }
-            public void Dispose()
-            {
-                ((IDisposable)this.obj).Dispose();
-            }
-        }
-
-        private readonly HashProvider _hashProvider;
-        private bool disposed = false;
-        protected sealed override void HashCore(byte[] array, int ibStart, int cbSize)
-        {
-            if (disposed) throw new ObjectDisposedException(typeof(SHA1ImplementationThatCanContinue).Name);
-
-            _hashProvider.AppendHashData(array, ibStart, cbSize);
-        }
-        protected sealed override void HashCore(ReadOnlySpan<byte> source)
-        {
-            if (disposed) throw new ObjectDisposedException(typeof(SHA1ImplementationThatCanContinue).Name);
-            _hashProvider.AppendHashData(source);
-        }
-        protected sealed override byte[] HashFinal()
-        {
-            if (disposed) throw new ObjectDisposedException(typeof(SHA1ImplementationThatCanContinue).Name);
-
-            disposed = true;
-            return _hashProvider.FinalizeHashAndReset();
-        }
-        protected sealed override bool TryHashFinal(Span<byte> destination, out int bytesWritten)
-        {
-            bytesWritten = -1;
-            return true; // we must make the base implementation do what we want in ISHAThatCanContinue.AppendHashData
-        }
-        public sealed override void Initialize() { }
-
-        public new void Dispose()
-        {
-            _hashProvider.Dispose();
-            base.Dispose();
-        }
-
-        public override string ToString()
-        {
-            var digest = HashFinal();
-            var result = BitConverter.ToString(digest);
-            return result;
-        }
-
-        void ISHAThatCanContinue.AppendHashData(ReadOnlySpan<byte> source)
-        {
-            if (!this.TryComputeHash(source, this.digest, out int _))
-                throw new Exception("TryComputeHash returned false");
-        }
-    }
-    internal class SHA1Wrapper : ISHAThatCanContinue
+    internal sealed class SHA1Wrapper : ISHAThatCanContinue
     {
         private readonly SHA1 sha = SHA1.Create();
         private bool disposed;

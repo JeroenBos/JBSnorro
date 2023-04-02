@@ -274,6 +274,7 @@ public class BitReader : IBitReader
     /// <summary>
     /// Gets the index in the stream the pattern occurs at.
     /// </summary>
+    /// <returns>-1 if not found.</returns>
     public long IndexOf(ulong item, int itemLength = 64)
     {
         Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
@@ -300,15 +301,36 @@ public class BitReader : IBitReader
     /// <summary>
     /// Gets the index in the stream the pattern occurs at.
     /// </summary>
-    public int Find(ulong item, int itemLength, ulong startBitIndex)
+    /// <returns>-1 if not found.</returns>
+    public long Find(ulong item, int itemLength, ulong startBitIndex)
+    {
+        Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
+        Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
+        Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= this.Length);
+        Contract.Requires<NotImplementedException>(itemLength <= 64);
+
+        this.Seek(startBitIndex);
+        return this.IndexOf(item, itemLength);
+    }
+    /// <summary>
+    /// Gets all indices in the stream the pattern occurs at.
+    /// </summary>
+    public IEnumerable<long> FindAll(ulong item, int itemLength, ulong startBitIndex = 0)
     {
         Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
         Contract.Requires<ArgumentOutOfRangeException>(itemLength <= 64);
         Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
         Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= this.Length);
 
-        this.Seek(startBitIndex);
-        return this.Find(item, itemLength, startBitIndex);
+        ulong nextBitIndex = startBitIndex;
+        while (true)
+        {
+            long result = this.Find(item, itemLength, nextBitIndex);
+            if (result == -1)
+                yield break;
+            yield return result;
+            nextBitIndex = checked((ulong)result + (ulong)itemLength);
+        }
     }
 
 
