@@ -282,11 +282,12 @@ public class BitReader : IBitReader
         checked
         {
             ulong mask = BitArrayExtensions.LowerBitsMask(itemLength);
+            ulong maskedItem = item & mask;
 
             for (; this.current + (ulong)itemLength < this.Length; this.current -= ((ulong)itemLength - 1))
             {
                 ulong value = this.ReadUInt64(itemLength);
-                if (((value ^ item) & mask) == mask)
+                if (value == maskedItem)
                 {
                     long currentIndex = (long)this.current;
                     return currentIndex - itemLength;

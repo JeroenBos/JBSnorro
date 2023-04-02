@@ -582,7 +582,7 @@ namespace JBSnorro
             {
                 ulong sourceUlongwiseComparisonStartIndex = sourceStartBitIndex.RoundUpToNearestMultipleOf(64UL);
                 ulong sourceUlongwiseComparisonEndIndex = (sourceStartBitIndex + length).RoundDownToNearestMultipleOf(64UL);
-                ulong extraLengthBefore = sourceUlongwiseComparisonStartIndex - sourceStartBitIndex;
+                ulong extraLengthBefore = Math.Min(sourceUlongwiseComparisonStartIndex - sourceStartBitIndex, length);
                 ulong extraLengthAfter = sourceStartBitIndex + length - sourceUlongwiseComparisonEndIndex;
                 ulong otherUlongwiseComparisonStartIndex = otherStartBitIndex + extraLengthBefore;
                 ulong otherUlongwiseComparisonEndIndex = otherUlongwiseComparisonStartIndex + sourceUlongwiseComparisonEndIndex - sourceUlongwiseComparisonStartIndex;
