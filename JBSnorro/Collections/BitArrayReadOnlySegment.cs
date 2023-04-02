@@ -154,9 +154,15 @@ namespace JBSnorro.Collections
                 _ => false
             };
         }
+        public bool Equals(ulong other)
+        {
+            if (this.Length > 64)
+                return false;
+            return this.Equals(new BitArray(new ulong[] { other }, this.Length));
+        }
         public bool Equals(BitArrayReadOnlySegment other)
         {
-            return this.data.BitSequenceEqual(other, this.start, this.start + this.Length);
+            return this.data.BitSequenceEqual(other, this.start, this.Length);
         }
         public bool Equals(BitArray other)
         {
