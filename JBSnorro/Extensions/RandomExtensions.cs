@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,16 +59,63 @@ public static class RandomExtensions
     /// <summary>
     /// Generates many unique random numbers. Returned in random order.
     /// </summary>
-    public static ulong[] ManyUnique(this Random random, int drawCount, int max, int min = 0)
+    /// <param name="max">Exclusive</param>
+    public static ulong[] ManyUnique(this Random random, int drawCount, ulong max, ulong min = 0)
     {
-        // PERF: if max is way larger than drawCount, I'm sure there's a more efficient implementation
+        if (max - min > 10UL * (ulong)drawCount)
+        {
+            var result = new HashSet<ulong>();
+            while (result.Count != drawCount)
+            {
+                var r = random.NextUInt64(min, max);
+                if (!result.Contains(r))
+                    result.Add(r);
+            }
+            return result.ToArray();
+        }
+
 
         var list = new int[max];
-        for (int i = 0; i < max; i++)
+        for (int i = 0; i < (int)max; i++)
             list[i] = i;
         list.Shuffle(random);
 
-        return list.Take(drawCount).Select(i => (ulong)(i + min)).ToArray();
+        return list.Take(drawCount).Select(i => (ulong)i + min).ToArray();
+    }
+    /// <param name="max">Exclusive</param>
+    public static ulong[] ManyUnique(this Random random, int drawCount, ulong max, ulong min = 0, params ulong[] exclusions)
+    {
+        if (exclusions == null || exclusions.Length == 0)
+            return ManyUnique(random, drawCount, max, min);
+        if (drawCount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(drawCount));
+        if (min < 0)
+            throw new ArgumentOutOfRangeException(nameof(min));
+        if (min >= max)
+            throw new ArgumentOutOfRangeException(nameof(min));
+        if (max - min - (ulong)exclusions.Length < (ulong)drawCount)
+            throw new ArgumentException("Too many excluded", nameof(exclusions));
+        Array.Sort(exclusions);
+        for (int i = 0; i < exclusions.Length - 1; i++)
+        {
+            if (exclusions[i] == exclusions[i + 1])
+                throw new ArgumentException("Duplicate entries not allowed", nameof(exclusions));
+            if (exclusions[0] < min)
+                throw new ArgumentOutOfRangeException("An exclusion is below min", nameof(exclusions));
+            if (exclusions[^-1] > max)
+                throw new ArgumentOutOfRangeException("An exclusion is above max", nameof(exclusions));
+            if (exclusions[^-1] > max - (ulong)exclusions.Length)
+                throw new NotImplementedException("Algorithm wouldn't work");
+        }
+
+        return random.ManyUnique(drawCount, max - (ulong)exclusions.Length, min)
+              .Map((ulong i) =>
+              {
+                  int index = exclusions.IndexOf(i);
+                  if (index == -1)
+                      return i;
+                  return max - 1 - (ulong)index /*"- 1" because max is exclusive*/;
+              });
     }
 
     public static ulong NextUInt64(this Random random)
@@ -82,6 +130,14 @@ public static class RandomExtensions
         if (maxValue > long.MaxValue) throw new NotImplementedException("maxValue > long.MaxValue");
 
         return (ulong)random.NextInt64((long)maxValue);
+    }
+    /// <param name="maxValue">Exclusive</param>
+    public static ulong NextUInt64(this Random random, ulong minValue, ulong maxValue)
+    {
+        if (maxValue > long.MaxValue) throw new NotImplementedException("maxValue > long.MaxValue");
+        if (minValue > maxValue) throw new NotImplementedException("minValue > maxValue");
+
+        return minValue + (ulong)random.NextInt64((long)(maxValue - minValue));
     }
 
     /// <summary>
