@@ -79,7 +79,22 @@ public static class TempFileCleanup
         logger?.LogInfo($"{fullpath}: explicitly cleaning up");
         return CleanupLine(ToLine(fullpath, TimeSpan.Zero), ignoreTimestamp: true);
     }
-
+    public static IDisposable CreateTempFile(out string path, string extension = "")
+    {
+        if (string.IsNullOrEmpty(extension))
+        {
+            path = Path.GetTempFileName();
+        }
+        else
+        {
+            path = Path.Join(Path.GetTempPath(), Guid.NewGuid().ToString(), extension);
+            using (var writer = File.Create(path))
+            {
+                // just touching the file
+            }
+        }
+        return Register(path) as IDisposable ?? Disposable.Empty;
+    }
     private static Task<string[]> ReadLines(string configPath)
     {
         return Retry(Append);
