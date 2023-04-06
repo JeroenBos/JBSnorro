@@ -127,7 +127,7 @@ public static class RandomExtensions
     {
         var a = (ulong)random.NextInt64(0, (long)uint.MaxValue + 1);
         var b = (ulong)random.NextInt64(0, (long)uint.MaxValue + 1);
-        return a | (b >> 32);
+        return a | (b << 32);
     }
     /// <param name="maxValue">Exclusive.</param>
     public static ulong NextUInt64(this Random random, ulong maxValue)
