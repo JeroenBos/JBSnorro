@@ -53,6 +53,7 @@ namespace JBSnorro.Collections
         }
 
         private ulong[] data;
+        public ulong[] UnderlyingArray => data;
         /// <summary> Gets or sets the flag at the specified index in this array is set. </summary>
         public bool this[int index]
         {
