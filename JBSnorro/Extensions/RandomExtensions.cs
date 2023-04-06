@@ -1,10 +1,13 @@
 ﻿#nullable enable
+using System.Reflection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
+using JBSnorro.Text.Json;
 
 namespace JBSnorro.Extensions;
 
@@ -280,4 +283,74 @@ public static class RandomExtensions
                      .Scan((a, b) => a + b, 0d);
     }
 
+
+    public static JsonConverter<Random> JsonConverter { get; } = new JsonConverterBy2<Random, RandomState>(
+        state =>
+        {
+            var result = new Random(0); // seed value is important, but presence is important as it selects a different implementation
+            RandomState.SetState(result, state);
+            return result;
+        },
+        RandomState.GetState!);
+
+
+    /// <summary>
+    /// <seealso cref="https://stackoverflow.com/a/71812953/308451"/>
+    /// </summary>
+    private struct RandomState
+    {
+        static RandomState()
+        {
+            ImplInfo = typeof(Random).GetField("_impl", BindingFlags.Instance | BindingFlags.NonPublic)!;
+            PrngInfo = Type.GetType(Net5CompatSeedImplName)!.GetField("_prng", BindingFlags.Instance | BindingFlags.NonPublic)!;
+            Type compatPrngType = Type.GetType(CompatPrngName)!;
+            seedArrayInfo = compatPrngType.GetField(SeedArrayInfoName, BindingFlags.Instance | BindingFlags.NonPublic)!;
+            inextInfo = compatPrngType.GetField(InextInfoName, BindingFlags.Instance | BindingFlags.NonPublic)!;
+            inextpInfo = compatPrngType.GetField(InextpInfoName, BindingFlags.Instance | BindingFlags.NonPublic)!;
+        }
+        public const string CompatPrngName = "System.Random+CompatPrng";
+        public const string Net5CompatSeedImplName = "System.Random+Net5CompatSeedImpl";
+        public const string SeedArrayInfoName = "_seedArray";
+        public const string InextInfoName = "_inext";
+        public const string InextpInfoName = "_inextp";
+        private static readonly FieldInfo ImplInfo;
+        private static readonly FieldInfo PrngInfo;
+        private static readonly FieldInfo seedArrayInfo;
+        private static readonly FieldInfo inextInfo;
+        private static readonly FieldInfo inextpInfo;
+
+        public int[] seedState { get; set; }
+        public int inext { get; set; }
+        public int inextp { get; set; }
+        public static RandomState GetState(Random random)
+        {
+            object o = GetCompatPrng(random);
+            RandomState state = new RandomState();
+            state.seedState = (int[])seedArrayInfo.GetValue(o)!;
+            state.inext = (int)inextInfo.GetValue(o)!;
+            state.inextp = (int)inextpInfo.GetValue(o)!;
+            return state;
+
+        }
+        //Random > Impl > CompatPrng
+        public static object GetImpl(Random random) => ImplInfo.GetValueDirect(__makeref(random))!;
+        public static object GetCompatPrng(object impl) => PrngInfo.GetValueDirect(__makeref(impl))!;
+        public static object GetCompatPrng(Random random)
+        {
+            object impl = GetImpl(random);
+            return PrngInfo.GetValueDirect(__makeref(impl))!;
+        }
+        public static void SetState(Random random, RandomState state)
+        {
+            object impl = GetImpl(random);
+
+            object prng = PrngInfo.GetValue(impl)!;
+
+            seedArrayInfo.SetValue(prng, state.seedState);
+            inextInfo.SetValue(prng, state.inext);
+            inextpInfo.SetValue(prng, state.inextp);
+
+            PrngInfo.SetValue(impl, prng);
+        }
+    }
 }
