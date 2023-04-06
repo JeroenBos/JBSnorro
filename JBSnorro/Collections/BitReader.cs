@@ -219,6 +219,27 @@ public class BitReader : IBitReader
         // double has 11 bits exponent
         return readDouble(bitCount);
     }
+    /// <summary>
+    /// First reads a number of how many bits to read, and then reads that number of bits as a float point number.
+    /// </summary>
+    public double ReadVariableFloatingPoint(int maxBitCount = 32)
+    {
+        if (maxBitCount < 2 || maxBitCount > 64)
+            throw new ArgumentException(nameof(maxBitCount));
+        if (RemainingLength < 3)
+            throw InsufficientBitsException("variable floating point");
+
+        if (RemainingLength < 7)
+            return this.readDouble((int)RemainingLength);
+
+        int bitsToRead = (int)this.ReadUInt32(5);
+        int clampedBitsToRead = Math.Max(2, Math.Min(maxBitCount, bitsToRead));
+        if ((ulong)clampedBitsToRead > RemainingLength)
+        {
+            clampedBitsToRead = (int)RemainingLength;
+        }
+        return readDouble(clampedBitsToRead);
+    }
     private double readDouble(int bitCount)
     {
         // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
