@@ -33,8 +33,8 @@ public interface IBitReader
     long IndexOf(ulong item, int itemLength);
     
     IBitReader Clone();
-    BitArrayReadOnlySegment RemainingSegment { get; }
-    BitArrayReadOnlySegment this[Range range] { get; }
+    /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
+    IBitReader this[Range range] { get; }
 }
 [DebuggerDisplay("{ToDebuggerDisplay()}")]
 public class BitReader : IBitReader
@@ -349,15 +349,6 @@ public class BitReader : IBitReader
         this.data.CopyTo(dest, destBitIndex);
 
     }
-    // mostly you want RemainingSegment anyway...
-    // public BitArrayReadOnlySegment ToBitArraySegment()
-    // {
-    //     checked
-    //     {
-    //         return this.data[new Range((int)this.startOffset, (int)this.startOffset + (int)this.Length)];
-    //     }
-    // }
-
     private string ToDebuggerDisplay()
     {
         return $"BitReader({startOffset}..[|{current}|]..{End}, Length={this.Length}/{this.data.Length}, Remaining={this.RemainingLength})";
@@ -369,13 +360,13 @@ public class BitReader : IBitReader
         result.current = this.current;
         return result;
     }
-    public BitArrayReadOnlySegment this[Range range]
+    /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
+    public IBitReader this[Range range]
     {
         get
         {
             var (offset, length) = range.GetOffsetAndLength(checked((int)this.Length));
-            return this.data[new Range((int)this.startOffset + offset, length)];
+            return new BitReader(this.data, this.startOffset + (ulong)offset, (ulong)length);
         }
     }
-
 }
