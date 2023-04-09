@@ -3197,6 +3197,43 @@ namespace JBSnorro
             return (float)Math.Sqrt(sum / count);
         }
         /// <summary>
+        /// Gets the standard deviation of the specified numbers.
+        /// </summary>
+        /// <param name="average">Provide the average as performance optimization.</param>
+        public static float StandardDeviation(this IEnumerable<float> numbers, out float average)
+        {
+            average = numbers.Average();
+            return StandardDeviation(numbers, average);
+        }
+        /// <summary>
+        /// Gets the standard deviation of the specified numbers.
+        /// </summary>
+        /// <param name="average">Provide the average as performance optimization.</param>
+        public static float StandardDeviation(this IEnumerable<int> numbers, float? average = null)
+        {
+            double μ = average ?? numbers.Average();
+
+            int count = 0;
+            double sum = 0;
+            foreach (var number in numbers)
+            {
+                sum += (number - μ) * (number - μ);
+                count++;
+            }
+            if (count == 0)
+                return 0;
+            return (float)Math.Sqrt(sum / count);
+        }
+        /// <summary>
+        /// Gets the standard deviation of the specified numbers.
+        /// </summary>
+        /// <param name="average">Provide the average as performance optimization.</param>
+        public static float StandardDeviation(this IEnumerable<int> numbers, out float average)
+        {
+            average = (float)numbers.Average();
+            return StandardDeviation(numbers, average);
+        }
+        /// <summary>
         /// Shuffles the specified list.
         /// </summary>
         public static void Shuffle<T>(this IList<T> list, Random? random = null)

@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using static JBSnorro.Global;
 
 namespace JBSnorro.Collections
@@ -53,7 +54,7 @@ namespace JBSnorro.Collections
         }
 
         private ulong[] data;
-        public ulong[] UnderlyingArray => data;
+        public Span<byte> UnderlyingData => MemoryMarshal.AsBytes(this.data.AsSpan());
         /// <summary> Gets or sets the flag at the specified index in this array is set. </summary>
         public bool this[int index]
         {
@@ -236,6 +237,19 @@ namespace JBSnorro.Collections
 
             foreach (int index in indicesOfTrueBits)
                 this[index] = true;
+        }
+        /// <summary>
+        /// Copies the bytes into a ulong[] and uses that as backing array.
+        /// </summary>
+        public BitArray(ReadOnlySpan<byte> bytes, ulong length)
+            : this(MarshalToUlong(bytes), length)
+        {
+        }
+        private static ulong[] MarshalToUlong(ReadOnlySpan<byte> bytes)
+        {
+            var result = new ulong[bytes.Length / 8];
+            bytes.CopyTo(MemoryMarshal.AsBytes(result.AsSpan()));
+            return result;
         }
         /// <summary> Creates a new bit array from the specified bytes (i.e. concat all bytes, each representing 8 bits). </summary>
         public BitArray(IEnumerable<byte> bytes) : this(bytes.SelectMany(b => ToBits(b)))

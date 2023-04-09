@@ -284,21 +284,28 @@ public static class RandomExtensions
     }
 
 
-    public static JsonConverter<Random> JsonConverter { get; } = new JsonConverterBy2<Random, RandomState>(
-        state =>
-        {
-            var result = new Random(0); // seed value is important, but presence is important as it selects a different implementation
-            RandomState.SetState(result, state);
-            return result;
-        },
-        RandomState.GetState!);
-
+    public static JsonConverter<Random> JsonConverter { get; } = new JsonConverterBy2<Random, RandomState>(RandomState.ToRandom, RandomState.GetState!);
+    public static RandomState ToState(this Random random)
+    {
+        return RandomState.GetState(random);
+    }
+    public static string Hash(this Random random)
+    {
+        return string.Format("{0:X8}", random.ToState().GetHashCode());
+    }
 
     /// <summary>
     /// <seealso cref="https://stackoverflow.com/a/71812953/308451"/>
     /// </summary>
-    private struct RandomState
+    public struct RandomState
     {
+        public static Random ToRandom(RandomState state)
+        {
+            var result = new Random(0); // seed value is important, but presence is important as it selects a different implementation
+            SetState(result, state);
+            return result;
+        }
+
         static RandomState()
         {
             ImplInfo = typeof(Random).GetField("_impl", BindingFlags.Instance | BindingFlags.NonPublic)!;
@@ -308,11 +315,11 @@ public static class RandomExtensions
             inextInfo = compatPrngType.GetField(InextInfoName, BindingFlags.Instance | BindingFlags.NonPublic)!;
             inextpInfo = compatPrngType.GetField(InextpInfoName, BindingFlags.Instance | BindingFlags.NonPublic)!;
         }
-        public const string CompatPrngName = "System.Random+CompatPrng";
-        public const string Net5CompatSeedImplName = "System.Random+Net5CompatSeedImpl";
-        public const string SeedArrayInfoName = "_seedArray";
-        public const string InextInfoName = "_inext";
-        public const string InextpInfoName = "_inextp";
+        internal const string CompatPrngName = "System.Random+CompatPrng";
+        internal const string Net5CompatSeedImplName = "System.Random+Net5CompatSeedImpl";
+        internal const string SeedArrayInfoName = "_seedArray";
+        internal const string InextInfoName = "_inext";
+        internal const string InextpInfoName = "_inextp";
         private static readonly FieldInfo ImplInfo;
         private static readonly FieldInfo PrngInfo;
         private static readonly FieldInfo seedArrayInfo;
@@ -333,14 +340,14 @@ public static class RandomExtensions
 
         }
         //Random > Impl > CompatPrng
-        public static object GetImpl(Random random) => ImplInfo.GetValueDirect(__makeref(random))!;
-        public static object GetCompatPrng(object impl) => PrngInfo.GetValueDirect(__makeref(impl))!;
-        public static object GetCompatPrng(Random random)
+        internal static object GetImpl(Random random) => ImplInfo.GetValueDirect(__makeref(random))!;
+        internal static object GetCompatPrng(object impl) => PrngInfo.GetValueDirect(__makeref(impl))!;
+        internal static object GetCompatPrng(Random random)
         {
             object impl = GetImpl(random);
             return PrngInfo.GetValueDirect(__makeref(impl))!;
         }
-        public static void SetState(Random random, RandomState state)
+        internal static void SetState(Random random, RandomState state)
         {
             object impl = GetImpl(random);
 
@@ -351,6 +358,13 @@ public static class RandomExtensions
             inextpInfo.SetValue(prng, state.inextp);
 
             PrngInfo.SetValue(impl, prng);
+        }
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return inext * 13 + inextp * 11 + SequenceEqualityComparer<int>.GetHashCode(seedState);
+            }
         }
     }
 }

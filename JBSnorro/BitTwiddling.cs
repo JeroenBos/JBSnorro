@@ -125,6 +125,18 @@ namespace JBSnorro
             }
         }
 
+        public static uint FlipBit(this uint u, int index)
+        {
+            uint flag = 1U << index;
+            if (BitTwiddling.HasBit(u, index))
+            {
+                return u & ~flag;
+            }
+            else
+            {
+                return u | flag;
+            }
+        }
         public static BitArray ToBitArray(this uint flags, int capacity = 32)
         {
             Contract.Requires(0 <= capacity);
