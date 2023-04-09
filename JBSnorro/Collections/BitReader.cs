@@ -6,17 +6,35 @@ namespace JBSnorro.Collections;
 public interface IBitReader
 {
     ulong Length { get; }
-    bool ReadBit();
-    byte ReadByte(int bitCount);
-    short ReadInt16(int bitCount);
-    int ReadInt32(int bitCount);
-    long ReadInt64(int bitCount);
-    ulong ReadUInt64(int bitCount);
+    ulong RemainingLength { get; }
+    ulong Position { get; }
 
-    Half ReadHalf();
-    float ReadSingle();
-    double ReadDouble();
+    bool ReadBit();
+    byte ReadByte(int bitCount = 8);
+    short ReadInt16(int bitCount = 16);
+    ushort ReadUInt16(int bitCount = 16);
+    int ReadInt32(int bitCount = 32);
+    uint ReadUInt32(int bitCount = 32);
+    long ReadInt64(int bitCount = 64);
+    ulong ReadUInt64(int bitCount = 64);
+    Half ReadHalf(int bitCount = 16);
+    float ReadSingle(int bitCount = 32);
+    double ReadDouble(int bitCount = 64);
+    double ReadVariableFloatingPoint(int bitCount);
+
+
+    bool CanRead(int bitCount)
+    {
+        if (bitCount < 0) throw new ArgumentOutOfRangeException(nameof(bitCount));
+        return CanRead((ulong)bitCount);
+    }
+    bool CanRead(ulong bitCount);
     void Seek(ulong bitIndex);
+    long IndexOf(ulong item, int itemLength);
+    
+    IBitReader Clone();
+    BitArrayReadOnlySegment RemainingSegment { get; }
+    BitArrayReadOnlySegment this[Range range] { get; }
 }
 [DebuggerDisplay("{ToDebuggerDisplay()}")]
 public class BitReader : IBitReader
@@ -34,8 +52,6 @@ public class BitReader : IBitReader
 
     /// <summary> In bits. </summary>
     private ulong current;
-    private int ulongIndex => checked((int)(current / 64));
-    private int bitIndex => checked((int)(current % 64));
     /// <summary> In bits. </summary>
     public ulong RemainingLength => this.End - current;
     /// <summary>
@@ -168,28 +184,7 @@ public class BitReader : IBitReader
             return -magnitude - 1; // -1, otherwise 0 is mapped doubly
         }
     }
-    public Half ReadHalf()
-    {
-        if (this.RemainingLength < 32)
-            throw InsufficientBitsException("Half");
-        short i = ReadInt16();
-        return BitTwiddling.BitsAsHalf(i);
-    }
-    public float ReadSingle()
-    {
-        if (this.RemainingLength < 32)
-            throw InsufficientBitsException("float");
-        int i = ReadInt32();
-        return BitTwiddling.BitsAsSingle(i);
-    }
-    public double ReadDouble()
-    {
-        if (this.RemainingLength < 64)
-            throw InsufficientBitsException("double");
-        long i = unchecked((long)ReadUInt64(64));
-        return BitTwiddling.BitsAsDouble(i);
-    }
-    public Half ReadHalf(int bitCount)
+    public Half ReadHalf(int bitCount = 16)
     {
         if (bitCount < 2 || bitCount > 32)
             throw new ArgumentException(nameof(bitCount));
@@ -199,7 +194,7 @@ public class BitReader : IBitReader
         // half has 5 bits exponent
         return (Half)readDouble(bitCount);
     }
-    public float ReadSingle(int bitCount)
+    public float ReadSingle(int bitCount = 32)
     {
         if (bitCount < 2 || bitCount > 32)
             throw new ArgumentException(nameof(bitCount));
@@ -209,7 +204,7 @@ public class BitReader : IBitReader
         // float has 8 bits exponent
         return (float)readDouble(bitCount);
     }
-    public double ReadDouble(int bitCount)
+    public double ReadDouble(int bitCount = 64)
     {
         if (bitCount < 2 || bitCount > 32)
             throw new ArgumentException(nameof(bitCount));
@@ -301,29 +296,13 @@ public class BitReader : IBitReader
         Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
         Contract.Requires<ArgumentOutOfRangeException>(itemLength <= 64);
 
-        checked
-        {
-            ulong mask = BitArrayExtensions.LowerBitsMask(itemLength);
-            ulong maskedItem = item & mask;
-
-            for (; this.current + (ulong)itemLength < this.Length; this.current -= ((ulong)itemLength - 1))
-            {
-                ulong value = this.ReadUInt64(itemLength);
-                if (value == maskedItem)
-                {
-                    long currentIndex = (long)this.current;
-                    return currentIndex - itemLength;
-                }
-            }
-            this.current = this.Length;
-            return -1;
-        }
+        return this.data.IndexOf(item, itemLength, this.Position);
     }
     /// <summary>
     /// Gets the index in the stream the pattern occurs at.
     /// </summary>
     /// <returns>-1 if not found.</returns>
-    public long Find(ulong item, int itemLength, ulong startBitIndex)
+    public long IndexOf(ulong item, int itemLength, ulong startBitIndex)
     {
         Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
         Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
@@ -336,7 +315,7 @@ public class BitReader : IBitReader
     /// <summary>
     /// Gets all indices in the stream the pattern occurs at.
     /// </summary>
-    public IEnumerable<long> FindAll(ulong item, int itemLength, ulong startBitIndex = 0)
+    public IEnumerable<long> IndicesOf(ulong item, int itemLength, ulong startBitIndex = 0)
     {
         Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
         Contract.Requires<ArgumentOutOfRangeException>(itemLength <= 64);
@@ -346,11 +325,11 @@ public class BitReader : IBitReader
         ulong nextBitIndex = startBitIndex;
         while (true)
         {
-            long result = this.Find(item, itemLength, nextBitIndex);
-            if (result == -1)
+            long index = this.IndexOf(item, itemLength, nextBitIndex);
+            if (index == -1)
                 yield break;
-            yield return result;
-            nextBitIndex = checked((ulong)result + (ulong)itemLength);
+            yield return index;
+            nextBitIndex = checked((ulong)index + (ulong)itemLength);
         }
     }
 
@@ -383,4 +362,20 @@ public class BitReader : IBitReader
     {
         return $"BitReader({startOffset}..[|{current}|]..{End}, Length={this.Length}/{this.data.Length}, Remaining={this.RemainingLength})";
     }
+
+    public IBitReader Clone()
+    {
+        var result = new BitReader(this.data, this.startOffset, this.Length);
+        result.current = this.current;
+        return result;
+    }
+    public BitArrayReadOnlySegment this[Range range]
+    {
+        get
+        {
+            var (offset, length) = range.GetOffsetAndLength(checked((int)this.Length));
+            return this.data[new Range((int)this.startOffset + offset, length)];
+        }
+    }
+
 }
