@@ -9,18 +9,8 @@ public interface IBitReader
     ulong RemainingLength { get; }
     ulong Position { get; }
 
-    bool ReadBit();
-    byte ReadByte(int bitCount = 8);
-    short ReadInt16(int bitCount = 16);
-    ushort ReadUInt16(int bitCount = 16);
-    int ReadInt32(int bitCount = 32);
-    uint ReadUInt32(int bitCount = 32);
-    long ReadInt64(int bitCount = 64);
     ulong ReadUInt64(int bitCount = 64);
-    Half ReadHalf(int bitCount = 16);
-    float ReadSingle(int bitCount = 32);
     double ReadDouble(int bitCount = 64);
-    double ReadVariableFloatingPoint(int bitCount);
 
 
     bool CanRead(int bitCount)
@@ -31,10 +21,112 @@ public interface IBitReader
     bool CanRead(ulong bitCount);
     void Seek(ulong bitIndex);
     long IndexOf(ulong item, int itemLength);
-    
+
     IBitReader Clone();
     /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
     IBitReader this[Range range] { get; }
+
+
+    public bool ReadBit()
+    {
+        if (this.RemainingLength < 1)
+            throw new InsufficientBitsException("bit");
+
+        ulong result = this.ReadUInt64(1);
+        return result != 0;
+    }
+    public byte ReadByte(int bitCount = 8)
+    {
+        if (bitCount < 1 || bitCount > 8)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("byte");
+
+        return (byte)ReadUInt64(bitCount);
+    }
+    public sbyte ReadSByte(int bitCount = 8)
+    {
+        if (bitCount < 2 || bitCount > 8)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("sbyte");
+
+        return (sbyte)ReadInt64(bitCount);
+    }
+    public short ReadInt16(int bitCount = 16)
+    {
+        if (bitCount < 2 || bitCount > 16)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("short");
+
+        return (short)ReadInt64(bitCount);
+    }
+    public ushort ReadUInt16(int bitCount = 16)
+    {
+        if (bitCount < 1 || bitCount > 16)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("ushort");
+
+        return (ushort)ReadInt64(bitCount);
+    }
+    public int ReadInt32(int bitCount = 32)
+    {
+        if (bitCount < 2 || bitCount > 32)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("int");
+
+        return (int)ReadInt64(bitCount);
+    }
+    public uint ReadUInt32(int bitCount = 32)
+    {
+        if (bitCount < 1 || bitCount > 32)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("int");
+
+        return (uint)ReadUInt64(bitCount);
+    }
+    public long ReadInt64(int bitCount = 64)
+    {
+        if (bitCount < 2 || bitCount > 64)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("long");
+
+        bool sign = ReadUInt64(1) != 0;
+        var magnitude = (long)ReadUInt64(bitCount - 1);
+        if (sign)
+        {
+            return magnitude;
+        }
+        else
+        {
+            return -magnitude - 1; // -1, otherwise 0 is mapped doubly
+        }
+    }
+    public Half ReadHalf(int bitCount = 16)
+    {
+        if (bitCount < 2 || bitCount > 32)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("Half");
+
+        // half has 5 bits exponent
+        return (Half)ReadDouble(bitCount);
+    }
+    public float ReadSingle(int bitCount = 32)
+    {
+        if (bitCount < 2 || bitCount > 32)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("float");
+
+        // float has 8 bits exponent
+        return (float)ReadDouble(bitCount);
+    }
 }
 [DebuggerDisplay("{ToDebuggerDisplay()}")]
 public class BitReader : IBitReader
@@ -98,143 +190,17 @@ public class BitReader : IBitReader
         this.current = startBitIndex;
         this.Length = dataBitCount - startBitIndex;
     }
-
-    private static Exception InsufficientBitsException(string elementName)
-    {
-        return new InvalidOperationException($"Insufficient bits remaining in stream to read '{elementName}'");
-    }
-    public bool ReadBit()
-    {
-        if (this.RemainingLength < 1)
-            throw InsufficientBitsException("bit");
-
-        bool result = this.data[this.current];
-        current++;
-        return result;
-    }
-    public byte ReadByte(int bitCount = 8)
-    {
-        if (bitCount < 1 || bitCount > 8)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("byte");
-
-        return (byte)ReadUInt64(bitCount);
-    }
-    public sbyte ReadSByte(int bitCount = 8)
-    {
-        if (bitCount < 2 || bitCount > 8)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("sbyte");
-
-        return (sbyte)ReadInt64(bitCount);
-    }
-    public short ReadInt16(int bitCount = 16)
-    {
-        if (bitCount < 2 || bitCount > 16)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("short");
-
-        return (short)ReadInt64(bitCount);
-    }
-    public ushort ReadUInt16(int bitCount = 16)
-    {
-        if (bitCount < 1 || bitCount > 16)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("ushort");
-
-        return (ushort)ReadInt64(bitCount);
-    }
-    public int ReadInt32(int bitCount = 32)
-    {
-        if (bitCount < 2 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("int");
-
-        return (int)ReadInt64(bitCount);
-    }
-    public uint ReadUInt32(int bitCount = 32)
-    {
-        if (bitCount < 1 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("int");
-
-        return (uint)ReadUInt64(bitCount);
-    }
-    public long ReadInt64(int bitCount = 64)
-    {
-        if (bitCount < 2 || bitCount > 64)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("long");
-
-        bool sign = ReadBit();
-        var magnitude = (long)ReadUInt64(bitCount - 1);
-        if (sign)
-        {
-            return magnitude;
-        }
-        else
-        {
-            return -magnitude - 1; // -1, otherwise 0 is mapped doubly
-        }
-    }
-    public Half ReadHalf(int bitCount = 16)
-    {
-        if (bitCount < 2 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("Half");
-
-        // half has 5 bits exponent
-        return (Half)readDouble(bitCount);
-    }
-    public float ReadSingle(int bitCount = 32)
-    {
-        if (bitCount < 2 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("float");
-
-        // float has 8 bits exponent
-        return (float)readDouble(bitCount);
-    }
     public double ReadDouble(int bitCount = 64)
     {
         if (bitCount < 2 || bitCount > 32)
             throw new ArgumentException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
-            throw InsufficientBitsException("double");
+            throw new InsufficientBitsException("double");
 
         // double has 11 bits exponent
         return readDouble(bitCount);
     }
-    /// <summary>
-    /// First reads a number of how many bits to read, and then reads that number of bits as a float point number.
-    /// </summary>
-    public double ReadVariableFloatingPoint(int maxBitCount = 32)
-    {
-        if (maxBitCount < 2 || maxBitCount > 64)
-            throw new ArgumentException(nameof(maxBitCount));
-        if (RemainingLength < 3)
-            throw InsufficientBitsException("variable floating point");
 
-        if (RemainingLength < 7)
-            return this.readDouble((int)RemainingLength);
-
-        int bitsToRead = (int)this.ReadUInt32(5);
-        int clampedBitsToRead = Math.Max(2, Math.Min(maxBitCount, bitsToRead));
-        if ((ulong)clampedBitsToRead > RemainingLength)
-        {
-            clampedBitsToRead = (int)RemainingLength;
-        }
-        return readDouble(clampedBitsToRead);
-    }
     private double readDouble(int bitCount)
     {
         // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
@@ -243,8 +209,9 @@ public class BitReader : IBitReader
         int significantBitCount = Math.Max(2, bitCount / 2);
         int exponentBitCount = bitCount - significantBitCount;
 
-        var significant = ReadInt64(significantBitCount);
-        var exponent = exponentBitCount == 0 ? 1 : exponentBitCount == 1 ? (double)ReadUInt64(exponentBitCount) : (double)ReadInt64(exponentBitCount);
+        var @this = (IBitReader)this;
+        var significant = @this.ReadInt64(significantBitCount);
+        var exponent = exponentBitCount == 0 ? 1 : exponentBitCount == 1 ? (double)ReadUInt64(exponentBitCount) : (double)@this.ReadInt64(exponentBitCount);
 
         var value = 2 * significant * double.Pow(2, exponent);
         return value;
@@ -369,4 +336,13 @@ public class BitReader : IBitReader
             return new BitReader(this.data, this.startOffset + (ulong)offset, (ulong)length);
         }
     }
+
+
+
+}
+
+class InsufficientBitsException : ArgumentOutOfRangeException
+{
+    public InsufficientBitsException() : base($"Insufficient bits remaining in stream") { }
+    public  InsufficientBitsException(string elementName) : base($"Insufficient bits remaining in stream to read '{elementName}'") { }
 }
