@@ -10,6 +10,7 @@ namespace JBSnorro.Collections
     [DebuggerDisplay("BitArrayReadOnlySegment(Length={Length}, {this.ToString()})")]
     public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     {
+        public static BitArrayReadOnlySegment Empty { get; } = new BitArrayReadOnlySegment(new BitArray(Array.Empty<ulong>(), 0), 0, 0);
         internal readonly BitArray data;
         internal readonly ulong start;
 

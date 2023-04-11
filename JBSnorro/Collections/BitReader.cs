@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using JBSnorro.Diagnostics;
+using System.Diagnostics;
 using DebuggerDisplayAttribute = System.Diagnostics.DebuggerDisplayAttribute;
 namespace JBSnorro.Collections;
 
@@ -127,6 +128,53 @@ public interface IBitReader
         // float has 8 bits exponent
         return (float)ReadDouble(bitCount);
     }
+    /// <summary>
+    /// Gets all indices in the stream the pattern occurs at.
+    /// </summary>
+    [DebuggerHidden]
+    public IEnumerable<long> IndicesOf(ulong item, int itemLength, ulong startBitIndex = 0)
+    {
+        return IndicesOfImpl(this, item, itemLength, startBitIndex);
+    }
+    internal static IEnumerable<long> IndicesOfImpl(IBitReader @this, ulong item, int itemLength, ulong startBitIndex)
+    {
+        Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
+        Contract.Requires<ArgumentOutOfRangeException>(itemLength <= 64);
+        Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
+        Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= @this.Length);
+
+        var nextBitIndex = startBitIndex;
+        while (true)
+        {
+            @this.Seek(nextBitIndex);
+            long index = @this.IndexOf(item, itemLength);
+            if (index == -1)
+                yield break;
+            yield return index;
+            nextBitIndex = checked((ulong)index + (ulong)itemLength);
+        }
+    }
+
+    /// <summary>
+    /// Gets the index in the stream the pattern occurs at.
+    /// </summary>
+    /// <returns>-1 if not found.</returns>
+    [DebuggerHidden]
+    long IndexOf(ulong item, int itemLength, ulong startBitIndex)
+    {
+        return IndexOfImpl(this, item, itemLength, startBitIndex);
+    }
+    internal static long IndexOfImpl(IBitReader @this, ulong item, int itemLength, ulong startBitIndex)
+    {
+        Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
+        Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
+        Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= @this.Length);
+        Contract.Requires<NotImplementedException>(itemLength <= 64);
+
+        @this.Seek(startBitIndex);
+        return @this.IndexOf(item, itemLength);
+    }
+
 }
 [DebuggerDisplay("{ToDebuggerDisplay()}")]
 public class BitReader : IBitReader
@@ -265,41 +313,16 @@ public class BitReader : IBitReader
 
         return this.data.IndexOf(item, itemLength, this.Position);
     }
-    /// <summary>
-    /// Gets the index in the stream the pattern occurs at.
-    /// </summary>
-    /// <returns>-1 if not found.</returns>
-    public long IndexOf(ulong item, int itemLength, ulong startBitIndex)
-    {
-        Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
-        Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
-        Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= this.Length);
-        Contract.Requires<NotImplementedException>(itemLength <= 64);
 
-        this.Seek(startBitIndex);
-        return this.IndexOf(item, itemLength);
-    }
+
     /// <summary>
     /// Gets all indices in the stream the pattern occurs at.
     /// </summary>
+    [DebuggerHidden]
     public IEnumerable<long> IndicesOf(ulong item, int itemLength, ulong startBitIndex = 0)
     {
-        Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
-        Contract.Requires<ArgumentOutOfRangeException>(itemLength <= 64);
-        Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
-        Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= this.Length);
-
-        ulong nextBitIndex = startBitIndex;
-        while (true)
-        {
-            long index = this.IndexOf(item, itemLength, nextBitIndex);
-            if (index == -1)
-                yield break;
-            yield return index;
-            nextBitIndex = checked((ulong)index + (ulong)itemLength);
-        }
+        return IBitReader.IndicesOfImpl(this, item, itemLength, startBitIndex);
     }
-
 
     /// <param name="length"> In bits. </param>
     public void CopyTo(ulong[] dest, ulong startBitIndex, ulong length, int destBitIndex)
@@ -336,13 +359,10 @@ public class BitReader : IBitReader
             return new BitReader(this.data, this.startOffset + (ulong)offset, (ulong)length);
         }
     }
-
-
-
 }
 
 class InsufficientBitsException : ArgumentOutOfRangeException
 {
     public InsufficientBitsException() : base($"Insufficient bits remaining in stream") { }
-    public  InsufficientBitsException(string elementName) : base($"Insufficient bits remaining in stream to read '{elementName}'") { }
+    public InsufficientBitsException(string elementName) : base($"Insufficient bits remaining in stream to read '{elementName}'") { }
 }

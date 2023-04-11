@@ -17,7 +17,6 @@ namespace JBSnorro.Collections
     [DebuggerDisplay("BitArray(Length={Length}, {this.ToString()})")]
     public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     {
-        public static BitArray Empty { get; } = new BitArray(Array.Empty<bool>());
         private const int bitCountPerInternalElement = 64;
         private static void ToInternalAndBitIndex(int index, out int dataIndex, out int bitIndex)
         {
@@ -640,7 +639,7 @@ namespace JBSnorro.Collections
         }
         public bool BitSequenceEqual(BitArrayReadOnlySegment other, ulong sourceStartBitIndex, ulong sourceBitLength)
         {
-            return this.data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitEnd: sourceStartBitIndex + sourceBitLength, otherBitEnd: other.start + other.Length);
+            return other.Length == sourceBitLength && this.data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitEnd: sourceStartBitIndex + sourceBitLength, otherBitEnd: other.start + other.Length);
         }
         public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
         {
@@ -744,7 +743,21 @@ namespace JBSnorro.Collections
         }
         public override bool Equals(object? obj)
         {
-            return Equals(obj as BitArray);
+            return obj switch
+            {
+                BitArray other => Equals(other),
+                BitArrayReadOnlySegment segment => Equals(segment),
+                _ => false,
+            };
+        }
+        public bool Equals(ulong value, int valueLength)
+        {
+            Contract.Requires((0..65).Contains(valueLength));
+            if (valueLength == 0)
+            {
+                return this.Length == 0;
+            }
+            return this.Length == (ulong)valueLength && value.Mask(0, valueLength) == this.data[0];
         }
         public bool Equals(BitArray? other)
         {
@@ -776,7 +789,6 @@ namespace JBSnorro.Collections
             return true;
 
         }
-
         public bool Equals(BitArrayReadOnlySegment segment)
         {
             return segment.Equals(this);
