@@ -283,6 +283,13 @@ public static class RandomExtensions
                      .Scan((a, b) => a + b, 0d);
     }
 
+    /// <summary>
+    /// Draws an element at random from the specified collection.
+    /// </summary>
+    public static T Draw<T>(this Random random, IReadOnlyList<T> collection)
+    {
+        return collection[random.Next(collection.Count)];
+    }
 
     public static JsonConverter<Random> JsonConverter { get; } = new JsonConverterBy2<Random, RandomState>(RandomState.ToRandom, RandomState.GetState!);
     public static RandomState ToState(this Random random)
