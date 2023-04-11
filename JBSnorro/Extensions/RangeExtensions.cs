@@ -58,4 +58,14 @@ public static class RangeExtensions
 
         return new Range(start, end);
     }
+    /// <summary>
+    /// Gets whether the specified index is in the specified range.
+    /// </summary>
+    public static bool Contains(this Range range, int index)
+    {
+        Contract.Requires(!range.Start.IsFromEnd);
+        Contract.Requires(!range.End.IsFromEnd);
+
+        return range.Start.Value <= index && index < range.End.Value;
+    }
 }
