@@ -11,8 +11,6 @@ public interface IBitReader
     ulong Position { get; }
 
     ulong ReadUInt64(int bitCount = 64);
-    double ReadDouble(int bitCount = 64);
-
 
     bool CanRead(int bitCount)
     {
@@ -128,6 +126,25 @@ public interface IBitReader
         // float has 8 bits exponent
         return (float)ReadDouble(bitCount);
     }
+    public double ReadDouble(int bitCount = 64)
+    {
+        if (bitCount < 2 || bitCount > 32)
+            throw new ArgumentException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("double");
+
+        // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
+        // but before some bitCount, there simply isn't enough bits to have this strategy. Something more complicated (or simpler) is needed
+
+        int significantBitCount = Math.Max(2, bitCount / 2);
+        int exponentBitCount = bitCount - significantBitCount;
+
+        var significant = this.ReadInt64(significantBitCount);
+        var exponent = exponentBitCount == 0 ? 1 : exponentBitCount == 1 ? (double)this.ReadUInt64(exponentBitCount) : this.ReadInt64(exponentBitCount);
+
+        var value = 2 * significant * double.Pow(2, exponent);
+        return value;
+    }
     /// <summary>
     /// Gets all indices in the stream the pattern occurs at.
     /// </summary>
@@ -238,32 +255,7 @@ public class BitReader : IBitReader
         this.current = startBitIndex;
         this.Length = dataBitCount - startBitIndex;
     }
-    public double ReadDouble(int bitCount = 64)
-    {
-        if (bitCount < 2 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw new InsufficientBitsException("double");
 
-        // double has 11 bits exponent
-        return readDouble(bitCount);
-    }
-
-    private double readDouble(int bitCount)
-    {
-        // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
-        // but before some bitCount, there simply isn't enough bits to have this strategy. Something more complicated (or simpler) is needed
-
-        int significantBitCount = Math.Max(2, bitCount / 2);
-        int exponentBitCount = bitCount - significantBitCount;
-
-        var @this = (IBitReader)this;
-        var significant = @this.ReadInt64(significantBitCount);
-        var exponent = exponentBitCount == 0 ? 1 : exponentBitCount == 1 ? (double)ReadUInt64(exponentBitCount) : (double)@this.ReadInt64(exponentBitCount);
-
-        var value = 2 * significant * double.Pow(2, exponent);
-        return value;
-    }
     /// <summary>
     /// Returns whether this reader still has the specified number of bits to read.
     /// </summary>

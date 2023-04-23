@@ -12,7 +12,7 @@ public class BitReaderTests
     [TestMethod]
     public void ReadDoubleFrom3TrueBits()
     {
-        var bitReader = new BitReader(new BitArray(new bool[] { true, true, true }));
+        IBitReader bitReader = new BitReader(new BitArray(new bool[] { true, true, true }));
 
         var value = bitReader.ReadDouble(3);
 
@@ -21,7 +21,7 @@ public class BitReaderTests
     [TestMethod]
     public void ReadDoubleFrom3FalseBits()
     {
-        var bitReader = new BitReader(new BitArray(new bool[] { false, false, false }));
+        IBitReader bitReader = new BitReader(new BitArray(new bool[] { false, false, false }));
 
         var value = bitReader.ReadDouble(3);
 
@@ -52,7 +52,7 @@ public class BitReaderTests
 
             foreach (var bitarray in allBitCombinations)
             {
-                var bitreader = new BitReader(bitarray);
+                IBitReader bitreader = new BitReader(bitarray);
                 var value = bitreader.ReadDouble(bitLength);
                 var absValue = double.Abs(value);
 
