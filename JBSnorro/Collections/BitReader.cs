@@ -255,6 +255,15 @@ public class BitReader : IBitReader
         this.current = startBitIndex;
         this.Length = dataBitCount - startBitIndex;
     }
+    public BitReader(BitArrayReadOnlySegment data)
+    {
+        if (data == null) throw new ArgumentNullException(nameof(data));
+
+        this.data = data.data;
+        this.startOffset = data.start;
+        this.current = startOffset;
+        this.Length = data.Length;
+    }
 
     /// <summary>
     /// Returns whether this reader still has the specified number of bits to read.
@@ -276,6 +285,8 @@ public class BitReader : IBitReader
     public ulong ReadUInt64(int bitCount = 64)
     {
         if (bitCount < 1 || bitCount > 64)
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
+        if ((ulong)bitCount > this.RemainingLength)
             throw new ArgumentException(nameof(bitCount));
 
         ulong bits = this.data.GetULong(this.current);

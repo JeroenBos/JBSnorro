@@ -68,6 +68,10 @@ namespace JBSnorro.Collections
         {
             return this.data.IndexOf(item, itemLength, startBitIndex);
         }
+        public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
+        {
+            return this.data.IndexOfAny(items, itemLength, this.start + startIndex, endIndex: this.start + this.Length);
+        }
         public void CopyTo(BitArray dest, ulong destStartIndex)
         {
             this.CopyTo(dest, 0, this.Length, destStartIndex);

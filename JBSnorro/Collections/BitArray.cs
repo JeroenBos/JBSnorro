@@ -112,8 +112,7 @@ namespace JBSnorro.Collections
         /// </summary>
         internal ulong GetULong(ulong bitIndex)
         {
-            if (bitIndex >= this.Length)
-                throw new ArgumentOutOfRangeException(nameof(bitIndex));
+            Contract.Requires(bitIndex <= this.Length);
 
             checked
             {
@@ -641,9 +640,11 @@ namespace JBSnorro.Collections
         {
             return other.Length == sourceBitLength && this.data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitEnd: sourceStartBitIndex + sourceBitLength, otherBitEnd: other.start + other.Length);
         }
-        public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
+        /// <param name="endIndex">Exclusive.</param>
+        public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? endIndex = null)
         {
-            return BitTwiddling.IndexOfBits(this.data, items, itemLength, startIndex, (ulong)this.Length);
+            ulong dataLength = endIndex == null ? this.Length : endIndex.Value;
+            return BitTwiddling.IndexOfBits(this.data, items, itemLength, startIndex, dataLength);
         }
         public void Insert(ulong index, bool value)
         {

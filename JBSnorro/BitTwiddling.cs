@@ -124,7 +124,28 @@ namespace JBSnorro
                 return i - remainder + multiple;
             }
         }
-
+        /// <summary>
+        /// Returns the distance to the nearest multiple of <paramref name="multiple"/> strictly greater than <paramref name="i"/>.
+        /// </summary>
+        public static ulong DistanceStrictlyUpToNearestMultipleOf(this ulong i, ulong multiple)
+        {
+            var roundedUp = i.RoundUpToNearestMultipleOf(multiple);
+            if (roundedUp == i)
+            {
+                return multiple;
+            }
+            else
+            {
+                return roundedUp - i;
+            }
+        }
+        /// <summary>
+        /// Returns the distance to the nearest multiple of <paramref name="multiple"/> greater than or equal to <paramref name="i"/>.
+        /// </summary>
+        public static ulong DistanceUpToNearestMultipleOf(this ulong i, ulong multiple)
+        {
+            return i.RoundUpToNearestMultipleOf(multiple) - i;
+        }
         public static uint FlipBit(this uint u, int index)
         {
             uint flag = 1U << index;
@@ -397,6 +418,7 @@ namespace JBSnorro
         }
         /// <summary> Gets the first bit index in the specified data of any of the specified equilong items. </summary>
         /// <param name="returnLastConsecutive"> When true, and when there's a match, the successive places are also checked and the last consecutive will be selected as the result.</param>
+        /// <param name="dataLength">The exclusive bit index, after which <paramref name="data"/> is not considered caontaining values anymore. This is independent of <paramref name="startIndex"/>.</param>
         public static (long BitIndex, int ItemIndex) IndexOfBits(IEnumerable<ulong> data, IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null, bool returnLastConsecutive = false)
         {
             const int N = 64;

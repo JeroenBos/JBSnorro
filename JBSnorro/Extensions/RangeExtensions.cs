@@ -63,9 +63,23 @@ public static class RangeExtensions
     /// </summary>
     public static bool Contains(this Range range, int index)
     {
+        return range.Contains(index, false);
+    }
+    /// <summary>
+    /// Gets whether the specified index is in the specified range.
+    /// </summary>
+    public static bool Contains(this Range range, int index, bool endInclusive)
+    {
         Contract.Requires(!range.Start.IsFromEnd);
         Contract.Requires(!range.End.IsFromEnd);
 
-        return range.Start.Value <= index && index < range.End.Value;
+        if (endInclusive)
+        {
+            return range.Start.Value <= index && index <= range.End.Value;
+        }
+        else
+        {
+            return range.Start.Value <= index && index < range.End.Value;
+        }
     }
 }
