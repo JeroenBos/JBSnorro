@@ -223,6 +223,7 @@ public class BitReader : IBitReader
     {
         get => this.data[checked((int)this.current)..];
     }
+    [DebuggerHidden]
     public BitReader(BitArray data, ulong startBitIndex = 0)
     {
         if (data == null) throw new ArgumentNullException(nameof(data));
@@ -233,6 +234,7 @@ public class BitReader : IBitReader
         this.current = startOffset;
         this.Length = data.Length - startBitIndex;
     }
+    [DebuggerHidden]
     public BitReader(BitArray data, ulong startBitIndex, ulong length)
     {
         if (data == null) throw new ArgumentNullException(nameof(data));
@@ -243,11 +245,13 @@ public class BitReader : IBitReader
         this.current = startBitIndex;
         this.Length = length;
     }
+    [DebuggerHidden]
     /// <param name="dataBitCount"> The length of the number of bits in <see cref="data"/>, including those to be excluded before <see cref="startBitIndex"/></param>
     public BitReader(ulong[] data, int dataBitCount, int startBitIndex = 0)
         : this(data, dataBitCount.ToULong(), startBitIndex.ToULong())
     {
     }
+    [DebuggerHidden]
     /// <param name="dataBitCount"> The length of the number of bits in <see cref="data"/>, including those to be excluded before <see cref="startBitIndex"/></param>
     public BitReader(ulong[] data, ulong dataBitCount, ulong startBitIndex = 0)
     {
@@ -255,6 +259,7 @@ public class BitReader : IBitReader
         this.current = startBitIndex;
         this.Length = dataBitCount - startBitIndex;
     }
+    [DebuggerHidden]
     public BitReader(BitArrayReadOnlySegment data)
     {
         if (data == null) throw new ArgumentNullException(nameof(data));

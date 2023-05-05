@@ -126,6 +126,10 @@ public static class RandomExtensions
               });
     }
 
+    public static bool NextBoolean(this Random random)
+    {
+        return random.Next(2) == 0;
+    }
     public static ulong NextUInt64(this Random random)
     {
         var a = (ulong)random.NextInt64(0, (long)uint.MaxValue + 1);

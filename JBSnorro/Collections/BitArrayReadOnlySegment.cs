@@ -200,6 +200,23 @@ namespace JBSnorro.Collections
         {
             return this.data.ToString(this.start, this.Length);
         }
+        public ReadOnlySpan<byte> GetUnderlyingData(out ulong start, bool minimize = true)
+        {
+            if (!minimize)
+            {
+                start = this.start;
+                return data.UnderlyingData;
+            }
+            else
+            {
+                var startBoundaryBitIndex = this.start.RoundDownToNearestMultipleOf(64UL);
+                var endBoundaryBitIndex = (this.start + this.Length).RoundUpToNearestMultipleOf(64UL);
+                var result = data.UnderlyingData[checked((int)startBoundaryBitIndex..(int)endBoundaryBitIndex)];
+                Contract.Ensures(result.Length % 64 == 0);
+                start = this.start - startBoundaryBitIndex;
+                return result;
+            }
+        }
     }
 
     public static class BitArraySegmentExtensions
