@@ -165,6 +165,31 @@ namespace JBSnorro
             EnsureSingleEnumerationDEBUG(ref ranges);
             return ranges.Select(indices => indices.Map(i => elements[i]));
         }
+        public static IEnumerable<T[]> AllCombinationsWithRepetitions<T>(this IReadOnlyList<T> elements, int combinationSize)
+        {
+            int[] indices = new int[combinationSize];
+
+            while (true)
+            {
+                yield return indices.Map(i => elements[i]);
+
+                int i;
+                for (i = 0; i < indices.Length; i++)
+                {
+                    indices[i]++;
+                    if (indices[i] != elements.Count)
+                    {
+                        break;
+                    }
+                    indices[i] = 0;
+                }
+                if (i == indices.Length)
+                {
+                    yield break;
+                }
+
+            }
+        }
         /// <summary> Gets all combinations where you can specify per position which element can be present there. </summary>
         /// <param name="elementsPerPosition"> The possible elements per position. </param>
         public static IEnumerable<T[]> AllCombinations<T>(this IReadOnlyList<IReadOnlyList<T>> elementsPerPosition)
@@ -221,15 +246,15 @@ namespace JBSnorro
 
 
 
-		/// <summary> Chooses one element from each sorted enumerable, and returns all such combinations in a specified order. </summary>
-		/// <param name="sortedEnumerables"> The items per position. </param>
-		public static ISortedEnumerable<T[]> AllOrderedCombinations<T>(this ReadOnlyCollection<ISortedEnumerable<T>> sortedEnumerables, Func<IReadOnlyList<T>, IReadOnlyList<T>, int> comparer)
-		{
-			Contract.Requires(sortedEnumerables != null);
-			Contract.Requires(comparer != null);
+        /// <summary> Chooses one element from each sorted enumerable, and returns all such combinations in a specified order. </summary>
+        /// <param name="sortedEnumerables"> The items per position. </param>
+        public static ISortedEnumerable<T[]> AllOrderedCombinations<T>(this ReadOnlyCollection<ISortedEnumerable<T>> sortedEnumerables, Func<IReadOnlyList<T>, IReadOnlyList<T>, int> comparer)
+        {
+            Contract.Requires(sortedEnumerables != null);
+            Contract.Requires(comparer != null);
 
-			return new SortedEnumerable<T[]>(allOrderedCombinations(sortedEnumerables.Map(enumerable => new SortedReadOnlyList<T>(enumerable.ToList(), enumerable.Comparer)), comparer), comparer);
-		}
+            return new SortedEnumerable<T[]>(allOrderedCombinations(sortedEnumerables.Map(enumerable => new SortedReadOnlyList<T>(enumerable.ToList(), enumerable.Comparer)), comparer), comparer);
+        }
         private static IEnumerable<T[]> allOrderedCombinations<T>(this ReadOnlyCollection<SortedReadOnlyList<T>> sortedEnumerables, Func<IReadOnlyList<T>, IReadOnlyList<T>, int> comparer)
         {
             Contract.Requires(sortedEnumerables != null);

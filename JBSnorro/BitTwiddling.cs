@@ -97,6 +97,14 @@ namespace JBSnorro
 
             return i - remainder;
         }
+        public static int RoundUp(this double d)
+        {
+            return (int)Math.Ceiling(d);
+        }
+        public static int RoundUp(this float f)
+        {
+            return (int)Math.Ceiling(f);
+        }
         public static int RoundUpToNearestMultipleOf(this int i, int multiple)
         {
             Contract.Requires(i >= 0);
@@ -352,19 +360,19 @@ namespace JBSnorro
                 return strictlyPositive ? divisor : 0;
             return remainder;
         }
-        static int ClearLowBits(int bits, int numberOfBits, int nLength)
+        static uint ClearLowBits(uint bits, int numberOfBits)
         {
-            int mask = (byte)(byte.MaxValue << numberOfBits);
-            return bits & mask;
-        }
-        static int ClearHighBits(int bits, int numberOfBits, int nLength)
-        {
-            int mask = (byte.MaxValue >> (nLength - numberOfBits));
+            uint mask = uint.MaxValue << numberOfBits;
             return bits & mask;
         }
         static ulong ClearLowBits(ulong bits, int numberOfBits)
         {
-            ulong mask = (ulong.MaxValue << numberOfBits);
+            ulong mask = ulong.MaxValue << numberOfBits;
+            return bits & mask;
+        }
+        static uint ClearHighBits(uint bits, int numberOfBitsToClear)
+        {
+            uint mask = uint.MaxValue >> numberOfBitsToClear;
             return bits & mask;
         }
         static ulong ClearHighBits(ulong bits, int numberOfBitsToClear)
@@ -383,12 +391,28 @@ namespace JBSnorro
 
             return ClearHighBits(ClearLowBits(ulong.MaxValue, from), 64 - until);
         }
+        static uint CreateUIntMask(int from, int until)
+        {
+            if (from < 0 || from > 32) throw new ArgumentOutOfRangeException(nameof(from));
+            if (until < from || until > 32) throw new ArgumentOutOfRangeException(nameof(until));
+
+            return (uint)ClearHighBits(ClearLowBits(uint.MaxValue, from), 32 - until);
+        }
         /// <summary>
         /// Sets the bits from [0, until) and [from, 64] to zero.
         /// </summary>
         public static ulong Mask(this ulong value, int until, int from)
         {
             var mask = CreateULongMask(until, from);
+            var result = value & mask;
+            return result;
+        }
+        /// <summary>
+        /// Sets the bits from [0, until) and [from, 32] to zero.
+        /// </summary>
+        public static uint Mask(this uint value, int until, int from)
+        {
+            var mask = CreateUIntMask(until, from);
             var result = value & mask;
             return result;
         }
