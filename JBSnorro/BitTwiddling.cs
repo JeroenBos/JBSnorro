@@ -396,7 +396,7 @@ namespace JBSnorro
             if (from < 0 || from > 32) throw new ArgumentOutOfRangeException(nameof(from));
             if (until < from || until > 32) throw new ArgumentOutOfRangeException(nameof(until));
 
-            return (uint)ClearHighBits(ClearLowBits(uint.MaxValue, from), 32 - until);
+            return ClearHighBits(ClearLowBits(uint.MaxValue, from), 32 - until);
         }
         /// <summary>
         /// Sets the bits from [0, until) and [from, 64] to zero.

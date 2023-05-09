@@ -250,10 +250,12 @@ namespace JBSnorro.Collections
             return result;
         }
         /// <summary> Creates a new bit array from the specified bytes (i.e. concat all bytes, each representing 8 bits). </summary>
+        [DebuggerHidden]
         public BitArray(IEnumerable<byte> bytes) : this(bytes.SelectMany(b => ToBits(b)))
         {
         }
         /// <summary> Creates a new bit array from the specified bytes (i.e. concat all bytes, each representing 8 bits), with prescribed length. </summary>
+        [DebuggerHidden]
         public BitArray(IEnumerable<byte> bytes, int bitCount) : this(bytes.SelectMany(b => ToBits(b)), count: bitCount)
         {
         }
@@ -262,11 +264,13 @@ namespace JBSnorro.Collections
             return Enumerable.Range(0, 8).Select(i => b.HasBit(i));
         }
         /// <inheritdoc cref="BitArray(ulong[], ulong)"/>
+        [DebuggerHidden]
         public BitArray(ulong[] backingData, int length) : this(backingData, checked((ulong)length))
         { }
         /// <summary> Creates a new bit array from <param ref="backingData"/>, i.e. no copy is made. </summary>
         /// <param name="backingData"> The indices of bits to set to true. </param>
         /// <param name="length"> The number of bits that are considered to be set in the given data. </param>
+        [DebuggerHidden]
         public BitArray(ulong[] backingData, ulong length)
         {
             Contract.Requires(backingData != null);
