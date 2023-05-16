@@ -312,11 +312,8 @@ public static class RandomExtensions
     {
         public static Random ToRandom(RandomState state)
         {
-            var result = new Random(0); // seed value is important, but presence is important as it selects a different implementation
-            SetState(result, state);
-            return result;
+            return state.ToRandom();
         }
-
         static RandomState()
         {
             ImplInfo = typeof(Random).GetField("_impl", BindingFlags.Instance | BindingFlags.NonPublic)!;
@@ -350,6 +347,13 @@ public static class RandomExtensions
             return state;
 
         }
+        public Random ToRandom()
+        {
+            var result = new Random(0); // seed value is important, but presence is important as it selects a different implementation
+            SetState(result, this);
+            return result;
+        }
+
         //Random > Impl > CompatPrng
         internal static object GetImpl(Random random) => ImplInfo.GetValueDirect(__makeref(random))!;
         internal static object GetCompatPrng(object impl) => PrngInfo.GetValueDirect(__makeref(impl))!;
@@ -376,6 +380,26 @@ public static class RandomExtensions
             {
                 return inext * 13 + inextp * 11 + SequenceEqualityComparer<int>.GetHashCode(seedState);
             }
+        }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine("{");
+            builder.Append("  inext=");
+            builder.Append(inext);
+            builder.AppendLine(",");
+            builder.Append("  inextp=");
+            builder.Append(inextp);
+            builder.AppendLine(",");
+            builder.Append("  data=[\n");
+            for (int i = 0; i < this.seedState.Length; i++)
+            {
+                builder.AppendLine($"    {this.seedState[i]},");
+            }
+            builder.AppendLine("  ]");
+            builder.AppendLine("}");
+            return builder.ToString();
         }
     }
 }
