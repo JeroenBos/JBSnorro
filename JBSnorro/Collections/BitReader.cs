@@ -95,8 +95,8 @@ public interface IBitReader
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("long");
 
-        bool sign = ReadUInt64(1) != 0;
-        var magnitude = (long)ReadUInt64(bitCount - 1);
+        bool sign = this.ReadUInt64(1) != 0;
+        var magnitude = (long)this.ReadUInt64(bitCount - 1);
         if (sign)
         {
             return magnitude;
@@ -135,11 +135,12 @@ public interface IBitReader
 
         // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
         // but before some bitCount, there simply isn't enough bits to have this strategy. Something more complicated (or simpler) is needed
-
+        ulong originalRemainingLength = this.RemainingLength;
         int significantBitCount = Math.Max(2, bitCount / 2);
         int exponentBitCount = bitCount - significantBitCount;
 
         var significant = this.ReadInt64(significantBitCount);
+        Contract.Assert(this.RemainingLength + (ulong)significantBitCount == originalRemainingLength);
         var exponent = exponentBitCount == 0 ? 1 : exponentBitCount == 1 ? (double)this.ReadUInt64(exponentBitCount) : this.ReadInt64(exponentBitCount);
 
         var value = 2 * significant * double.Pow(2, exponent);
