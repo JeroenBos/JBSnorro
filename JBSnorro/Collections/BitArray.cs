@@ -279,7 +279,16 @@ namespace JBSnorro.Collections
             this.Length = length;
             this.data = backingData;
         }
-
+        /// <summary>
+        /// Creates a <see cref="BitArray"/> with data cloned from the specified segment.
+        /// </summary>
+        [DebuggerHidden]
+        public BitArray(BitArrayReadOnlySegment segment)
+        {
+            this.Length = segment.Length;
+            this.data = new ulong[this.Length.RoundUpToNearestMultipleOf(64UL) / 64UL];
+            segment.CopyTo(this, 0);
+        }
         /// <summary> Gets a clone of this bit array. </summary>
         [DebuggerHidden]
         public BitArray Clone()
