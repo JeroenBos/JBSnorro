@@ -155,6 +155,7 @@ namespace JBSnorro.Collections
 
             return new BitArray(data, (int)length.Value);
         }
+        [DebuggerHidden]
         /// <summary> Creates a new empty bit array. </summary>
         public BitArray()
         {
@@ -219,6 +220,7 @@ namespace JBSnorro.Collections
         /// <summary> Creates a new bit array where the indices of the initially true bits are specified. </summary>
         /// <param name="indicesOfTrueBits"> The indices of bits to set to true. </param>
         /// <param name="length"> The length of the bit array to create. </param>
+        [DebuggerHidden]
         public BitArray(IEnumerable<int> indicesOfTrueBits, int length) : this(length)
         {
             Contract.Requires(indicesOfTrueBits != null);
@@ -229,6 +231,7 @@ namespace JBSnorro.Collections
         /// <summary> Creates a new bit array where the indices of the initially true bits are specified. </summary>
         /// <param name="indicesOfTrueBits"> The indices of bits to set to true. </param>
         /// <param name="length"> The length of the bit array to create. </param>
+        [DebuggerHidden]
         public BitArray(int length, params int[] indicesOfTrueBits) : this(length)
         {
             Contract.Requires(indicesOfTrueBits != null);
@@ -239,10 +242,12 @@ namespace JBSnorro.Collections
         /// <summary>
         /// Copies the bytes into a ulong[] and uses that as backing array.
         /// </summary>
+        [DebuggerHidden]
         public BitArray(ReadOnlySpan<byte> bytes, ulong length)
             : this(MarshalToUlong(bytes), length)
         {
         }
+        [DebuggerHidden]
         private static ulong[] MarshalToUlong(ReadOnlySpan<byte> bytes)
         {
             var result = new ulong[bytes.Length / 8];
