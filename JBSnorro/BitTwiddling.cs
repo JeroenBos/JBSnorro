@@ -795,5 +795,18 @@ namespace JBSnorro
             }
             return builder.ToString();
         }
+        /// <summary>
+        /// Gets the index of the bit after the highest nonzero bit.
+        /// </summary>
+        public static int CountBits(this ulong bits)
+        {
+            int i = 0;
+            while (bits > 0)
+            {
+                bits >>= 1;
+                i++;
+            }
+            return i;
+        }
     }
 }
