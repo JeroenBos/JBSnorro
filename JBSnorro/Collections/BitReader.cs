@@ -95,7 +95,7 @@ public interface IBitReader
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("long");
 
-        bool sign = this.ReadUInt64(1) != 0;
+        bool sign = this.ReadUInt64(1) == 0;
         var magnitude = (long)this.ReadUInt64(bitCount - 1);
         if (sign)
         {
