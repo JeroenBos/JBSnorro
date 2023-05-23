@@ -4,6 +4,7 @@ using JBSnorro.Algorithms;
 using JBSnorro.Collections;
 using JBSnorro.Collections.Sorted;
 using JBSnorro.Diagnostics;
+using JBSnorro.Dynamic;
 using JBSnorro.Extensions;
 using JBSnorro.Geometry;
 using System.Collections;
@@ -3358,6 +3359,18 @@ namespace JBSnorro
         public static IEnumerable<TResult> Select<TKeyItem1, TKeyItem2, TValue, TResult>(this IEnumerable<((TKeyItem1, TKeyItem2), TValue)> sequence, Func<TKeyItem1, TKeyItem2, TValue, TResult> selector)
         {
             return sequence.Select([DebuggerHidden] (_) => selector(_.Item1.Item1, _.Item1.Item2, _.Item2));
+        }
+        /// <summary>
+        /// Counts the occurrences of elements in the sequence.
+        /// </summary>
+        public static Dictionary<T, int> ToCountDictionary<T>(this IEnumerable<T> sequence, IEqualityComparer<T>? equalityComparer = null) where T : notnull
+        {
+            var result = new Dictionary<T, int>(equalityComparer);
+            foreach (var item in sequence)
+            {
+                result.SetOrUpdate(item, 1, static count => count + 1);
+            }
+            return result;
         }
     }
 }
