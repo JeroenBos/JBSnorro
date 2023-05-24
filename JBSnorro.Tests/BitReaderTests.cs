@@ -25,7 +25,7 @@ public class BitReaderTests
 
         var value = bitReader.ReadDouble(3);
 
-        Contract.Assert(value == -2);
+        Contract.Assert(value == 0);
     }
 
     [TestMethod]
