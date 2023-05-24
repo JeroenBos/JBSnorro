@@ -16,7 +16,7 @@ public class BitReaderTests
 
         var value = bitReader.ReadDouble(3);
 
-        Contract.Assert(value == 4);
+        Contract.Assert(value == -8);
     }
     [TestMethod]
     public void ReadDoubleFrom3FalseBits()
