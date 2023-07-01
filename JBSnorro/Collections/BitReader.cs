@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using JBSnorro.Diagnostics;
+using JBSnorro.Extensions;
 using System.Diagnostics;
 using DebuggerDisplayAttribute = System.Diagnostics.DebuggerDisplayAttribute;
 namespace JBSnorro.Collections;
@@ -7,7 +8,7 @@ namespace JBSnorro.Collections;
 public interface IBitReader
 {
     ulong Length { get; }
-    ulong RemainingLength { get; }
+    ulong RemainingLength => checked(Length - Position);
     ulong Position { get; }
 
     ulong ReadUInt64(int bitCount = 64);
@@ -17,9 +18,12 @@ public interface IBitReader
         if (bitCount < 0) throw new ArgumentOutOfRangeException(nameof(bitCount));
         return CanRead((ulong)bitCount);
     }
-    bool CanRead(ulong bitCount);
+    bool CanRead(ulong bitCount)
+    {
+        return RemainingLength >= bitCount;
+    }
     void Seek(ulong bitIndex);
-    long IndexOf(ulong item, int itemLength);
+    long IndexOf(ulong item, int itemLength) => IndexOf(item, itemLength, this.Position);
 
     IBitReader Clone();
     /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
@@ -37,7 +41,7 @@ public interface IBitReader
     public byte ReadByte(int bitCount = 8)
     {
         if (bitCount < 1 || bitCount > 8)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("byte");
 
@@ -46,7 +50,7 @@ public interface IBitReader
     public sbyte ReadSByte(int bitCount = 8)
     {
         if (bitCount < 2 || bitCount > 8)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("sbyte");
 
@@ -55,7 +59,7 @@ public interface IBitReader
     public short ReadInt16(int bitCount = 16)
     {
         if (bitCount < 2 || bitCount > 16)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("short");
 
@@ -64,7 +68,7 @@ public interface IBitReader
     public ushort ReadUInt16(int bitCount = 16)
     {
         if (bitCount < 1 || bitCount > 16)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("ushort");
 
@@ -73,7 +77,7 @@ public interface IBitReader
     public int ReadInt32(int bitCount = 32)
     {
         if (bitCount < 2 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("int");
 
@@ -82,7 +86,7 @@ public interface IBitReader
     public uint ReadUInt32(int bitCount = 32)
     {
         if (bitCount < 1 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("int");
 
@@ -91,7 +95,7 @@ public interface IBitReader
     public long ReadInt64(int bitCount = 64)
     {
         if (bitCount < 2 || bitCount > 64)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("long");
 
@@ -109,7 +113,7 @@ public interface IBitReader
     public Half ReadHalf(int bitCount = 16)
     {
         if (bitCount < 2 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("Half");
 
@@ -119,7 +123,7 @@ public interface IBitReader
     public float ReadSingle(int bitCount = 32)
     {
         if (bitCount < 2 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("float");
 
@@ -129,7 +133,7 @@ public interface IBitReader
     public double ReadDouble(int bitCount = 64)
     {
         if (bitCount < 2 || bitCount > 32)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (this.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("double");
 
@@ -192,8 +196,8 @@ public interface IBitReader
         @this.Seek(startBitIndex);
         return @this.IndexOf(item, itemLength);
     }
-
 }
+
 [DebuggerDisplay("{ToDebuggerDisplay()}")]
 public class BitReader : IBitReader
 {
@@ -293,7 +297,7 @@ public class BitReader : IBitReader
         if (bitCount < 1 || bitCount > 64)
             throw new ArgumentOutOfRangeException(nameof(bitCount));
         if ((ulong)bitCount > this.RemainingLength)
-            throw new ArgumentException(nameof(bitCount));
+            throw new ArgumentException("Not enough remaining length", nameof(bitCount));
 
         ulong bits = this.data.GetULong(this.current);
         ulong mask = BitArrayExtensions.LowerBitsMask(bitCount);
@@ -374,4 +378,64 @@ class InsufficientBitsException : ArgumentOutOfRangeException
 {
     public InsufficientBitsException() : base($"Insufficient bits remaining in stream") { }
     public InsufficientBitsException(string elementName) : base($"Insufficient bits remaining in stream to read '{elementName}'") { }
+}
+
+
+class FloatingPointBitReader : IBitReader
+{
+    private readonly IBitReader reader;
+    public double Min { get; }
+    public double Max { get; }
+
+    public FloatingPointBitReader(IBitReader reader, double min, double max)
+    {
+        Contract.Requires(reader != null);
+        Contract.Requires(double.IsFinite(min));
+        Contract.Requires(double.IsFinite(max));
+
+        this.reader = reader;
+        this.Min = min;
+        this.Max = max;
+    }
+
+    public ulong Length
+    {
+        get => reader.Length;
+    }
+    public ulong Position
+    {
+        get => reader.Position;
+    }
+    public IBitReader this[Range range]
+    {
+        get => new FloatingPointBitReader(this.reader[range], Min, Max);
+    }
+
+
+    public virtual double ReadDouble(int bitCount)
+    {
+        Contract.Requires((1..64).Contains(bitCount, endInclusive: true));
+
+        decimal bits = ReadUInt64(bitCount);
+        ulong rangeLength = 2UL << bitCount - 1;
+        decimal rangeScale = (decimal)(Max - Min) / rangeLength;
+        double result = (double)(bits * rangeScale + (decimal)Min);
+        return result;
+    }
+
+
+
+    public ulong ReadUInt64(int bitCount = 64)
+    {
+        return reader.ReadUInt64(bitCount);
+    }
+    public virtual void Seek(ulong bitIndex)
+    {
+        reader.Seek(bitIndex);
+    }
+    public virtual FloatingPointBitReader Clone()
+    {
+        return new FloatingPointBitReader(reader, Min, Max);
+    }
+    IBitReader IBitReader.Clone() => Clone();
 }

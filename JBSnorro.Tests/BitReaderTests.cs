@@ -34,7 +34,7 @@ public class BitReaderTests
         const double init = 8;
         const double min = 0.5;
         // var ranges = Enumerable.Range(3, 8).Select(i => (i, double.Pow(2, i + 4), double.Pow(2, -i)));
-        var ranges =  new (int length, double maxAbsoluteRange, double minAbsolutePrecision)[] {
+        var ranges = new (int length, double maxAbsoluteRange, double minAbsolutePrecision)[] {
             (3, init * double.Pow(2, 1), min * double.Pow(2, -1)),
             (4, init * double.Pow(2, 2), min * double.Pow(2, -2)),
             (5, init * double.Pow(2, 2), min * double.Pow(2, -2)),
@@ -166,3 +166,19 @@ public class BinaryReaderTests
     }
 }
 
+
+
+[TestClass]
+public class FloatingPointBitReaderTests
+{
+    [TestMethod]
+    public void SimpleTest()
+    {
+        var baseReader = new BitReader(new BitArray(new ulong[] { 0b1111100000 }, 10));
+        var reader = new FloatingPointBitReader(baseReader, 0, 1UL << 10);
+
+        var result = reader.ReadDouble(10);
+
+        Contract.Assert(result == 0b1111100000);
+    }
+}
