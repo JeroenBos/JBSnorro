@@ -38,6 +38,7 @@ public interface IBitReader
         ulong result = this.ReadUInt64(1);
         return result != 0;
     }
+    [DebuggerHidden]
     public byte ReadByte(int bitCount = 8)
     {
         if (bitCount < 1 || bitCount > 8)
@@ -47,6 +48,7 @@ public interface IBitReader
 
         return (byte)ReadUInt64(bitCount);
     }
+    [DebuggerHidden]
     public sbyte ReadSByte(int bitCount = 8)
     {
         if (bitCount < 2 || bitCount > 8)
@@ -56,6 +58,7 @@ public interface IBitReader
 
         return (sbyte)ReadInt64(bitCount);
     }
+    [DebuggerHidden]
     public short ReadInt16(int bitCount = 16)
     {
         if (bitCount < 2 || bitCount > 16)
@@ -65,6 +68,7 @@ public interface IBitReader
 
         return (short)ReadInt64(bitCount);
     }
+    [DebuggerHidden]
     public ushort ReadUInt16(int bitCount = 16)
     {
         if (bitCount < 1 || bitCount > 16)
@@ -74,6 +78,7 @@ public interface IBitReader
 
         return (ushort)ReadInt64(bitCount);
     }
+    [DebuggerHidden]
     public int ReadInt32(int bitCount = 32)
     {
         if (bitCount < 2 || bitCount > 32)
@@ -83,6 +88,7 @@ public interface IBitReader
 
         return (int)ReadInt64(bitCount);
     }
+    [DebuggerHidden]
     public uint ReadUInt32(int bitCount = 32)
     {
         if (bitCount < 1 || bitCount > 32)
@@ -110,6 +116,7 @@ public interface IBitReader
             return -magnitude - 1; // -1, otherwise 0 is mapped doubly
         }
     }
+    [DebuggerHidden]
     public Half ReadHalf(int bitCount = 16)
     {
         if (bitCount < 2 || bitCount > 32)
@@ -120,6 +127,7 @@ public interface IBitReader
         // half has 5 bits exponent
         return (Half)ReadDouble(bitCount);
     }
+    [DebuggerHidden]
     public float ReadSingle(int bitCount = 32)
     {
         if (bitCount < 2 || bitCount > 32)
