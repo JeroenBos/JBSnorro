@@ -174,8 +174,8 @@ public class FloatingPointBitReaderTests
     [TestMethod]
     public void SimpleTest()
     {
-        var baseReader = new BitReader(new BitArray(new ulong[] { 0b1111100000 }, 10));
-        var reader = new FloatingPointBitReader(baseReader, 0, 1UL << 10);
+        var data = new BitArray(new ulong[] { 0b1111100000 }, 10);
+        var reader = new FloatingPointBitReader(data[..], 0, 1UL << 10);
 
         var result = reader.ReadDouble(10);
 
