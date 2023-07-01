@@ -2,6 +2,7 @@
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using DebuggerDisplayAttribute = System.Diagnostics.DebuggerDisplayAttribute;
 namespace JBSnorro.Collections;
 
@@ -11,7 +12,6 @@ public interface IBitReader
     ulong RemainingLength => checked(Length - Position);
     ulong Position { get; }
 
-    ulong ReadUInt64(int bitCount = 64);
 
     bool CanRead(int bitCount)
     {
@@ -116,6 +116,7 @@ public interface IBitReader
             return -magnitude - 1; // -1, otherwise 0 is mapped doubly
         }
     }
+    ulong ReadUInt64(int bitCount = 64);
     [DebuggerHidden]
     public Half ReadHalf(int bitCount = 16)
     {
@@ -138,51 +139,29 @@ public interface IBitReader
         // float has 8 bits exponent
         return (float)ReadDouble(bitCount);
     }
-    public double ReadDouble(int bitCount = 64)
-    {
-        if (bitCount < 2 || bitCount > 32)
-            throw new ArgumentOutOfRangeException(nameof(bitCount));
-        if (this.RemainingLength < (ulong)bitCount)
-            throw new InsufficientBitsException("double");
-
-        // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
-        // but before some bitCount, there simply isn't enough bits to have this strategy. Something more complicated (or simpler) is needed
-        ulong originalRemainingLength = this.RemainingLength;
-        int significantBitCount = Math.Max(2, bitCount / 2);
-        int exponentBitCount = bitCount - significantBitCount;
-
-        var significant = this.ReadInt64(significantBitCount);
-        Contract.Assert(this.RemainingLength + (ulong)significantBitCount == originalRemainingLength);
-        var exponent = exponentBitCount == 0 ? 1 : exponentBitCount == 1 ? (double)this.ReadUInt64(exponentBitCount) : this.ReadInt64(exponentBitCount);
-
-        var value = 2 * significant * double.Pow(2, exponent);
-        return value;
-    }
+    public double ReadDouble(int bitCount = 64);
     /// <summary>
     /// Gets all indices in the stream the pattern occurs at.
     /// </summary>
     [DebuggerHidden]
     public IEnumerable<long> IndicesOf(ulong item, int itemLength, ulong startBitIndex = 0)
     {
-        return IndicesOfImpl(this, item, itemLength, startBitIndex);
-    }
-    internal static IEnumerable<long> IndicesOfImpl(IBitReader @this, ulong item, int itemLength, ulong startBitIndex)
-    {
         Contract.Requires<ArgumentOutOfRangeException>(itemLength >= 1);
         Contract.Requires<ArgumentOutOfRangeException>(itemLength <= 64);
         Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
-        Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= @this.Length);
+        Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= this.Length);
 
         var nextBitIndex = startBitIndex;
         while (true)
         {
-            @this.Seek(nextBitIndex);
-            long index = @this.IndexOf(item, itemLength);
+            this.Seek(nextBitIndex);
+            long index = this.IndexOf(item, itemLength);
             if (index == -1)
                 yield break;
             yield return index;
             nextBitIndex = checked((ulong)index + (ulong)itemLength);
         }
+
     }
 
     /// <summary>
@@ -210,24 +189,46 @@ public interface IBitReader
 public class BitReader : IBitReader
 {
     public static BitReader Empty { get; } = new BitReader(Array.Empty<ulong>(), 0);
+
     private readonly BitArray data;
     /// <summary>
     /// The index where this reader actually starts. Cannot be sought beyond.
     /// Treat this BitReader as if the stream really starts at <see cref="startOffset"/>.
     /// </summary>
     private readonly ulong startOffset;
-    /// <summary> Gets the length of the stream this bitreader can read, in bits. </summary>
-    public ulong Length { get; } // does not count the bits before the startOffset
-    private ulong End => startOffset + Length;
-
     /// <summary> In bits. </summary>
     private ulong current;
-    /// <summary> In bits. </summary>
-    public ulong RemainingLength => this.End - current;
+    /// <summary> 
+    /// Gets the length of the stream this <see cref="IBitReader"/> can read, in bits.
+    /// </summary>
+    /// <remarks>Does not count the bits before the startOffset</remarks>
+    public ulong Length { get; }
+
+    private ulong End
+    {
+        get => startOffset + Length;
+    }
+    /// <summary> In bits.</summary>
+    public ulong RemainingLength
+    {
+        get => this.End - current;
+    }
     /// <summary>
     /// Gets the current position of this reader in the bit stream.
     /// </summary>
-    public ulong Position => current - startOffset;
+    public ulong Position
+    {
+        get => current - startOffset;
+    }
+    /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
+    public IBitReader this[Range range]
+    {
+        get
+        {
+            var (offset, length) = range.GetOffsetAndLength(checked((int)this.Length));
+            return new BitReader(this.data, this.startOffset + (ulong)offset, (ulong)length);
+        }
+    }
 
     /// <summary>
     /// Gets the remainder of the bits in a segment.
@@ -300,6 +301,12 @@ public class BitReader : IBitReader
         return RemainingLength >= bitCount;
     }
 
+    /// <inheritdoc cref="IBitReader.ReadInt64(int)"/>
+    public long ReadInt64(int bitCount = 64)
+    {
+        IBitReader self = this;
+        return self.ReadInt64();
+    }
     public ulong ReadUInt64(int bitCount = 64)
     {
         if (bitCount < 1 || bitCount > 64)
@@ -314,6 +321,26 @@ public class BitReader : IBitReader
         current += (ulong)bitCount;
 
         return result;
+    }
+    public double ReadDouble(int bitCount = 64)
+    {
+        if (bitCount < 2 || bitCount > 32)
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
+        if (this.RemainingLength < (ulong)bitCount)
+            throw new InsufficientBitsException("double");
+
+        // the idea is that if the mantissa is filled, then the bits are just becoming less and less relevant
+        // but before some bitCount, there simply isn't enough bits to have this strategy. Something more complicated (or simpler) is needed
+        ulong originalRemainingLength = this.RemainingLength;
+        int significantBitCount = Math.Max(2, bitCount / 2);
+        int exponentBitCount = bitCount - significantBitCount;
+
+        var significant = this.ReadInt64(significantBitCount);
+        Contract.Assert(this.RemainingLength + (ulong)significantBitCount == originalRemainingLength);
+        var exponent = exponentBitCount == 0 ? 1 : exponentBitCount == 1 ? (double)this.ReadUInt64(exponentBitCount) : this.ReadInt64(exponentBitCount);
+
+        var value = 2 * significant * double.Pow(2, exponent);
+        return value;
     }
 
     public void Seek(ulong bitIndex)
@@ -337,12 +364,13 @@ public class BitReader : IBitReader
 
 
     /// <summary>
-    /// Gets all indices in the stream the pattern occurs at.
+    /// <inheritdoc cref="IBitReader.IndicesOf(ulong, int, ulong)"/>
     /// </summary>
     [DebuggerHidden]
     public IEnumerable<long> IndicesOf(ulong item, int itemLength, ulong startBitIndex = 0)
     {
-        return IBitReader.IndicesOfImpl(this, item, itemLength, startBitIndex);
+        IBitReader self = this;
+        return self.IndicesOf(item, itemLength, startBitIndex);
     }
 
     /// <param name="length"> In bits. </param>
@@ -358,27 +386,17 @@ public class BitReader : IBitReader
             throw new ArgumentOutOfRangeException(nameof(destBitIndex));
 
         this.data.CopyTo(dest, destBitIndex);
-
     }
-    private string ToDebuggerDisplay()
-    {
-        return $"BitReader({startOffset}..[|{current}|]..{End}, Length={this.Length}/{this.data.Length}, Remaining={this.RemainingLength})";
-    }
-
     public IBitReader Clone()
     {
         var result = new BitReader(this.data, this.startOffset, this.Length);
         result.current = this.current;
         return result;
     }
-    /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
-    public IBitReader this[Range range]
+
+    protected virtual string ToDebuggerDisplay()
     {
-        get
-        {
-            var (offset, length) = range.GetOffsetAndLength(checked((int)this.Length));
-            return new BitReader(this.data, this.startOffset + (ulong)offset, (ulong)length);
-        }
+        return $"{this.GetType().Name}({startOffset}..[|{current}|]..{End}, Length={this.Length}/{this.data.Length}, Remaining={this.RemainingLength})";
     }
 }
 
@@ -389,7 +407,7 @@ class InsufficientBitsException : ArgumentOutOfRangeException
 }
 
 
-class FloatingPointBitReader : IBitReader
+public class FloatingPointBitReader : IBitReader
 {
     private readonly IBitReader reader;
     public double Min { get; }
