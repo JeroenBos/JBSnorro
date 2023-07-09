@@ -148,16 +148,6 @@ internal abstract class BitReader : IBitReader
     }
 
 
-    /// <summary>
-    /// <inheritdoc cref="IBitReader.IndicesOf(ulong, int, ulong)"/>
-    /// </summary>
-    [DebuggerHidden]
-    public IEnumerable<long> IndicesOf(ulong item, int itemLength, ulong startBitIndex = 0)
-    {
-        IBitReader self = this;
-        return self.IndicesOf(item, itemLength, startBitIndex);
-    }
-
     /// <param name="length"> In bits. </param>
     public void CopyTo(ulong[] dest, ulong startBitIndex, ulong length, int destBitIndex)
     {
