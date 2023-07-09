@@ -47,17 +47,6 @@ internal class SimpleBitReader : BitReader
         }
     }
 
-    public override double ReadDouble(int bitCount)
-    {
-        Contract.Requires((1..64).Contains(bitCount, endInclusive: true));
-
-        decimal bits = ReadUInt64(bitCount);
-        ulong rangeLength = 2UL << bitCount - 1;
-        decimal rangeScale = (decimal)(Max - Min) / rangeLength;
-        double result = (double)(bits * rangeScale + (decimal)Min);
-        return result;
-    }
-
     public override SimpleBitReader Clone()
     {
         // base.current is dealt with through startOffset

@@ -123,10 +123,6 @@ internal abstract class BitReader : IBitReader
 
         return result;
     }
-    public virtual double ReadDouble(int bitCount = 64)
-    {
-        throw new NotSupportedException("If you want to read floating point numbers, use ony of the derived types");
-    }
 
     public void Seek(ulong bitIndex)
     {
