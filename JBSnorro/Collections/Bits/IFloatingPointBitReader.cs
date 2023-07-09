@@ -11,7 +11,7 @@ public interface IFloatingPointBitReader : IBitReader
     {
         return new FloatingPointBitReader(reader, readDouble ?? DefaultReadDouble);
     }
-    private static double DefaultReadDouble(int bitCount, IBitReader self)
+    internal static double DefaultReadDouble(int bitCount, IBitReader self)
     {
         if (bitCount < 2 || bitCount > 32)
             throw new ArgumentOutOfRangeException(nameof(bitCount));
@@ -56,4 +56,29 @@ public interface IFloatingPointBitReader : IBitReader
         return (float)ReadDouble(bitCount);
     }
     public double ReadDouble(int bitCount = 64);
+}
+
+public static class IBitReaderExtensions
+{
+    /// <summary>
+    /// Reads a <see cref="Half"/> using the default floating-point precision encoding.
+    /// </summary>
+    public static Half ReadHalf(this IBitReader reader, int bitCount = 16)
+    {
+        return (Half)IFloatingPointBitReader.DefaultReadDouble(bitCount, reader);
+    }
+    /// <summary>
+    /// Reads a <see cref="float"/> using the default floating-point precision encoding.
+    /// </summary>
+    public static float ReadSingle(this IBitReader reader, int bitCount = 16)
+    {
+        return (float)IFloatingPointBitReader.DefaultReadDouble(bitCount, reader);
+    }
+    /// <summary>
+    /// Reads a <see cref="double"/> using the default floating-point precision encoding.
+    /// </summary>
+    public static float ReadDouble(this IBitReader reader, int bitCount = 16)
+    {
+        return (float)IFloatingPointBitReader.DefaultReadDouble(bitCount, reader);
+    }
 }
