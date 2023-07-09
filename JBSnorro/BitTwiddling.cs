@@ -1,4 +1,5 @@
 ﻿using JBSnorro.Collections;
+using JBSnorro.Collections.Bits;
 using JBSnorro.Diagnostics;
 using System;
 using System.Collections;
@@ -7,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BitArray = JBSnorro.Collections.BitArray;
+using BitArray = JBSnorro.Collections.Bits.BitArray;
 
 namespace JBSnorro
 {

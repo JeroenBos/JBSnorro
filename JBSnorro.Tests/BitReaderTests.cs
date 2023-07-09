@@ -1,25 +1,25 @@
 ﻿using static JBSnorro.Diagnostics.Contract;
 using JBSnorro;
-using JBSnorro.Collections;
 using JBSnorro.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
+using JBSnorro.Collections.Bits;
 
 namespace JBNA.Tests;
 
 [TestClass]
-public class IBitReaderTests
+public class IFloatingPointBitReaderTests
 {
-    private static IBitReader Create(BitArray array)
+    private static IFloatingPointBitReader Create(BitArray array)
     {
         // to prove that this only tests IBitReader functions, but we need to create an instance, we encapsulate the call to SomeBitReader:
-        return new SomeBitReader(array);
+        return IFloatingPointBitReader.Create(array.ToBitReader());
     }
 
     [TestMethod]
     public void ReadDoubleFrom3TrueBits()
     {
-        IBitReader bitReader = Create(new BitArray(new bool[] { true, true, true }));
+        IFloatingPointBitReader bitReader = Create(new BitArray(new bool[] { true, true, true }));
 
         var value = bitReader.ReadDouble(3);
 
@@ -28,7 +28,7 @@ public class IBitReaderTests
     [TestMethod]
     public void ReadDoubleFrom3FalseBits()
     {
-        IBitReader bitReader = Create(new BitArray(new bool[] { false, false, false }));
+        IFloatingPointBitReader bitReader = Create(new BitArray(new bool[] { false, false, false }));
 
         var value = bitReader.ReadDouble(3);
 
@@ -59,7 +59,7 @@ public class IBitReaderTests
 
             foreach (var bitarray in allBitCombinations)
             {
-                IBitReader bitreader = Create(bitarray);
+                IFloatingPointBitReader bitreader = Create(bitarray);
                 var value = bitreader.ReadDouble(bitLength);
                 var absValue = double.Abs(value);
 
@@ -90,10 +90,10 @@ public class BinaryReaderTests
         return Create(BitArray.FromRef(data, length), startBitIndex);
     }
     [DebuggerHidden]
-    private static IBitReader Create(BitArray array, ulong startBitIndex = 0)
+    private static IBitReader Create(BitArray data, ulong startBitIndex = 0)
     {
         // to prove that this only tests IBitReader functions, but we need to create an instance, we encapsulate the call to SomeBitReader:
-        return new SomeBitReader(array, startBitIndex);
+        return IBitReader.Create(data, startBitIndex);
     }
 
     [TestMethod]
@@ -195,9 +195,9 @@ public class FloatingPointBitReaderTests
     public void SimpleTest()
     {
         var data = new BitArray(new ulong[] { 0b1111100000 }, 10);
-        var reader = new SimpleBitReader(data[..], 0, 1UL << 10);
+        var reader = data[..].ToBitReader();
 
-        var result = reader.ReadDouble(10);
+        var result = reader.ReadUInt64(10);
 
         Contract.Assert(result == 0b1111100000);
     }

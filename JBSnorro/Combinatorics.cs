@@ -1,5 +1,6 @@
 ﻿using JBSnorro;
 using JBSnorro.Collections;
+using JBSnorro.Collections.Bits;
 using JBSnorro.Collections.Sorted;
 using JBSnorro.Diagnostics;
 using JBSnorro.Geometry;

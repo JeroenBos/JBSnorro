@@ -1,4 +1,4 @@
-﻿using JBSnorro.Collections;
+﻿using JBSnorro.Collections.Bits;
 using JBSnorro.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;

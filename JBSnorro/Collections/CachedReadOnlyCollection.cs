@@ -1,19 +1,15 @@
-﻿using JBSnorro.Diagnostics;
+﻿using JBSnorro.Collections.Bits;
+using JBSnorro.Diagnostics;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JBSnorro.Collections
 {
-	/// <summary>
-	/// Represents a collectino of lazily computed elements (and are cached upon first computation).
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	[DebuggerDisplay("Count: {Count}")]
+    /// <summary>
+    /// Represents a collectino of lazily computed elements (and are cached upon first computation).
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [DebuggerDisplay("Count: {Count}")]
 	public class CachedReadOnlyCollection<T> : IReadOnlyList<T>
 	{
 		private readonly Func<int, T> selector;
@@ -52,7 +48,7 @@ namespace JBSnorro.Collections
 				yield return this[i];
 			}
 		}
-		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
 		/// <summary>
 		/// Gets the index of the first element in this collection that has already been cached that matches the specified predicate.

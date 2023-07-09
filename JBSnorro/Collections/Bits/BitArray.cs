@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using JBSnorro;
 using JBSnorro.Algorithms;
+using JBSnorro.Collections.Bits.Internals;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using System.Collections;
@@ -10,10 +11,10 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using static JBSnorro.Global;
 
-namespace JBSnorro.Collections
+namespace JBSnorro.Collections.Bits
 {
     /// <summary> Represents the same idea as the BCL <see cref="System.Collections.BitArray"/>, 
-    /// only it derives from <see cref="System.Collections.Generic.IList{T}"/> and <see cref="System.Collections.Generic.IReadOnlyList{T}"/>. </summary>
+    /// only it derives from <see cref="IList{T}"/> and <see cref="IReadOnlyList{T}"/>. </summary>
     [DebuggerDisplay("BitArray(Length={Length}, {this.ToString()})")]
     public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     {
@@ -53,7 +54,7 @@ namespace JBSnorro.Collections
         }
 
         private ulong[] data;
-        public Span<byte> UnderlyingData => MemoryMarshal.AsBytes(this.data.AsSpan());
+        public Span<byte> UnderlyingData => MemoryMarshal.AsBytes(data.AsSpan());
         /// <summary> Gets or sets the flag at the specified index in this array is set. </summary>
         public bool this[int index]
         {
@@ -78,7 +79,7 @@ namespace JBSnorro.Collections
                 int dataIndex;
                 ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
 #endif
-                return (data[ToInternalAndBitIndex(i, out bitIndex)] & (1UL << bitIndex)) != 0;
+                return (data[ToInternalAndBitIndex(i, out bitIndex)] & 1UL << bitIndex) != 0;
             }
             [DebuggerHidden]
             set
@@ -101,8 +102,8 @@ namespace JBSnorro.Collections
         {
             get
             {
-                Contract.Requires<NotImplementedException>(this.Length <= int.MaxValue);
-                var (start, length) = range.GetOffsetAndLength((int)this.Length);
+                Contract.Requires<NotImplementedException>(Length <= int.MaxValue);
+                var (start, length) = range.GetOffsetAndLength((int)Length);
                 return new BitArrayReadOnlySegment(this, (ulong)start, (ulong)length);
             }
         }
@@ -112,7 +113,7 @@ namespace JBSnorro.Collections
         /// </summary>
         internal ulong GetULong(ulong bitIndex)
         {
-            Contract.Requires(bitIndex <= this.Length);
+            Contract.Requires(bitIndex <= Length);
 
             checked
             {
@@ -121,12 +122,12 @@ namespace JBSnorro.Collections
 
                 if (bitIndexInUlong == 0)
                 {
-                    return this.data[ulongIndex];
+                    return data[ulongIndex];
                 }
                 else
                 {
-                    ulong shiftedP1 = this.data[ulongIndex] >> bitIndexInUlong;
-                    ulong shiftedP2 = this.data.ElementAtOrDefault(ulongIndex + 1) << (64 - bitIndexInUlong);
+                    ulong shiftedP1 = data[ulongIndex] >> bitIndexInUlong;
+                    ulong shiftedP2 = data.ElementAtOrDefault(ulongIndex + 1) << 64 - bitIndexInUlong;
 
                     var result = shiftedP1 | shiftedP2;
                     return result;
@@ -141,7 +142,7 @@ namespace JBSnorro.Collections
         /// </summary>
         public ulong Capacity
         {
-            get => (ulong)this.data.Length * 64UL;
+            get => (ulong)data.Length * 64UL;
         }
 
         /// <summary>
@@ -184,7 +185,7 @@ namespace JBSnorro.Collections
             }
         }
         /// <summary> Creates a new bit array from the specified bits. </summary>
-        public BitArray(IEnumerable<bool> bits) : this((bits as IList<bool>) ?? bits.ToList()) { }
+        public BitArray(IEnumerable<bool> bits) : this(bits as IList<bool> ?? bits.ToList()) { }
         /// <summary> Creates a new bit array from the specified bits. </summary>
         [DebuggerHidden]
         public BitArray(IList<bool> bits) : this(bits, bits.Count) { }
@@ -205,13 +206,13 @@ namespace JBSnorro.Collections
         [DebuggerHidden]
         private BitArray(IEnumerable<bool> bits, ulong count)
         {
-            Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
+            Contract.Assert<NotImplementedException>(Length <= int.MaxValue);
             Contract.Requires(bits != null);
             Contract.Requires(count >= 0);
             Contract.LazilyAssertCount(ref bits, (int)count);
 
-            this.Length = count;
-            this.data = new ulong[ComputeInternalStructureSize(count)];
+            Length = count;
+            data = new ulong[ComputeInternalStructureSize(count)];
             int i = 0;
             foreach (bool bit in bits)
             {
@@ -282,8 +283,8 @@ namespace JBSnorro.Collections
             Contract.Requires(backingData != null);
             Contract.Requires(0 <= length && length <= 64UL * (ulong)backingData.Length);
 
-            this.Length = length;
-            this.data = backingData;
+            Length = length;
+            data = backingData;
         }
         /// <summary>
         /// Creates a <see cref="BitArray"/> with data cloned from the specified segment.
@@ -291,8 +292,8 @@ namespace JBSnorro.Collections
         [DebuggerHidden]
         public BitArray(BitArrayReadOnlySegment segment)
         {
-            this.Length = segment.Length;
-            this.data = new ulong[this.Length.RoundUpToNearestMultipleOf(64UL) / 64UL];
+            Length = segment.Length;
+            data = new ulong[Length.RoundUpToNearestMultipleOf(64UL) / 64UL];
             segment.CopyTo(this, 0);
         }
         /// <summary> Gets a clone of this bit array. </summary>
@@ -300,18 +301,28 @@ namespace JBSnorro.Collections
         public BitArray Clone()
         {
             var data = (ulong[])this.data.Clone();
-            return BitArray.FromRef(data, (ulong)this.Length);
+            return FromRef(data, Length);
+        }
+        /// <summary>
+        /// Clones this <see cref="BitArray"/> but specified a shorter length.
+        /// </summary>
+        public BitArray With(ulong length)
+        {
+            Contract.Requires(length <= this.Length);
+            if (length == this.Length)
+                return this;
+            return new BitArray(this.data, length);
         }
 
         /// <summary> Returns whether no bit is set in both this and the specified array. </summary>
         public bool IsDisjointFrom(BitArray array)
         {
             Contract.Requires(array != null);
-            Contract.Requires(this.Length == array.Length);
+            Contract.Requires(Length == array.Length);
 
-            for (int i = 0; i < this.data.Length; i++)
+            for (int i = 0; i < data.Length; i++)
             {
-                if ((this.data[i] & array.data[i]) != 0)
+                if ((data[i] & array.data[i]) != 0)
                     return false;
             }
             return true;
@@ -320,11 +331,11 @@ namespace JBSnorro.Collections
         public bool Contains(BitArray array)
         {
             Contract.Requires(array != null);
-            Contract.Requires(this.Length == array.Length);
+            Contract.Requires(Length == array.Length);
 
-            for (int i = 0; i < this.data.Length; i++)
+            for (int i = 0; i < data.Length; i++)
             {
-                if ((this.data[i] & array.data[i]) != array.data[i])
+                if ((data[i] & array.data[i]) != array.data[i])
                     return false;
             }
             return true;
@@ -333,9 +344,9 @@ namespace JBSnorro.Collections
         public bool Contains(IReadOnlyList<bool> bitSequence)
         {
             Contract.Requires(bitSequence != null);
-            Contract.Requires(bitSequence.Count == checked((int)this.Length));
+            Contract.Requires(bitSequence.Count == checked((int)Length));
 
-            for (int i = 0; i < checked((int)this.Length); i++)
+            for (int i = 0; i < checked((int)Length); i++)
             {
                 if (bitSequence[i] && !this[i])
                     return false;
@@ -345,19 +356,19 @@ namespace JBSnorro.Collections
         /// <summary> Gets whether no bit is set. Returns true when this array has length 0. </summary>
         public bool IsEmpty()
         {
-            return this.data.All(internalElement => internalElement == 0);
+            return data.All(internalElement => internalElement == 0);
         }
         /// <summary> Gets whether all bits are set. Returns true when this array has length 0. </summary>
         public bool IsFull()
         {
-            for (int i = 0; i < this.data.Length - 1; i++)
+            for (int i = 0; i < data.Length - 1; i++)
             {
-                if (this.data[i] != ulong.MaxValue)
+                if (data[i] != ulong.MaxValue)
                     return false;
             }
             if (data.Length != 0)
             {
-                int bitCountThatHasToBeSetOnLastInternalElement = (int)(this.Length % bitCountPerInternalElement);
+                int bitCountThatHasToBeSetOnLastInternalElement = (int)(Length % bitCountPerInternalElement);
                 ulong fullBitPatternOfLastIntervalElement = bitCountThatHasToBeSetOnLastInternalElement == bitCountPerInternalElement
                                                                     ? ulong.MaxValue
                                                                     : (1UL << bitCountThatHasToBeSetOnLastInternalElement) - 1;//would correctly overflow if bitCountThatHasToBeSetOnLastInternalElement == bitCountPerInternalElement
@@ -376,9 +387,9 @@ namespace JBSnorro.Collections
         public void Or(BitArray array)
         {
             Contract.Requires(array != null);
-            Contract.Requires(array.Length == this.Length);
+            Contract.Requires(array.Length == Length);
 
-            Contract.Assert(array.data.Length == this.data.Length);
+            Contract.Assert(array.data.Length == data.Length);
 
             for (int i = 0; i < data.Length; i++)
             {
@@ -390,7 +401,7 @@ namespace JBSnorro.Collections
         public void Or(ImmutableBitArray array)
         {
             Contract.Requires(!ReferenceEquals(array, null));
-            Contract.Requires(array.Length == this.Length);
+            Contract.Requires(array.Length == Length);
 
             Or(array.data);
         }
@@ -399,7 +410,7 @@ namespace JBSnorro.Collections
         public void Or(IReadOnlyList<bool> bitSequence)
         {
             Contract.Requires(bitSequence != null);
-            Contract.Requires(bitSequence.Count == checked((int)this.Length));
+            Contract.Requires(bitSequence.Count == checked((int)Length));
 
             for (int i = 0; i < bitSequence.Count; i++)
             {
@@ -410,9 +421,9 @@ namespace JBSnorro.Collections
         public void And(BitArray array)
         {
             Contract.Requires(array != null);
-            Contract.Requires(array.Length == this.Length);
+            Contract.Requires(array.Length == Length);
 
-            Contract.Assert(array.data.Length == this.data.Length);
+            Contract.Assert(array.data.Length == data.Length);
 
             for (int i = 0; i < data.Length; i++)
             {
@@ -423,7 +434,7 @@ namespace JBSnorro.Collections
         public void And(ImmutableBitArray array)
         {
             Contract.Requires(!ReferenceEquals(array, null));
-            Contract.Requires(array.Length == this.Length);
+            Contract.Requires(array.Length == Length);
 
             And(array.data);
         }
@@ -431,7 +442,7 @@ namespace JBSnorro.Collections
         public void And(IReadOnlyList<bool> bitSequence)
         {
             Contract.Requires(bitSequence != null);
-            Contract.Requires(bitSequence.Count == checked((int)this.Length));
+            Contract.Requires(bitSequence.Count == checked((int)Length));
 
             for (int i = 0; i < bitSequence.Count; i++)
             {
@@ -445,7 +456,7 @@ namespace JBSnorro.Collections
         {
             if (index < 0) throw new ArgumentOutOfRangeException(nameof(index));
 
-            return this.With((ulong)index, value);
+            return With((ulong)index, value);
         }
         /// <summary> Gets a clone of the current bit array and sets the bit at the specified index to the specified value. </summary>
         /// <param name="index"> The index of the bit to set in the new array. </param>
@@ -453,12 +464,12 @@ namespace JBSnorro.Collections
         public BitArray With(ulong index, bool value = true)
         {
             Contract.Requires(0 <= index);
-            Contract.Requires(index < this.Length);
+            Contract.Requires(index < Length);
 
-            var result = this.Clone();
+            var result = Clone();
             result[index] = value;
 
-            Contract.Ensures(result.Length == this.Length);
+            Contract.Ensures(result.Length == Length);
             return result;
         }
 
@@ -512,15 +523,15 @@ namespace JBSnorro.Collections
         public void ComputeSHA1(ISHAThatCanContinue hasher)
         {
             // mask the last ulong in case some bits are still set there:
-            int endULongIndex = (int)(this.Length / 64UL);
-            int remainder = (int)(this.Length % 64UL);
+            int endULongIndex = (int)(Length / 64UL);
+            int remainder = (int)(Length % 64UL);
             if (remainder != 0)
             {
-                this.data[endULongIndex] = this.data[endULongIndex].Mask(0, remainder);
+                data[endULongIndex] = data[endULongIndex].Mask(0, remainder);
                 endULongIndex++;
             }
 
-            var data_bytes = System.Runtime.InteropServices.MemoryMarshal.AsBytes(this.data.AsSpan()[..endULongIndex]);
+            var data_bytes = MemoryMarshal.AsBytes(data.AsSpan()[..endULongIndex]);
 #if DEBUG
             var test = data_bytes.ToArray();
 #endif
@@ -534,7 +545,7 @@ namespace JBSnorro.Collections
         {
             get
             {
-                Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
+                Contract.Assert<NotImplementedException>(Length <= int.MaxValue);
                 return (int)Length;
             }
         }
@@ -548,8 +559,8 @@ namespace JBSnorro.Collections
         [DebuggerHidden]
         public void CopyTo(bool[] array, int arrayIndex)
         {
-            Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
-            for (int i = 0; i < (int)this.Length; i++)
+            Contract.Assert<NotImplementedException>(Length <= int.MaxValue);
+            for (int i = 0; i < (int)Length; i++)
             {
                 array[arrayIndex + i] = this[i];
             }
@@ -557,7 +568,7 @@ namespace JBSnorro.Collections
         [DebuggerHidden]
         public void CopyTo(ulong[] array, int arrayIndex)
         {
-            this.data.CopyTo(array, arrayIndex);
+            data.CopyTo(array, arrayIndex);
         }
         [DebuggerHidden]
         public void CopyTo(Span<byte> array, int arrayIndex)
@@ -566,27 +577,27 @@ namespace JBSnorro.Collections
             const int bitsPerULong = 64;
             const int bitsPerByte = 8;
 
-            if (this.Length == 0)
+            if (Length == 0)
                 return;
-            ulong neededNumberOfBytes = this.Length == 0 ? 0 : ((this.Length - 1) / bitsPerByte);
+            ulong neededNumberOfBytes = Length == 0 ? 0 : (Length - 1) / bitsPerByte;
             if (array.Length < checked((int)((ulong)arrayIndex + neededNumberOfBytes)))
                 throw new IndexOutOfRangeException("Specified array too small");
 
             int i;
-            for (i = 0; i < checked((int)(this.Length / bitsPerULong)); i++)
+            for (i = 0; i < checked((int)(Length / bitsPerULong)); i++)
             {
                 for (int j = 0; j < bytesPerULong; j++)
                 {
-                    array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> (j * bitsPerByte));
+                    array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> j * bitsPerByte);
                 }
             }
-            for (int j = 0; j < checked((int)((this.Length % bitsPerULong) / bytesPerULong)); j++)
+            for (int j = 0; j < checked((int)(Length % bitsPerULong / bytesPerULong)); j++)
             {
-                array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> (j * bitsPerByte));
+                array[arrayIndex + i * bytesPerULong + j] = (byte)(data[i] >> j * bitsPerByte);
             }
             // << shifts to higher order bits
             // mask the last byte that may contain unzeroed data:
-            int extraBits = (int)(this.Length % bitsPerByte);
+            int extraBits = (int)(Length % bitsPerByte);
             if (extraBits != 0)
             {
                 byte mask = (byte)-(byte.MaxValue >> extraBits);
@@ -598,21 +609,21 @@ namespace JBSnorro.Collections
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
             Contract.Assert<NotImplementedException>(sourceStartBitIndex + length <= int.MaxValue);
-            if (sourceStartBitIndex + length > (ulong)this.Length) throw new ArgumentOutOfRangeException("sourceStartBitIndex + length");
+            if (sourceStartBitIndex + length > Length) throw new ArgumentOutOfRangeException("sourceStartBitIndex + length");
             Contract.Assert<NotImplementedException>(destStartBitIndex + length <= int.MaxValue);
-            if (destStartBitIndex + length > (ulong)array.Length) throw new ArgumentOutOfRangeException("destStartBitIndex + length");
+            if (destStartBitIndex + length > array.Length) throw new ArgumentOutOfRangeException("destStartBitIndex + length");
 
             CopyTo(array.data, sourceStartBitIndex, length, destStartBitIndex);
         }
         [DebuggerHidden]
         internal void CopyTo(ulong[] array, ulong sourceStartBitIndex, ulong length, ulong destStartBitIndex)
         {
-            BitTwiddling.CopyBitsTo(this.data, array, sourceStartBitIndex, destStartBitIndex, length: length);
+            data.CopyBitsTo(array, sourceStartBitIndex, destStartBitIndex, length: length);
         }
         [DebuggerHidden]
         public IEnumerator<bool> GetEnumerator()
         {
-            return Enumerable.Range(0, checked((int)this.Length)).Select(i => this[i]).GetEnumerator();
+            return Enumerable.Range(0, checked((int)Length)).Select(i => this[i]).GetEnumerator();
         }
         [DebuggerHidden]
         IEnumerator IEnumerable.GetEnumerator()
@@ -627,24 +638,24 @@ namespace JBSnorro.Collections
         [DebuggerHidden]
         public long IndexOf(ulong item, int? itemLength = null, ulong startBitIndex = 0)
         {
-            return BitTwiddling.IndexOfBits(this.data, item, itemLength, startBitIndex, this.Length);
+            return BitTwiddling.IndexOfBits(data, item, itemLength, startBitIndex, Length);
         }
         /// <summary>
         /// Returns the last of the matches consecutive with the first match after or at <paramref name="startBitIndex"/>.
         /// </summary>
         public long IndexOfLastConsecutive(ulong item, int? itemLength = null, ulong startBitIndex = 0)
         {
-            return BitTwiddling.IndexOfBits(this.data, new[] { item }, itemLength, startBitIndex, this.Length, returnLastConsecutive: true).BitIndex;
+            return BitTwiddling.IndexOfBits(data, new[] { item }, itemLength, startBitIndex, Length, returnLastConsecutive: true).BitIndex;
         }
         public bool IsAt(ulong index, ulong item, int? itemLength = null)
         {
             ulong length = (ulong)(itemLength ?? 64);
             var tempWrapper = new BitArray(new ulong[] { item }, length);
-            return this.BitSequenceEqual(tempWrapper, index, length);
+            return BitSequenceEqual(tempWrapper, index, length);
         }
         public bool BitSequenceEqual(BitArray other)
         {
-            return BitSequenceEqual(other, 0, this.Length);
+            return BitSequenceEqual(other, 0, Length);
         }
         public bool BitSequenceEqual(BitArray other, ulong sourceStartBitIndex, ulong sourceBitLength)
         {
@@ -653,23 +664,23 @@ namespace JBSnorro.Collections
         }
         public bool BitSequenceEqual(BitArrayReadOnlySegment other)
         {
-            return BitSequenceEqual(other, 0, this.Length);
+            return BitSequenceEqual(other, 0, Length);
         }
         public bool BitSequenceEqual(BitArrayReadOnlySegment other, ulong sourceStartBitIndex, ulong sourceBitLength)
         {
-            return other.Length == sourceBitLength && this.data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitEnd: sourceStartBitIndex + sourceBitLength, otherBitEnd: other.start + other.Length);
+            return other.Length == sourceBitLength && data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitEnd: sourceStartBitIndex + sourceBitLength, otherBitEnd: other.start + other.Length);
         }
         /// <param name="endIndex">Exclusive.</param>
         public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? endIndex = null)
         {
-            ulong dataLength = endIndex == null ? this.Length : endIndex.Value;
-            return BitTwiddling.IndexOfBits(this.data, items, itemLength, startIndex, dataLength);
+            ulong dataLength = endIndex == null ? Length : endIndex.Value;
+            return BitTwiddling.IndexOfBits(data, items, itemLength, startIndex, dataLength);
         }
         public void Insert(ulong index, bool value)
         {
             // PERF: create overload that takes `ref this.data` (in case there's sufficient space)
-            this.data = BitTwiddling.InsertBits(this.data, new[] { index }, new[] { value }, this.Length);
-            this.Length++;
+            data = data.InsertBits(new[] { index }, new[] { value }, Length);
+            Length++;
         }
         /// <summary>
         /// Inserts bits into the specified bit source.
@@ -682,8 +693,8 @@ namespace JBSnorro.Collections
         public void InsertRange(ulong[] sortedIndices, bool[] values)
         {
             // there's still PERF to be gained by not creating a new array if it would fit, by implementing `ref this.data`
-            this.data = BitTwiddling.InsertBits(this.data, sortedIndices, values, (ulong)this.Length);
-            this.Length += (ulong)sortedIndices.Length;
+            data = data.InsertBits(sortedIndices, values, Length);
+            Length += (ulong)sortedIndices.Length;
         }
         /// <summary>
         /// Inserts the specified bits at the specified index.
@@ -692,33 +703,33 @@ namespace JBSnorro.Collections
         /// <param name="index"></param>
         public void Insert(BitArrayReadOnlySegment segment, ulong index)
         {
-            this.data = BitTwiddling.InsertBits(this.data, segment.data.data, index, segment.start, segment.Length, this.Length);
-            this.Length += segment.Length;
+            data = data.InsertBits(segment.data.data, index, segment.start, segment.Length, Length);
+            Length += segment.Length;
         }
         /// <summary>
         /// Appends the specified segment at the end of this array.
         /// </summary>
         public void Add(BitArrayReadOnlySegment segment)
         {
-            this.Insert(segment, this.Length);
+            Insert(segment, Length);
         }
         public void RemoveAt(ulong index)
         {
-            this.RemoveAt(new[] { index });
+            RemoveAt(new[] { index });
         }
         public void RemoveAt(params ulong[] indices)
         {
-            Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
+            Contract.Assert<NotImplementedException>(Length <= int.MaxValue);
             if (indices.Length == 0)
                 return;
-            if (indices.Length > (int)this.Length)
+            if (indices.Length > (int)Length)
                 throw new ArgumentOutOfRangeException(nameof(indices), "More indices specified than bits");
             // this is a very inefficient implementation
             // use constructor to convert to ulong[]
             int[] indicesInts = indices.Map(u => checked((int)u));
-            var bitArray = new BitArray(this.AsEnumerable().ExceptAt(indicesInts), this.Length - (ulong)indices.Length);
-            bitArray.CopyTo(this.data, 0); // overwrite current; will always fit
-            this.Length -= (ulong)indices.Length;
+            var bitArray = new BitArray(this.AsEnumerable().ExceptAt(indicesInts), Length - (ulong)indices.Length);
+            bitArray.CopyTo(data, 0); // overwrite current; will always fit
+            Length -= (ulong)indices.Length;
         }
         #endregion
 
@@ -775,9 +786,9 @@ namespace JBSnorro.Collections
             Contract.Requires((0..65).Contains(valueLength));
             if (valueLength == 0)
             {
-                return this.Length == 0;
+                return Length == 0;
             }
-            return this.Length == (ulong)valueLength && value.Mask(0, valueLength) == this.data[0];
+            return Length == (ulong)valueLength && value.Mask(0, valueLength) == data[0];
         }
         public bool Equals(BitArray? other)
         {
@@ -786,22 +797,22 @@ namespace JBSnorro.Collections
             if (ReferenceEquals(other, this))
                 return true;
 
-            if (this.Length != other.Length)
+            if (Length != other.Length)
                 return false;
 
-            int fullUlongDataLength = checked((int)(this.Length / 64));
+            int fullUlongDataLength = checked((int)(Length / 64));
 
-            if (!this.data.Take(fullUlongDataLength).SequenceEqual(other.data.Take(fullUlongDataLength)))
+            if (!data.Take(fullUlongDataLength).SequenceEqual(other.data.Take(fullUlongDataLength)))
                 return false;
 
             ulong getLast(ulong[] data)
             {
-                return data[fullUlongDataLength].Mask(0, (int)(this.Length % 64));
+                return data[fullUlongDataLength].Mask(0, (int)(Length % 64));
             }
 
-            if ((this.Length % 64) != 0)
+            if (Length % 64 != 0)
             {
-                var thisLast = getLast(this.data);
+                var thisLast = getLast(data);
                 var otherLast = getLast(other.data);
 
                 return thisLast == otherLast;
@@ -820,9 +831,9 @@ namespace JBSnorro.Collections
 
         #endregion
 
-        public BitReader ToBitReader()
+        public IBitReader ToBitReader()
         {
-            return BitReader.Create(this, 0, this.Length);
+            return IBitReader.Create(this);
         }
 
         void IList<bool>.Insert(int index, bool item)
@@ -840,17 +851,17 @@ namespace JBSnorro.Collections
         [DebuggerHidden]
         public override string ToString()
         {
-            return this.ToString(this.Length);
+            return ToString(Length);
         }
         [DebuggerHidden]
         public string ToString(ulong length)
         {
-            return this.data.FormatAsBits(length);
+            return data.FormatAsBits(length);
         }
         [DebuggerHidden]
         public string ToString(ulong startIndex, ulong length)
         {
-            return this.data.FormatAsBits(startIndex, length);
+            return data.FormatAsBits(startIndex, length);
         }
     }
 
@@ -935,7 +946,7 @@ namespace JBSnorro.Collections
         /// <summary> Returns <see param="bitCount"/> ones followed by zeroes (least significant to most). </summary>
         internal static ulong LowerBitsMask(int bitCount)
         {
-            return ulong.MaxValue >> (64 - bitCount);
+            return ulong.MaxValue >> 64 - bitCount;
         }
         /// <summary> Returns zeroes ending on <see param="bitCount"/> ones (least significant to most). </summary>
         internal static ulong UpperBitsMask(int bitCount)
