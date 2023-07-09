@@ -187,10 +187,8 @@ public interface IBitReader
 }
 
 [DebuggerDisplay("{ToDebuggerDisplay()}")]
-public class BitReader : IBitReader
+public abstract class BitReader : IBitReader
 {
-    public static BitReader Empty { get; } = new BitReader(Array.Empty<ulong>(), 0);
-
     protected readonly BitArray data;
     /// <summary>
     /// The index where this reader actually starts. Cannot be sought beyond.
@@ -222,14 +220,7 @@ public class BitReader : IBitReader
         get => current - startOffset;
     }
     /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
-    public virtual IBitReader this[Range range]
-    {
-        get
-        {
-            var (offset, length) = range.GetOffsetAndLength(checked((int)this.Length));
-            return new BitReader(this.data, this.startOffset + (ulong)offset, (ulong)length);
-        }
-    }
+    public abstract IBitReader this[Range range] { get; }
 
     /// <summary>
     /// Gets the remainder of the bits in a segment.
@@ -296,7 +287,8 @@ public class BitReader : IBitReader
         return RemainingLength >= bitCount;
     }
 
-    public virtual ulong ReadUInt64(int bitCount = 64)
+    /// <remarks>Is sealed because of <see cref="ReadUInt64(BitArray, ulong, int)"/></remarks>
+    public ulong ReadUInt64(int bitCount = 64)
     {
         if (bitCount < 1 || bitCount > 64)
             throw new ArgumentOutOfRangeException(nameof(bitCount));
@@ -360,11 +352,8 @@ public class BitReader : IBitReader
 
         this.data.CopyTo(dest, destBitIndex);
     }
-    public virtual IBitReader Clone()
-    {
-        // this.current is dealt with through startOffset
-        return new BitReader(this.data, this.startOffset, this.Length);
-    }
+    public abstract IBitReader Clone();
+
 
     protected virtual string ToDebuggerDisplay()
     {
@@ -429,6 +418,20 @@ public class SomeBitReader : BitReader
 
         var value = 2 * significant * double.Pow(2, exponent);
         return value;
+    }
+
+    public override IBitReader Clone()
+    {
+        // this.current is dealt with through startOffset
+        return new SomeBitReader(this.data, this.startOffset, this.Length);
+    }
+    public override IBitReader this[Range range]
+    {
+        get
+        {
+            var (offset, length) = range.GetOffsetAndLength(checked((int)this.Length));
+            return new SomeBitReader(this.data, this.startOffset + (ulong)offset, (ulong)length);
+        }
     }
 }
 

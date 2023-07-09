@@ -112,7 +112,8 @@ namespace JBSnorro.Collections
                 if (dataStart < 0)
                     return false;
 
-                ulong dataBeforeCurrentSegment = new BitReader(this.data, (ulong)dataStart).ReadUInt64(dataLength);
+                // SomeBitReader or some other type doesn't matter: the implementation of ReadUInt64 doesn't differ
+                ulong dataBeforeCurrentSegment = BitReader.ReadUInt64(this.data, (ulong)dataStart, dataLength);
                 return dataBeforeCurrentSegment == data;
             }
         }
@@ -136,7 +137,8 @@ namespace JBSnorro.Collections
                 if (dataEnd > this.data.Length)
                     return false;
 
-                ulong dataAfterCurrentSegment = new BitReader(this.data, this.start + this.Length).ReadUInt64(dataLength);
+                
+                ulong dataAfterCurrentSegment = BitReader.ReadUInt64(this.data, this.start + this.Length, dataLength);
                 return dataAfterCurrentSegment == data;
             }
         }
@@ -239,23 +241,6 @@ namespace JBSnorro.Collections
         public static BitArrayReadOnlySegment SelectSegment(this BitArray array, ulong start, ulong length)
         {
             return new BitArrayReadOnlySegment(array, start, length);
-        }
-        [DebuggerHidden]
-        public static BitReader SelectReader(this BitArray array, Range range)
-        {
-            Contract.Assert<NotImplementedException>(array.Length <= int.MaxValue);
-            var (index, length) = range.GetOffsetAndLength((int)array.Length);
-            return array.SelectReader(index, length);
-        }
-        [DebuggerHidden]
-        public static BitReader SelectReader(this BitArray array, int start, int length)
-        {
-            return array.SelectReader((ulong)start, (ulong)length);
-        }
-        [DebuggerHidden]
-        public static BitReader SelectReader(this BitArray array, ulong start, ulong length)
-        {
-            return new BitReader(array, start, length);
         }
     }
 }

@@ -7,12 +7,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace JBNA.Tests;
 
 [TestClass]
-public class BitReaderTests
+public class IBitReaderTests
 {
+    private static IBitReader Create(BitArray array)
+    {
+        // to prove that this only tests IBitReader functions, but we need to create an instance, we encapsulate the call to SomeBitReader:
+        return new SomeBitReader(array);
+    }
+
     [TestMethod]
     public void ReadDoubleFrom3TrueBits()
     {
-        IBitReader bitReader = new BitReader(new BitArray(new bool[] { true, true, true }));
+        IBitReader bitReader = Create(new BitArray(new bool[] { true, true, true }));
 
         var value = bitReader.ReadDouble(3);
 
@@ -21,7 +27,7 @@ public class BitReaderTests
     [TestMethod]
     public void ReadDoubleFrom3FalseBits()
     {
-        IBitReader bitReader = new BitReader(new BitArray(new bool[] { false, false, false }));
+        IBitReader bitReader = Create(new BitArray(new bool[] { false, false, false }));
 
         var value = bitReader.ReadDouble(3);
 
@@ -52,7 +58,7 @@ public class BitReaderTests
 
             foreach (var bitarray in allBitCombinations)
             {
-                IBitReader bitreader = new BitReader(bitarray);
+                IBitReader bitreader = Create(bitarray);
                 var value = bitreader.ReadDouble(bitLength);
                 var absValue = double.Abs(value);
 
@@ -77,54 +83,65 @@ public class BitReaderTests
 [TestClass]
 public class BinaryReaderTests
 {
+    private static IBitReader Create(ulong[] data, ulong startBitIndex = 0)
+    {
+        return Create(BitArray.FromRef(data), startBitIndex);
+    }
+    private static IBitReader Create(BitArray array, ulong startBitIndex = 0)
+    {
+        // to prove that this only tests IBitReader functions, but we need to create an instance, we encapsulate the call to SomeBitReader:
+        return new SomeBitReader(array, startBitIndex);
+    }
+
     [TestMethod]
     public void Can_Construct()
     {
-        var reader = new BitReader(new BitArray());
+        var reader = Create(new BitArray());
         Assert(reader.Length == 0);
     }
     [TestMethod]
     public void Can_Read_FalseBit()
     {
-        IBitReader reader = new BitReader(new BitArray(new bool[] { false }));
+        IBitReader reader = Create(new BitArray(new bool[] { false }));
         Assert(reader.ReadBit() == false);
     }
     [TestMethod]
     public void Can_Read_TrueBit()
     {
-        IBitReader reader = new BitReader(new BitArray(new bool[] { true }));
+        IBitReader reader = Create(new BitArray(new bool[] { true }));
         Assert(reader.ReadBit() == true);
     }
     [TestMethod]
     public void Can_Read_Zero_Byte()
     {
-        IBitReader reader = new BitReader(new[] { 0b0UL }, 8);
+        IBitReader reader = Create(new[] { 0b0UL }, 8);
         Assert(reader.ReadByte() == 0);
     }
 
     [TestMethod]
     public void Can_Read_One_Byte()
     {
-        IBitReader reader = new BitReader(new[] { 0b0000_0001UL }, 8);
-        Assert(reader.ReadByte() == 1);
+        IBitReader reader = Create(new[] { 0b0000_0001UL }, 8);
+        var actual = reader.ReadByte();
+        Assert(actual == 1);
     }
     [TestMethod]
     public void Can_Read_Two_Byte()
     {
-        IBitReader reader = new BitReader(new[] { 0b0000_0010UL }, 8);
+        IBitReader reader = Create(new[] { 0b0000_0010UL }, 8);
         Assert(reader.ReadByte() == 2);
     }
 
     [TestMethod]
     public void Can_Read_Two_ULong()
     {
-        IBitReader reader = new BitReader(new[] { 0b0000_0010UL }, 64);
+        IBitReader reader = Create(new[] { 0b0000_0010UL }, 64);
         Assert(reader.ReadUInt64() == 2);
     }
     [TestMethod]
     public void Reading_bits_is_successive()
     {
-        IBitReader reader = new BitReader(new[] { 0b0000_0110UL }, 8);
+        IBitReader reader = Create(new[] { 0b0000_0110UL }, 8);
         Assert(reader.ReadBit() == false);
         Assert(reader.ReadBit() == true);
         Assert(reader.ReadBit() == true);
@@ -135,7 +152,7 @@ public class BinaryReaderTests
     [TestMethod]
     public void Reading_bytes_is_successive()
     {
-        IBitReader reader = new BitReader(new[] { 0b1111_0000_0000_0110UL }, 16);
+        IBitReader reader = Create(new[] { 0b1111_0000_0000_0110UL }, 16);
         Assert(reader.ReadByte() == 0b110);
         Assert(reader.RemainingLength == 8);
         Assert(reader.ReadByte() == 0b1111_0000);
@@ -144,7 +161,7 @@ public class BinaryReaderTests
     [TestMethod]
     public void Reading_bits_and_bytes_is_successive()
     {
-        IBitReader reader = new BitReader(new[] { 0b1101_0111_0100_0000_0110UL }, 20);
+        IBitReader reader = Create(new[] { 0b1101_0111_0100_0000_0110UL }, 20);
         Assert(reader.ReadBit() == false);
         Assert(reader.RemainingLength == 19);
         Assert(reader.ReadByte() == 0b0000_0011);
@@ -158,7 +175,7 @@ public class BinaryReaderTests
     [TestMethod]
     public void Can_read_bytes_over_ulong_crossing()
     {
-        IBitReader reader = new BitReader(new[] { (0b1001UL << 60) | 1234, 0b1100UL }, 100);
+        IBitReader reader = Create(new[] { (0b1001UL << 60) | 1234, 0b1100UL }, 100);
         var x = reader.ReadUInt64(bitCount: 60);
         Assert(x == 1234);
         var y = reader.ReadByte();
