@@ -439,30 +439,30 @@ public class SomeBitReader : BitReader
 /// <summary>
 /// A bit reader that reads floating point numbers assuming they're particularly encoded.
 /// </summary>
-public class FloatingPointBitReader : BitReader
+public class SimpleBitReader : BitReader
 {
     public double Min { get; }
     public double Max { get; }
 
-    public FloatingPointBitReader(BitArrayReadOnlySegment data, double min, double max)
+    public SimpleBitReader(BitArrayReadOnlySegment data, double min, double max)
         : base(data)
     {
         this.Min = min;
         this.Max = max;
     }
-    public FloatingPointBitReader(BitArray data, double min, double max, ulong startBitIndex = 0)
+    public SimpleBitReader(BitArray data, double min, double max, ulong startBitIndex = 0)
         : base(data, startBitIndex)
     {
         this.Min = min;
         this.Max = max;
     }
-    public FloatingPointBitReader(BitArray data, double min, double max, ulong startBitIndex, ulong length)
+    public SimpleBitReader(BitArray data, double min, double max, ulong startBitIndex, ulong length)
         : base(data, startBitIndex, length)
     {
         this.Min = min;
         this.Max = max;
     }
-    public FloatingPointBitReader(ulong[] data, double min, double max, int dataBitCount, int startBitIndex = 0)
+    public SimpleBitReader(ulong[] data, double min, double max, int dataBitCount, int startBitIndex = 0)
         : base(data, dataBitCount, startBitIndex)
     {
         this.Min = min;
@@ -474,7 +474,7 @@ public class FloatingPointBitReader : BitReader
         get
         {
             var (offset, length) = range.GetOffsetAndLength(checked((int)this.Length));
-            return new FloatingPointBitReader(this.data, this.Min, this.Max, this.startOffset + (ulong)offset, (ulong)length);
+            return new SimpleBitReader(this.data, this.Min, this.Max, this.startOffset + (ulong)offset, (ulong)length);
         }
     }
 
@@ -489,9 +489,9 @@ public class FloatingPointBitReader : BitReader
         return result;
     }
 
-    public override FloatingPointBitReader Clone()
+    public override SimpleBitReader Clone()
     {
         // base.current is dealt with through startOffset
-        return new FloatingPointBitReader(this.data, this.Min, this.Max, this.startOffset, this.Length);
+        return new SimpleBitReader(this.data, this.Min, this.Max, this.startOffset, this.Length);
     }
 }

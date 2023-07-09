@@ -192,7 +192,7 @@ public class FloatingPointBitReaderTests
     public void SimpleTest()
     {
         var data = new BitArray(new ulong[] { 0b1111100000 }, 10);
-        var reader = new FloatingPointBitReader(data[..], 0, 1UL << 10);
+        var reader = new SimpleBitReader(data[..], 0, 1UL << 10);
 
         var result = reader.ReadDouble(10);
 
