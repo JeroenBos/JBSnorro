@@ -821,7 +821,7 @@ namespace JBSnorro.Collections
 
         public BitReader ToBitReader()
         {
-            return new BitReader(this);
+            return BitReader.Create(this, 0, this.Length);
         }
 
         void IList<bool>.Insert(int index, bool item)

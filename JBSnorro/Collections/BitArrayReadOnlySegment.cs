@@ -53,7 +53,7 @@ namespace JBSnorro.Collections
         }
         public BitReader ToBitReader(ulong startIndex = 0)
         {
-            return new BitReader(data, this.start + startIndex, this.Length);
+            return BitReader.Create(data, this.start + startIndex, this.Length);
         }
         int IReadOnlyCollection<bool>.Count
         {

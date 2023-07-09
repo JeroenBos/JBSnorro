@@ -370,6 +370,21 @@ public class BitReader : IBitReader
     {
         return $"{this.GetType().Name}({startOffset}..[|{current}|]..{End}, Length={this.Length}/{this.data.Length}, Remaining={this.RemainingLength})";
     }
+
+    /// <summary>
+    /// It doesn't matter which derivative type you use, if you're only going to read UInt64s: the implementations of ReadUInt64 don't differ
+    /// </summary>
+    internal static ulong ReadUInt64(BitArray data, ulong startIndex, int dataLength)
+    {
+        return new SomeBitReader(data, startIndex).ReadUInt64(dataLength);
+    }
+    /// <summary>
+    /// This is the function that creates <see cref="BitReader"/>s, and can be overridden.
+    /// This is the only place where I make the decision to default to <see cref="SomeBitReader"/> of all the <see cref="IBitReader"/>.
+    /// I.e. <see cref="BitArray.ToBitReader()"/> and <see cref="BitArrayReadOnlySegment.ToBitReader(ulong)"/> defer to this.
+    /// 
+    /// </summary>
+    public static Func<BitArray /*data*/, ulong /*startBitIndex*/, ulong /*length*/, BitReader> Create = (data, startBitIndex, length) => new SomeBitReader(data, startBitIndex, length);
 }
 
 /// <summary>
