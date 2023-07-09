@@ -148,6 +148,7 @@ namespace JBSnorro.Collections
         /// Uses the specified array directly as underlying data source.
         /// </summary>
         /// <param name="length">The number of bits in <paramref name="data"/>. Defaults to <code>64 * data.Length</code>.</param>
+        [DebuggerHidden]
         public static BitArray FromRef(ulong[] data, ulong? length = null)
         {
             length ??= 64 * (ulong)data.Length;

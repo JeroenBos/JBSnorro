@@ -3,6 +3,7 @@ using JBSnorro;
 using JBSnorro.Collections;
 using JBSnorro.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Diagnostics;
 
 namespace JBNA.Tests;
 
@@ -83,10 +84,12 @@ public class IBitReaderTests
 [TestClass]
 public class BinaryReaderTests
 {
+    [DebuggerHidden]
     private static IBitReader Create(ulong[] data, ulong startBitIndex = 0)
     {
         return Create(BitArray.FromRef(data), startBitIndex);
     }
+    [DebuggerHidden]
     private static IBitReader Create(BitArray array, ulong startBitIndex = 0)
     {
         // to prove that this only tests IBitReader functions, but we need to create an instance, we encapsulate the call to SomeBitReader:
