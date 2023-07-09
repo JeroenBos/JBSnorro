@@ -195,12 +195,12 @@ public abstract class BitReader : IBitReader
     /// Treat this BitReader as if the stream really starts at <see cref="startOffset"/>.
     /// </summary>
     protected readonly ulong startOffset;
-    /// <summary> In bits. </summary>
+    /// <summary> In bits, relative to the start of <see cref="data"/>. </summary>
     protected ulong current;
     /// <summary> 
     /// Gets the length of the stream this <see cref="IBitReader"/> can read, in bits.
     /// </summary>
-    /// <remarks>Does not count the bits before the startOffset</remarks>
+    /// <remarks>Does not count the bits before the <see cref="startOffset"/>.</remarks>
     public ulong Length { get; }
 
     private ulong End

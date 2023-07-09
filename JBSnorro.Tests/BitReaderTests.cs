@@ -85,9 +85,9 @@ public class IBitReaderTests
 public class BinaryReaderTests
 {
     [DebuggerHidden]
-    private static IBitReader Create(ulong[] data, ulong startBitIndex = 0)
+    private static IBitReader Create(ulong[] data, ulong length, ulong startBitIndex = 0)
     {
-        return Create(BitArray.FromRef(data), startBitIndex);
+        return Create(BitArray.FromRef(data, length), startBitIndex);
     }
     [DebuggerHidden]
     private static IBitReader Create(BitArray array, ulong startBitIndex = 0)
