@@ -125,8 +125,7 @@ namespace JBSnorro.Collections
 			Contract.Requires(enumerable != null);
 
 			this.cache = new List<T>(initialCapacity);
-			var x = enumerable.GetEnumerator();
-			this.sequence = x;
+            this.sequence = enumerable.GetEnumerator();
 		}
 
 		/// <summary> Creates a lazy list that caches the results of the specified function. </summary>

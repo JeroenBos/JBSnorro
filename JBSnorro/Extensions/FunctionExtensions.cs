@@ -34,7 +34,6 @@ public static class FunctionExtensions
 /// <param name="Value">The position of this quantity in this dimension. </param>
 /// <param name="Length">The length of the dimension. Must be nonnegative.</param>
 /// <param name="Start">The start of the dimension. </param>
-// [DebuggerHidden]
 public record struct OneDimensionalDiscreteQuantity(int Value, int Length, int Start = 0);
 /// <summary>
 /// Represents a dimensional quantity in one continuous dimension. The start of the dimension is closed and the end open (although not very relevant practically for continuous quantities).
@@ -44,36 +43,38 @@ public record struct OneDimensionalDiscreteQuantity(int Value, int Length, int S
 /// <param name="Start">The start of the dimension. </param>
 public record struct OneDimensionalContinuousQuantity(float Value, float Length, float Start = 0);
 
-public delegate float DimensionfulFunction(OneDimensionalDiscreteQuantity arg);
-public delegate TResult DimensionfulFunction<TResult>(OneDimensionalDiscreteQuantity arg);
-public delegate float DimensionfulContinuousFunction(OneDimensionalContinuousQuantity arg);
-
-public interface IDimensionfulContinuousFunction
+public interface IDimensionfulContinuousFunction<TResult>
 {
-    float Invoke(OneDimensionalContinuousQuantity arg);
+    TResult Invoke(OneDimensionalContinuousQuantity arg);
 }
-public interface IDimensionfulDiscreteFunction
+public interface IDimensionfulContinuousFunction : IDimensionfulContinuousFunction<float>
 {
-    float Invoke(OneDimensionalDiscreteQuantity arg);
+}
+
+public interface IDimensionfulDiscreteFunction<TResult>
+{
+    TResult Invoke(OneDimensionalDiscreteQuantity arg);
+
 
     [DebuggerHidden]
-    public Func<int, float> On(int length, int start = 0)
+    public Func<int, TResult> On(int length, int start = 0)
     {
-        return [DebuggerHiddenAttribute] (arg) => this.Invoke(new OneDimensionalDiscreteQuantity(arg, length, start));
+        return [DebuggerHidden] (arg) => this.Invoke(new OneDimensionalDiscreteQuantity(arg, length, start));
     }
-
-
-    public static IDimensionfulDiscreteFunction Create(DimensionfulFunction f)
+    public static IDimensionfulDiscreteFunction<TResult> Create(IDimensionfulDiscreteFunction<TResult> f)
     {
         return new DimensionfulDiscreteFunctionImpl(f);
     }
     //public static IDimensionfulDiscreteFunction Create(Func<OneDimensionalDiscreteQuantity, int> f) => new DimensionfulDiscreteFunctionImpl(new DimensionfulDiscreteFunction(f));
-    private record DimensionfulDiscreteFunctionImpl(DimensionfulFunction f) : IDimensionfulDiscreteFunction
+    private record DimensionfulDiscreteFunctionImpl(IDimensionfulDiscreteFunction<TResult> f) : IDimensionfulDiscreteFunction<TResult>
     {
-        float IDimensionfulDiscreteFunction.Invoke(OneDimensionalDiscreteQuantity arg) => f(arg);
+        TResult IDimensionfulDiscreteFunction<TResult>.Invoke(OneDimensionalDiscreteQuantity arg) => f.Invoke(arg);
     }
 }
+public interface IDimensionfulDiscreteFunction : IDimensionfulDiscreteFunction<float>
+{
 
+}
 
 public static class DimensionalFunctionExtensions
 {
@@ -81,22 +82,22 @@ public static class DimensionalFunctionExtensions
     {
         return new OneDimensionalContinuousQuantity(discreteQuantity.Value, discreteQuantity.Length, discreteQuantity.Start);
     }
-    public static Func<OneDimensionalDiscreteQuantity, TResult> Map<TResult>(this DimensionfulFunction f, Func<OneDimensionalContinuousQuantity, TResult> map, float mapDomainLength, float mapDomainStart = 0)
+    public static Func<OneDimensionalDiscreteQuantity, TResult> Map<TResult>(this IDimensionfulDiscreteFunction f, Func<OneDimensionalContinuousQuantity, TResult> map, float mapDomainLength, float mapDomainStart = 0)
     {
         return g;
         TResult g(OneDimensionalDiscreteQuantity arg)
         {
-            var returnedValue = f(arg);
+            var returnedValue = f.Invoke(arg);
             var returnedValueWithUnits = new OneDimensionalContinuousQuantity(returnedValue, mapDomainLength, mapDomainStart);
             return map(returnedValueWithUnits);
         }
     }
-    public static Func<OneDimensionalContinuousQuantity, TResult> Map<TResult>(this DimensionfulContinuousFunction f, Func<OneDimensionalContinuousQuantity, TResult> map, float mapDomainLength, float mapDomainStart = 0)
+    public static Func<OneDimensionalContinuousQuantity, TResult> Map<TResult>(this IDimensionfulContinuousFunction f, Func<OneDimensionalContinuousQuantity, TResult> map, float mapDomainLength, float mapDomainStart = 0)
     {
         return g;
         TResult g(OneDimensionalContinuousQuantity arg)
         {
-            var returnedValue = f(arg);
+            var returnedValue = f.Invoke(arg);
             var returnedValueWithUnits = new OneDimensionalContinuousQuantity(returnedValue, mapDomainLength, mapDomainStart);
             return map(returnedValueWithUnits);
         }

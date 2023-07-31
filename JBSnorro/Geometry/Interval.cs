@@ -1,4 +1,5 @@
 ﻿using JBSnorro.Collections;
+using JBSnorro.Collections.Bits;
 using JBSnorro.Collections.Sorted;
 using JBSnorro.Diagnostics;
 using System;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace JBSnorro.Geometry
 {
-	[DebuggerDisplay("{string.Format(\"{2}{0}, {1}{3}\", Start, End, StartInclusive ? '[' : '(', EndInclusive ? ']' : ')')}")]
+    [DebuggerDisplay("{string.Format(\"{2}{0}, {1}{3}\", Start, End, StartInclusive ? '[' : '(', EndInclusive ? ']' : ')')}")]
 	public struct Interval
 	{
 		public int Start { get; }

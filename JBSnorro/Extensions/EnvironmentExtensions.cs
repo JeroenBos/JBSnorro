@@ -78,8 +78,21 @@ public class EnvironmentExtensions
             {
                 Console.WriteLine($"Outputting logs to {debugOutputPath}");
                 using StreamWriter writer = File.AppendText(debugOutputPath!);
-                writer.WriteLine ("--------------------------------------------------------------------------------");
+                writer.WriteLine("--------------------------------------------------------------------------------");
             }
+        }
+    }
+    public static string GetOrSetEnvironmentVariable(string key, string value)
+    {
+        var retrievedValue = Environment.GetEnvironmentVariable(key);
+        if (retrievedValue is null)
+        {
+            Environment.SetEnvironmentVariable(key, value);
+            return Environment.ExpandEnvironmentVariables(value);
+        }
+        else
+        {
+            return Environment.ExpandEnvironmentVariables(retrievedValue);
         }
     }
 }

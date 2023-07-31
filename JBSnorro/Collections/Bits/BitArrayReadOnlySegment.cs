@@ -1,18 +1,18 @@
 ﻿#nullable enable
+using JBSnorro;
+using JBSnorro.Algorithms;
+using JBSnorro.Collections.Bits.Internals;
 using JBSnorro.Diagnostics;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Cryptography;
 
-namespace JBSnorro.Collections
+namespace JBSnorro.Collections.Bits
 {
+    [DebuggerDisplay("BitArrayReadOnlySegment(Length={Length}, {this.ToString()})")]
     public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     {
+        public static BitArrayReadOnlySegment Empty { get; } = new BitArrayReadOnlySegment(new BitArray(Array.Empty<ulong>(), 0), 0, 0);
         internal readonly BitArray data;
         internal readonly ulong start;
 
@@ -20,24 +20,24 @@ namespace JBSnorro.Collections
         {
             this.data = data;
             this.start = start;
-            this.Length = length;
+            Length = length;
         }
 
         public bool this[int index] => this[(ulong)index];
-        public bool this[ulong index] => this.data[start + index];
+        public bool this[ulong index] => data[start + index];
         public BitArrayReadOnlySegment this[Range range]
         {
             get
             {
                 checked
                 {
-                    Contract.Requires<NotImplementedException>(this.Length <= int.MaxValue);
-                    var (start, length) = range.GetOffsetAndLength((int)this.Length);
+                    Contract.Requires<NotImplementedException>(Length <= int.MaxValue);
+                    var (start, length) = range.GetOffsetAndLength((int)Length);
                     ulong dataStart = (uint)start + this.start;
                     Contract.Requires<NotImplementedException>(dataStart <= int.MaxValue);
 
                     var dataRange = new Range((int)dataStart, (int)dataStart + length);
-                    return this.data[dataRange];
+                    return data[dataRange];
                 }
             }
         }
@@ -46,48 +46,52 @@ namespace JBSnorro.Collections
 
         public IEnumerator<bool> GetEnumerator()
         {
-            Contract.Assert<NotImplementedException>(start + this.Length <= int.MaxValue);
+            Contract.Assert<NotImplementedException>(start + Length <= int.MaxValue);
             return Enumerable.Range(0, ((IReadOnlyList<bool>)this).Count).Select(i => this[i]).GetEnumerator();
         }
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
-        public BitReader ToBitReader(ulong startIndex = 0)
+        public IBitReader ToBitReader(ulong startIndex = 0)
         {
-            return new BitReader(data, this.start + startIndex, this.Length);
+            return IBitReader.Create(data, start + startIndex, Length);
         }
         int IReadOnlyCollection<bool>.Count
         {
             get
             {
-                Contract.Assert<NotImplementedException>(this.Length <= int.MaxValue);
-                return (int)this.Length;
+                Contract.Assert<NotImplementedException>(Length <= int.MaxValue);
+                return (int)Length;
             }
 
         }
         public long IndexOf(ulong item, int? itemLength = null, ulong startBitIndex = 0)
         {
-            return this.data.IndexOf(item, itemLength, startBitIndex);
+            return data.IndexOf(item, itemLength, startBitIndex);
+        }
+        public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
+        {
+            return data.IndexOfAny(items, itemLength, start + startIndex, endIndex: start + Length);
         }
         public void CopyTo(BitArray dest, ulong destStartIndex)
         {
-            this.CopyTo(dest, 0, this.Length, destStartIndex);
+            CopyTo(dest, 0, Length, destStartIndex);
         }
         public void CopyTo(BitArray dest, ulong sourceStartIndex, ulong length, ulong destStartIndex)
         {
-            if (length > this.Length) throw new ArgumentOutOfRangeException(nameof(length));
-            if (sourceStartIndex + length > this.start + this.Length) throw new ArgumentOutOfRangeException(nameof(sourceStartIndex));
+            if (length > Length) throw new ArgumentOutOfRangeException(nameof(length));
+            if (sourceStartIndex + length > start + Length) throw new ArgumentOutOfRangeException(nameof(sourceStartIndex));
 
-            this.data.CopyTo(dest, this.start + sourceStartIndex, length, destStartIndex);
+            data.CopyTo(dest, start + sourceStartIndex, length, destStartIndex);
         }
-        
+
         public BitArray Insert(ulong data, int dataLength, ulong insertionIndex)
         {
-            var result = new BitArray(this.Length + (ulong)dataLength);
-            this.CopyTo(result, 0UL, insertionIndex, 0);
+            var result = new BitArray(Length + (ulong)dataLength);
+            CopyTo(result, 0UL, insertionIndex, 0);
             result.Set(data, dataLength, insertionIndex);
-            this.CopyTo(result, insertionIndex, this.Length - insertionIndex, (ulong)dataLength);
+            CopyTo(result, insertionIndex, Length - insertionIndex, (ulong)dataLength);
             return result;
         }
         public BitArrayReadOnlySegment Prepend(ulong data, int dataLength)
@@ -97,7 +101,7 @@ namespace JBSnorro.Collections
             if (isPrependedWithData())
             {
                 // this case is a performance optimization
-                return new BitArrayReadOnlySegment(this.data, this.start - (ulong)dataLength, this.Length + (ulong)dataLength);
+                return new BitArrayReadOnlySegment(this.data, start - (ulong)dataLength, Length + (ulong)dataLength);
             }
             else
             {
@@ -110,7 +114,8 @@ namespace JBSnorro.Collections
                 if (dataStart < 0)
                     return false;
 
-                ulong dataBeforeCurrentSegment = new BitReader(this.data, (ulong)dataStart).ReadUInt64(dataLength);
+                // SomeBitReader or some other type doesn't matter: the implementation of ReadUInt64 doesn't differ
+                ulong dataBeforeCurrentSegment = BitReader.ReadUInt64(this.data, (ulong)dataStart, dataLength);
                 return dataBeforeCurrentSegment == data;
             }
         }
@@ -121,7 +126,7 @@ namespace JBSnorro.Collections
             if (isAppendedWithData())
             {
                 // this case is a performance optimization
-                return new BitArrayReadOnlySegment(this.data, this.start, this.Length + (ulong)dataLength);
+                return new BitArrayReadOnlySegment(this.data, start, Length + (ulong)dataLength);
             }
             else
             {
@@ -130,11 +135,12 @@ namespace JBSnorro.Collections
 
             bool isAppendedWithData()
             {
-                ulong dataEnd = start + this.Length + (ulong)dataLength;
+                ulong dataEnd = start + Length + (ulong)dataLength;
                 if (dataEnd > this.data.Length)
                     return false;
 
-                ulong dataAfterCurrentSegment = new BitReader(this.data, this.start + this.Length).ReadUInt64(dataLength);
+
+                ulong dataAfterCurrentSegment = BitReader.ReadUInt64(this.data, start + Length, dataLength);
                 return dataAfterCurrentSegment == data;
             }
         }
@@ -144,7 +150,7 @@ namespace JBSnorro.Collections
         /// </summary>
         public BitArrayReadOnlySegment Wrap(ulong prependData, int prependDataLength, ulong appendData, int appendDataLength)
         {
-            return this.Prepend(prependData, prependDataLength)
+            return Prepend(prependData, prependDataLength)
                        .Append(appendData, appendDataLength);
         }
 
@@ -152,22 +158,70 @@ namespace JBSnorro.Collections
         {
             return obj switch
             {
-                BitArrayReadOnlySegment segment => this.Equals(segment),
-                BitArray array => this.Equals(array),
+                BitArrayReadOnlySegment segment => Equals(segment),
+                BitArray array => Equals(array),
                 _ => false
             };
         }
+        public bool Equals(ulong other)
+        {
+            if (Length > 64)
+                return false;
+            return Equals(new BitArray(new ulong[] { other }, Length));
+        }
         public bool Equals(BitArrayReadOnlySegment other)
         {
-            return this.data.BitSequenceEqual(other, this.start, this.Length);
+            return data.BitSequenceEqual(other, start, Length);
         }
         public bool Equals(BitArray other)
         {
-            return this.data.BitSequenceEqual(other, this.start, this.Length);
+            return data.BitSequenceEqual(other[Range.All], start, Length);
         }
         public override int GetHashCode()
         {
             throw new NotImplementedException();
+        }
+
+        public string ComputeSHA1()
+        {
+            using var hasher = ISHAThatCanContinue.Create();
+            ComputeSHA1(hasher);
+            return hasher.ToString();
+        }
+        public void ComputeSHA1(out ISHAThatCanContinue hasher)
+        {
+            ComputeSHA1(hasher = ISHAThatCanContinue.Create());
+        }
+        public void ComputeSHA1(ISHAThatCanContinue hasher)
+        {
+            // PERF
+            var copy = new BitArray(Length);
+            CopyTo(copy, 0);
+
+            copy.ComputeSHA1(hasher);
+        }
+        public override string ToString()
+        {
+            return data.ToString(start, Length);
+        }
+        public ReadOnlySpan<byte> GetUnderlyingData(out ulong start, bool minimize = true)
+        {
+            if (!minimize)
+            {
+                start = this.start;
+                return data.UnderlyingData;
+            }
+            else
+            {
+                var startBoundaryBitIndex = this.start.RoundDownToNearestMultipleOf(64UL);
+                var endBoundaryBitIndex = (this.start + Length).RoundUpToNearestMultipleOf(64UL);
+                var startBoundaryByteIndex = startBoundaryBitIndex / 8;
+                var endBoundaryByteIndex = endBoundaryBitIndex / 8;
+
+                start = this.start - startBoundaryBitIndex;
+                var result = data.UnderlyingData[checked((int)startBoundaryByteIndex..(int)endBoundaryByteIndex)];
+                return result;
+            }
         }
     }
 
@@ -189,23 +243,6 @@ namespace JBSnorro.Collections
         public static BitArrayReadOnlySegment SelectSegment(this BitArray array, ulong start, ulong length)
         {
             return new BitArrayReadOnlySegment(array, start, length);
-        }
-        [DebuggerHidden]
-        public static BitReader SelectReader(this BitArray array, Range range)
-        {
-            Contract.Assert<NotImplementedException>(array.Length <= int.MaxValue);
-            var (index, length) = range.GetOffsetAndLength((int)array.Length);
-            return array.SelectReader(index, length);
-        }
-        [DebuggerHidden]
-        public static BitReader SelectReader(this BitArray array, int start, int length)
-        {
-            return array.SelectReader((ulong)start, (ulong)length);
-        }
-        [DebuggerHidden]
-        public static BitReader SelectReader(this BitArray array, ulong start, ulong length)
-        {
-            return new BitReader(array, start, length); 
         }
     }
 }

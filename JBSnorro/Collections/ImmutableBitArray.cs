@@ -1,19 +1,14 @@
 ﻿#nullable enable
 using JBSnorro;
+using JBSnorro.Collections.Bits;
 using JBSnorro.Diagnostics;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static JBSnorro.Global;
 
 namespace JBSnorro.Collections
 {
-	/// <summary> Represents an immutable array of booleans, stored as bits. </summary>
-	public class ImmutableBitArray : IReadOnlyList<bool>
+    /// <summary> Represents an immutable array of booleans, stored as bits. </summary>
+    public class ImmutableBitArray : System.Collections.Generic.IReadOnlyList<bool>
 	{
 		/// <summary> Creates an immutable bit array that is the product of applying OR on all specified arrays. </summary>
 		public static ImmutableBitArray Or(IEnumerable<BitArray> arrays)
@@ -205,7 +200,7 @@ namespace JBSnorro.Collections
 		{
 			return data.GetEnumerator();
 		}
-		IEnumerator IEnumerable.GetEnumerator()
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
 		}
