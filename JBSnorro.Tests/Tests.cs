@@ -6,7 +6,6 @@ using JBSnorro.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections;
 using System.Collections.ObjectModel;
-using JBSnorro;
 using static JBSnorro.Combinatorics;
 
 namespace Tests.JBSnorro;
