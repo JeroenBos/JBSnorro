@@ -37,7 +37,7 @@ namespace JBSnorro.Geometry
 		}
 
 		/// <summary> Determines whether the specified object is equal to the current. </summary>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is LineSegment)
 				return this.Equals((LineSegment)obj);

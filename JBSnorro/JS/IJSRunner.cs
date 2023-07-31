@@ -1,5 +1,4 @@
-﻿#nullable enable
-using JBSnorro.Csx;
+﻿using JBSnorro.Csx;
 using JBSnorro.Csx.Node;
 using JBSnorro.Text;
 using System.Text.Json;

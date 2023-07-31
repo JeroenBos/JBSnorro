@@ -1,9 +1,7 @@
-﻿#nullable enable
-using JBSnorro;
-using JBSnorro.Diagnostics;
+﻿using JBSnorro.Diagnostics;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using DebuggerDisplayAttribute = System.Diagnostics.DebuggerDisplayAttribute;
+
 namespace JBSnorro.Collections.Bits.Internals;
 
 [DebuggerDisplay("{ToDebuggerDisplay()}")]

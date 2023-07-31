@@ -80,7 +80,7 @@ namespace JBSnorro.Collections
 			// throws so that I know when I accidentally forgot to pass along an equality comparer
 			throw new InvalidOperationException();
 		}
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			// throws so that I know when I accidentally forgot to pass along an equality comparer
 			throw new InvalidOperationException();

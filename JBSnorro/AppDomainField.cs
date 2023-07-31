@@ -49,7 +49,7 @@ namespace JBSnorro
 			this.DiscardValueOnAssemblyAdded = discardValueOnAssemblyAdded;
 		}
 
-		public void DiscardValue(AppDomain appDomain = null)
+		public void DiscardValue(AppDomain? appDomain = null)
 		{
 			appDomain = appDomain ?? AppDomain.CurrentDomain;
 

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using JBSnorro.Csx;
+﻿using JBSnorro.Csx;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using JBSnorro.Logging;

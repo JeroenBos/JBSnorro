@@ -236,7 +236,6 @@ namespace JBSnorro.Testing
             return (initializationMethods, cleanupMethods);
         }
 
-#nullable enable
 
         [DebuggerHidden]
         private static async Task execute(MethodInfo method, ConstructorInfo ctor, (IReadOnlyList<MethodInfo> Inits, IReadOnlyList<MethodInfo> Cleanups) wrappers)

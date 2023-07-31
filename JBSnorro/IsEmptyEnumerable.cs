@@ -63,7 +63,7 @@ namespace JBSnorro
 
 			public T Current => owner.enumerator.Current;
 
-			object IEnumerator.Current => Current;
+			object? IEnumerator.Current => Current;
 
 			public void Dispose()
 			{

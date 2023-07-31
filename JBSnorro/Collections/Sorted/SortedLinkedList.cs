@@ -1,171 +1,164 @@
-﻿using JBSnorro.Collections.Sorted;
-using JBSnorro.Diagnostics;
-using System;
+﻿using JBSnorro.Diagnostics;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace JBSnorro.Collections.Sorted
+namespace JBSnorro.Collections.Sorted;
+
+/// <summary> A sorted singly-linked list. </summary>
+public class SortedLinkedList<T> : ISortedList<T>
 {
-	/// <summary> A sorted singly-linked list. </summary>
-	public class SortedLinkedList<T> : ISortedList<T>
+	private Node? first;
+	/// <summary> The comparer against which this list is sorted. </summary>
+	public Func<T, T, int> Comparer { get; }
+	/// <summary> The number of elements in this list. </summary>
+	public int Count { get; private set; }
+
+
+	public SortedLinkedList(Func<T, T, int>? comparer = null)
 	{
-		private Node first;
-		/// <summary> The comparer against which this list is sorted. </summary>
-		public Func<T, T, int> Comparer { get; }
-		/// <summary> The number of elements in this list. </summary>
-		public int Count { get; private set; }
+		this.Comparer = comparer.OrDefault();
+	}
 
-
-		public SortedLinkedList(Func<T, T, int> comparer = null)
+	public void AddRange(params T[] items)
+	{
+		foreach (T item in items)
+			Add(item);
+	}
+	public void Add(T item)
+	{
+		if (first == null)
 		{
-			this.Comparer = comparer.OrDefault();
+			first = CreateNode(item, null);
 		}
-
-		public void AddRange(params T[] items)
+		else if (Comparer(item, first.Value) <= 0)
 		{
-			foreach (T item in items)
-				Add(item);
+			this.first = CreateNode(item, this.first);
 		}
-		public void Add(T item)
+		else
 		{
-			if (first == null)
+			var nodeBeforeNewNode = this.first;
+			while (nodeBeforeNewNode.Next != null && Comparer(nodeBeforeNewNode.Next.Value, item) <= 0)
 			{
-				first = CreateNode(item, null);
+				nodeBeforeNewNode = nodeBeforeNewNode.Next;
 			}
-			else if (Comparer(item, first.Value) <= 0)
+
+			Contract.Assert(Comparer(nodeBeforeNewNode.Value, item) <= 0);
+			Contract.Assert(nodeBeforeNewNode.Next == null || Comparer(nodeBeforeNewNode.Next.Value, item) > 0);
+
+			nodeBeforeNewNode.Append(item);
+		}
+
+		Count++;
+	}
+
+	/// <summary> Removes the specified item from this list. </summary>
+	/// <returns> whether the item was removed. </returns>
+	public bool Remove(T item)
+	{
+		bool removed;
+		if (first == null)
+		{
+			removed = false;//list contains no elements, so item not found
+		}
+		else if (Comparer(first.Value, item) == 0)
+		{
+			first = first.Next;
+			removed = true;
+		}
+		else
+		{
+			var nodeBeforeNodeToRemove = this.first;
+			while (nodeBeforeNodeToRemove.Next != null && Comparer(nodeBeforeNodeToRemove.Next.Value, item) != 0)
 			{
-				this.first = CreateNode(item, this.first);
+				nodeBeforeNodeToRemove = nodeBeforeNodeToRemove.Next;
+			}
+
+			if (nodeBeforeNodeToRemove.Next == null)
+			{
+				removed = false;//item not found
 			}
 			else
 			{
-				var nodeBeforeNewNode = this.first;
-				while (nodeBeforeNewNode.Next != null && Comparer(nodeBeforeNewNode.Next.Value, item) <= 0)
-				{
-					nodeBeforeNewNode = nodeBeforeNewNode.Next;
-				}
-
-				Contract.Assert(Comparer(nodeBeforeNewNode.Value, item) <= 0);
-				Contract.Assert(nodeBeforeNewNode.Next == null || Comparer(nodeBeforeNewNode.Next.Value, item) > 0);
-
-				nodeBeforeNewNode.Append(item);
-			}
-
-			Count++;
-		}
-
-		/// <summary> Removes the specified item from this list. </summary>
-		/// <returns> whether the item was removed. </returns>
-		public bool Remove(T item)
-		{
-			bool removed;
-			if (first == null)
-			{
-				removed = false;//list contains no elements, so item not found
-			}
-			if (first.Value.Equals(item))
-			{
-				first = first.Next;
+				nodeBeforeNodeToRemove.RemoveNodeAfterThisOne();
 				removed = true;
 			}
-			else
-			{
-				var nodeBeforeNodeToRemove = this.first;
-				while (nodeBeforeNodeToRemove.Next != null && !nodeBeforeNodeToRemove.Next.Value.Equals(item))
-				{
-					nodeBeforeNodeToRemove = nodeBeforeNodeToRemove.Next;
-				}
-
-				if (nodeBeforeNodeToRemove.Next == null)
-				{
-					removed = false;//item not found
-				}
-				else
-				{
-					nodeBeforeNodeToRemove.RemoveNodeAfterThisOne();
-					removed = true;
-				}
-			}
-
-			if (removed)
-				Count--;
-			return removed;
 		}
 
-		protected virtual Node CreateNode(T value, Node next)
-		{
-			var result = new Node(this, value, next);
+		if (removed)
+			Count--;
+		return removed;
+	}
 
-			Contract.Ensures(result != null);
-			Contract.Ensures(result.List == this, "The specified node does not belong to this list. ");
-			return result;
+	protected virtual Node CreateNode(T value, Node? next)
+	{
+		var result = new Node(this, value, next);
+
+		Contract.Ensures(result != null);
+		Contract.Ensures(result.List == this, "The specified node does not belong to this list. ");
+		return result;
+	}
+
+
+
+	T IIndexable<T>.this[int index]
+	{
+		get
+		{
+			Contract.Requires(0 <= index && index < Count);
+			// if (index < Count / 2) return this.First.Skip(index).First();
+			return this.Skip(Count - index).First();
+		}
+	}
+	/// <summary>
+	/// Gets the values of this sorted linked list in ascending order.
+	/// </summary>
+	public IEnumerator<T> GetEnumerator()
+	{
+		var node = this.first;
+		while (node != null)
+		{
+			yield return node.Value;
+			node = node.Next;
+		}
+	}
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+
+	protected class Node
+	{
+		/// <summary> The value this node holds. </summary>
+		public T Value { get; }
+		/// <summary> The node after this node in the associated list. </summary>
+		public Node? Next { get; private set; }
+		/// <summary> This linked list this node is part of. </summary>
+		public SortedLinkedList<T> List { get; }
+
+
+		internal Node(SortedLinkedList<T> list, T value, Node? next)
+		{
+			Contract.Requires(list != null);
+
+			this.List = list;
+			this.Value = value;
+			this.Next = next;
 		}
 
 
-
-		T IIndexable<T>.this[int index]
+		/// <summary> Adds a new node to the associated list just after the current node holding the specified value. </summary>
+		internal void Append(T value)
 		{
-			get
-			{
-				Contract.Requires(0 <= index && index < Count);
-				// if (index < Count / 2) return this.First.Skip(index).First();
-				return this.Skip(Count - index).First();
-			}
+			Contract.Requires(this.Next == null || List.Comparer(this.Next.Value, value) >= 0, "Appending the specified value would violate sortedness");
+
+			this.Next = this.List.CreateNode(value, this.Next);
+			//list count is updated in caller. node.Count is always recomputed so remains correct
 		}
-		/// <summary>
-		/// Gets the values of this sorted linked list in ascending order.
-		/// </summary>
-		public IEnumerator<T> GetEnumerator()
+		/// <summary> Removes the node after this node. </summary>
+		internal void RemoveNodeAfterThisOne()
 		{
-			var node = this.first;
-			while (node != null)
-			{
-				yield return node.Value;
-				node = node.Next;
-			}
-		}
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+			Contract.Requires<InvalidOperationException>(this.Next != null, "There is no element after this element to remove. ");
 
-		protected class Node
-		{
-			/// <summary> The value this node holds. </summary>
-			public T Value { get; }
-			/// <summary> The node after this node in the associated list. </summary>
-			public Node Next { get; private set; }
-			/// <summary> This linked list this node is part of. </summary>
-			public SortedLinkedList<T> List { get; }
-
-
-			internal Node(SortedLinkedList<T> list, T value, Node next)
-			{
-				Contract.Requires(list != null);
-
-				this.List = list;
-				this.Value = value;
-				this.Next = next;
-			}
-
-
-			/// <summary> Adds a new node to the associated list just after the current node holding the specified value. </summary>
-			internal void Append(T value)
-			{
-				Contract.Requires(this.Next == null || List.Comparer(this.Next.Value, value) >= 0, "Appending the specified value would violate sortedness");
-
-				this.Next = this.List.CreateNode(value, this.Next);
-				//list count is updated in caller. node.Count is always recomputed so remains correct
-			}
-			/// <summary> Removes the node after this node. </summary>
-			internal void RemoveNodeAfterThisOne()
-			{
-				Contract.Requires<InvalidOperationException>(this.Next != null, "There is no element after this element to remove. ");
-
-				this.Next = this.Next.Next;
-			}
+			this.Next = this.Next.Next;
 		}
 	}
 }

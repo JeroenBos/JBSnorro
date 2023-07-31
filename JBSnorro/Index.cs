@@ -104,7 +104,7 @@ namespace JBSnorro
 		/// <param name="collection"> The collection to find the element in. </param>
 		/// <param name="indexOf"> The element to find the index of. </param>
 		/// <param name="equalityComparer"> The comparer determining whether the element has been found. Specify null to use the default equality comparer. </param>
-		public Index(IReadOnlyList<TElement> collection, TElement indexOf, IEqualityComparer<TElement> equalityComparer = null)
+		public Index(IReadOnlyList<TElement> collection, TElement indexOf, IEqualityComparer<TElement>? equalityComparer = null)
 			: this(collection, element => (equalityComparer ?? EqualityComparer<TElement>.Default).Equals(indexOf, element))
 		{
 
@@ -224,7 +224,7 @@ namespace JBSnorro
 		{
 			return !(a == b);
 		}
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			var index = obj as IGenericlessIndex;
 			if (index == null)
@@ -268,9 +268,9 @@ namespace JBSnorro
 			Collection = collection;
 		}
 
-		public Count<TResult> Map<TResult>()
+		public Count<TResult?> Map<TResult>()
 		{
-			return new Count<TResult>(new FacadeMapCollection<TElement, TResult>(this.Collection, _ => default(TResult)));
+			return new Count<TResult?>(new FacadeMapCollection<TElement, TResult?>(this.Collection, _ => default));
 		}
 
 		public static bool operator >=(Count<TElement> count, int i)
@@ -326,7 +326,7 @@ namespace JBSnorro
 
 		IReadOnlyList<object> IGenericlessCount.Collection => (IReadOnlyList<object>)Collection;
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			var index = obj as IGenericlessIndex;
 			if (index == null)

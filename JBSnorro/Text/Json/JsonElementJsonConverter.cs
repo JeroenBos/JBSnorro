@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
@@ -38,17 +39,17 @@ namespace JBSnorro.Text.Json
 			memory.Position = 0;
 			return memory;
 		}
-		static FieldInfo _parentField = typeof(JsonElement).GetField("_parent", BindingFlags.NonPublic | BindingFlags.Instance);
+		readonly static FieldInfo _parentField = typeof(JsonElement).GetField("_parent", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new UnreachableException();
 		public static JsonDocument GetParent(this JsonElement element)
 		{
-			return (JsonDocument)_parentField.GetValue(element) ?? throw new InvalidOperationException("JsonElement does not have a parent");
+			return (JsonDocument?)_parentField.GetValue(element) ?? throw new InvalidOperationException("JsonElement does not have a parent");
 		}
-		public static T Deserialize<T>(this JsonElement element, JsonSerializerOptions options = null)
+		public static T Deserialize<T>(this JsonElement element, JsonSerializerOptions? options = null)
 		{
 			using (var stream = element.GetParent().ToStream())
 			{
 				var reader = new Utf8JsonReader(stream.AsSpan());
-				return JsonSerializer.Deserialize<T>(ref reader, options);
+				return JsonSerializer.Deserialize<T>(ref reader, options)!;
 			}
 		}
 	}

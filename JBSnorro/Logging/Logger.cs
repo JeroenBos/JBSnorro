@@ -1,5 +1,4 @@
-﻿#nullable enable
-using JBSnorro;
+﻿using JBSnorro;
 using JBSnorro.Collections.Immutable;
 using System.Text;
 

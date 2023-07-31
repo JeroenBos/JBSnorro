@@ -1,4 +1,4 @@
-using System;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,13 +12,13 @@ namespace JBSnorro.Text.Json
 		public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 		{
 			using var _ = this.DetectStackoverflow(reader, typeToConvert);
-			string name = JsonSerializer.Deserialize<string>(ref reader, options);
+			string name = JsonSerializer.Deserialize<string>(ref reader, options) ?? throw new UnreachableException();
 			return this.Parse(name);
 		}
 
 		protected virtual T Parse(string name)
 		{
-			if (Enum.TryParse(typeof(T), name, ignoreCase: true, out object result))
+			if (Enum.TryParse(typeof(T), name, ignoreCase: true, out object? result))
 				return (T)result;
 			if (int.TryParse(name, out int i))
 				return (T)(object)i;
@@ -34,9 +34,10 @@ namespace JBSnorro.Text.Json
 		/// <summary> Converts the name of the enum for serialization. </summary>
 		protected virtual string GetName(T value, JsonSerializerOptions options)
 		{
-			return Enum.GetName(typeof(T), value);
+			return Enum.GetName(typeof(T), value) ?? throw new Exception($"The specified enum value ({value}) does not exist in {typeof(T).FullName}");
 		}
-	}
+
+    }
 	/// <summary> Serializes values of the specified enum type by name to lowercase and deserializes them from string (case-insensitive). </summary>
 	public class LowerCaseEnumStringJsonConverter<T> : EnumStringJsonConverter<T> where T : Enum
 	{

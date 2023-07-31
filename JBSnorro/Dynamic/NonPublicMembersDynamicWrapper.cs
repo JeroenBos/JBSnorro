@@ -1,4 +1,3 @@
-#nullable enable
 using JBSnorro.Diagnostics;
 using System;
 using System.Collections.Generic;

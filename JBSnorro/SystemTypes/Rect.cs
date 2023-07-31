@@ -893,7 +893,7 @@ namespace JBSnorro.SystemTypes
 		/// bool - true if the object is an instance of Rect and if it's equal to "this".
 		/// </returns>
 		/// <param name='o'>The object to compare to "this"</param>
-		public override bool Equals(object o)
+		public override bool Equals(object? o)
 		{
 			if ((null == o) || !(o is Rect))
 			{
@@ -1071,7 +1071,7 @@ namespace JBSnorro.SystemTypes
 		/// <returns>
 		/// A string representation of this object.
 		/// </returns>
-		string IFormattable.ToString(string format, IFormatProvider provider)
+		string IFormattable.ToString(string? format, IFormatProvider? provider)
 		{
 
 			// Delegate to the internal method which implements all ToString calls.
@@ -1087,7 +1087,7 @@ namespace JBSnorro.SystemTypes
 		/// <returns>
 		/// A string representation of this object.
 		/// </returns>
-		internal string ConvertToString(string format, IFormatProvider provider)
+		internal string ConvertToString(string? format, IFormatProvider? provider)
 		{
 			if (IsEmpty)
 			{

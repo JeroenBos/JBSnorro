@@ -1,54 +1,48 @@
 ﻿using JBSnorro.Collections.Sorted;
 using JBSnorro.Diagnostics;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Windows;
 
-namespace JBSnorro
+namespace JBSnorro;
+
+public class SortedEnumerable<T> : ISortedEnumerable<T>
 {
-	public class SortedEnumerable<T> : ISortedEnumerable<T>
+	private readonly IEnumerable<T> sequence;
+	[DebuggerHidden]
+	public SortedEnumerable(IEnumerable<T> sequence, IComparer<T> comparer) : this(sequence, comparer.Compare) { }
+	[DebuggerHidden]
+	public SortedEnumerable(IEnumerable<T> sequence, Func<T, T, int>? comparer = null)
 	{
-		private readonly IEnumerable<T> sequence;
-		[DebuggerHidden]
-		public SortedEnumerable(IEnumerable<T> sequence, IComparer<T> comparer) : this(sequence, comparer.Compare) { }
-		[DebuggerHidden]
-		public SortedEnumerable(IEnumerable<T> sequence, Func<T, T, int> comparer = null)
-		{
-			comparer = comparer.OrDefault();
+		comparer = comparer.OrDefault();
 
-			Contract.Requires(sequence != null);
-			Contract.LazilyAssertSortedness(ref sequence, comparer);
+		Contract.Requires(sequence != null);
+		Contract.LazilyAssertSortedness(ref sequence, comparer);
 
-			this.sequence = sequence;
-			this.Comparer = comparer;
-		}
-		public SortedEnumerable(IEnumerable<T> sequence, Func<T, IComparable> comparableKeySelector)
-			: this(sequence, (a, b) => comparableKeySelector(a).CompareTo(comparableKeySelector(b)))
-		{
-		}
-		[DebuggerHidden]
-		public IEnumerator<T> GetEnumerator()
-		{
-			return sequence.GetEnumerator();
-		}
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-		public Func<T, T, int> Comparer { get; private set; }
-
-
+		this.sequence = sequence;
+		this.Comparer = comparer;
 	}
-	public static class SortedEnumerable
+	public SortedEnumerable(IEnumerable<T> sequence, Func<T, IComparable> comparableKeySelector)
+		: this(sequence, (a, b) => comparableKeySelector(a).CompareTo(comparableKeySelector(b)))
 	{
-		public static SortedEnumerable<int> Range(int start, int count)
-		{
-			return new SortedEnumerable<int>(Enumerable.Range(start, count));
-		}
-
 	}
+	[DebuggerHidden]
+	public IEnumerator<T> GetEnumerator()
+	{
+		return sequence.GetEnumerator();
+	}
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		return GetEnumerator();
+	}
+	public Func<T, T, int> Comparer { get; private set; }
+
+
+}
+public static class SortedEnumerable
+{
+	public static SortedEnumerable<int> Range(int start, int count)
+	{
+		return new SortedEnumerable<int>(Enumerable.Range(start, count));
+	}
+
 }

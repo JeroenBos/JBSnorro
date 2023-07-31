@@ -1,5 +1,4 @@
-﻿#nullable enable
-using JBSnorro.SystemTypes;
+﻿using JBSnorro.SystemTypes;
 using System.Diagnostics;
 
 namespace JBSnorro;

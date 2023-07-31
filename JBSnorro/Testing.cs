@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace JBSnorro.Testing;
+﻿namespace JBSnorro.Testing;
 
 public static class TestingExtensions
 {

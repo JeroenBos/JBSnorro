@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net7.0</TargetFrameworks>
 		<LangVersion>11</LangVersion>
+		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Version>0.0.16</Version>

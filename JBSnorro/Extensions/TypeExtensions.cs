@@ -460,7 +460,6 @@ namespace JBSnorro.Extensions
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public;
             return type.GetProperties(flags);
         }
-#nullable enable
         /// <summary>
         /// Similar to <see cref="Type.IsAssignableFrom(Type)" />, except that it also allows for the type being assigned to generic type definitions.
         /// </summary>

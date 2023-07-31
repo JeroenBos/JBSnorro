@@ -80,10 +80,14 @@ namespace JBSnorro
 			return sortedElements.Any(innerList => innerList.Contains(element));
 		}
 		/// <summary> Compares the two specified element for precedence. </summary>
-		public int Compare(T x, T y)
+		public int Compare(T? x, T? y)
 		{
-			Contract.Requires(this.Contains(x));
-			Contract.Requires(this.Contains(y));
+			Contract.Requires(ReferenceEquals(x, null) || this.Contains(x));
+			Contract.Requires(ReferenceEquals(y, null) || this.Contains(y));
+			
+			if (ReferenceEquals(x, y)) return 0;
+			if (ReferenceEquals(x, null)) return 1;
+            if (ReferenceEquals(y, null)) return -1;
 
 			return GetComparisonIndex(x).CompareTo(GetComparisonIndex(y));
 		}
