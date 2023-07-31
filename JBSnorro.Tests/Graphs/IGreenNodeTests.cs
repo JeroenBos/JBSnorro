@@ -1,10 +1,12 @@
 ﻿#nullable enable
+using JBSnorro;
 using JBSnorro.Diagnostics;
 using JBSnorro.Graphs;
 using JBSnorro.Graphs.RedGreen;
+using JBSnorro.Tests.Graphs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JBSnorro.Tests.Graphs;
+namespace Tests.JBSnorro.Graphs;
 
 /// <summary>
 /// Tests the interface <see cref="IGreenNode{TGreenNode}"/>.

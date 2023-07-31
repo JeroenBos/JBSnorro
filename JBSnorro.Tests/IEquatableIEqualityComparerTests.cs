@@ -1,6 +1,8 @@
 ﻿using JBSnorro;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Tests.JBSnorro;
+
 [TestClass]
 public class TestEqualityComparerThroughIEquatable
 {

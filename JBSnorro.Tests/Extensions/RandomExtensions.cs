@@ -3,7 +3,7 @@ using JBSnorro.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
 
-namespace JBSnorro.Tests.Extensions;
+namespace Tests.JBSnorro.Extensions;
 
 [TestClass]
 public class RandomExtensionsTests

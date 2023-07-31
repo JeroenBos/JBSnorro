@@ -1,7 +1,7 @@
 ﻿using JBSnorro.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JBSnorro.Tests.Collections;
+namespace Tests.JBSnorro.Collections;
 
 [TestClass]
 public class PriorityQueueTests

@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-namespace JBSnorro.Tests;
+using JBSnorro;
+
+namespace Tests.JBSnorro;
 
 [TestClass]
 public class FloatingPointApproximationTests
