@@ -1,7 +1,7 @@
 ﻿using JBSnorro.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JBSnorro;
+namespace Tests.JBSnorro.Diagnostics;
 
 
 #if DEBUG

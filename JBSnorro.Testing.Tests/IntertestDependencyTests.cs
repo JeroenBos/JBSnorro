@@ -1,7 +1,8 @@
-﻿using JBSnorro.Csx;
+﻿using JBSnorro;
+using JBSnorro.Csx;
 using System.Diagnostics;
 
-namespace JBSnorro.Testing.IntertestDependency.Tests;
+namespace Tests.JBSnorro.Testing.IntertestDependency;
 
 public class IntertestDependencyTests
 {

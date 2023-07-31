@@ -1,7 +1,7 @@
 ﻿using JBSnorro.Algorithms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JBSnorro.Tests.Algorithms;
+namespace Tests.JBSnorro.Algorithms;
 
 [TestClass]
 public class ISHAThatCanContinueTests

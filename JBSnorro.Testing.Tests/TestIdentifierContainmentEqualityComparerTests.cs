@@ -1,8 +1,8 @@
-﻿namespace JBSnorro.Testing.IntertestDependency.Tests;
+﻿namespace Tests.JBSnorro.Testing.IntertestDependency;
 
 public class TestIdentifierContainmentEqualityComparerTests
 {
-    private readonly IEqualityComparer<JBSnorro.Testing.IntertestDependency.TestIdentifier> comparer = TestIdentifier.TestIdentifierContainmentEqualityComparerInstance;
+    private readonly IEqualityComparer<TestIdentifier> comparer = TestIdentifier.TestIdentifierContainmentEqualityComparerInstance;
 
     private readonly TestIdentifier TypeT = new TestIdentifier("T", isType: true);
     private readonly TestIdentifier TypeT2 = new TestIdentifier("T", isType: true);

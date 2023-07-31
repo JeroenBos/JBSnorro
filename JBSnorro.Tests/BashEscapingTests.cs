@@ -1,8 +1,9 @@
 ﻿#nullable enable
+using JBSnorro.JS;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static JBSnorro.Diagnostics.Contract;
 
-namespace JBSnorro.JS.Tests;
+namespace Tests.JBSnorro.JS;
 
 [TestClass]
 public class BashEscapingTests

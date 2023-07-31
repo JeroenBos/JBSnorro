@@ -1,11 +1,11 @@
 ﻿using static JBSnorro.Diagnostics.Contract;
 using JBSnorro;
+using JBSnorro.Collections.Bits;
 using JBSnorro.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
-using JBSnorro.Collections.Bits;
 
-namespace JBNA.Tests;
+namespace Tests.JBSnorro.Collections.Bits;
 
 [TestClass]
 public class IFloatingPointBitReaderTests

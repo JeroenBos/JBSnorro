@@ -2,7 +2,7 @@
 using JBSnorro.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JBSnorro.Tests.Extensions;
+namespace Tests.JBSnorro.Extensions;
 
 [TestClass] 
 public class RangeExtensionTests

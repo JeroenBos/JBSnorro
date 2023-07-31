@@ -1,9 +1,9 @@
 ﻿using JBSnorro.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JBSnorro.Tests.TypeExtensions.Tests;
+namespace Tests.JBSnorro.TypeExtensions;
 
-using TypeExtensions = JBSnorro.Extensions.TypeExtensions;
+using TypeExtensions = global::JBSnorro.Extensions.TypeExtensions;
 
 [TestClass]
 public class Overrides

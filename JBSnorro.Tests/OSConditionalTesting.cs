@@ -7,44 +7,44 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using TestAttribute = Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute; // or NUnit.Framework.TestAttribute
 
-namespace JBSnorro.Tests
-{
-    class TestOnWindowsOnly
+namespace Tests.JBSnorro;
+
+class TestOnWindowsOnly
 #if WINDOWS
 	: TestAttribute
 #else
-    : Attribute
+: Attribute
 #endif
-    {
+{
 
-    }
-    class TestOnLinuxOnly
+}
+class TestOnLinuxOnly
 #if LINUX
 	: TestAttribute
 #else
-    : Attribute
+: Attribute
 #endif
-    {
+{
 
-    }
+}
 
-    [TestClass]
-    public class DefineConstantsTests
-    {
+[TestClass]
+public class DefineConstantsTests
+{
 #if WINDOWS
-        [Test]
-        public void TestWindowsOS()
-        {
-            Assert.IsTrue(OperatingSystem.IsWindows());
-            Assert.IsFalse(OperatingSystem.IsLinux());
-        }	    
+    [Test]
+    public void TestWindowsOS()
+    {
+        Assert.IsTrue(OperatingSystem.IsWindows());
+        Assert.IsFalse(OperatingSystem.IsLinux());
+    }	    
 #else
-        [Test]
-        public void TestNotWindowsOS()
-        {
-            Assert.IsFalse(OperatingSystem.IsWindows());
-            Assert.IsTrue(OperatingSystem.IsLinux());
-        }
+    [Test]
+    public void TestNotWindowsOS()
+    {
+        Assert.IsFalse(OperatingSystem.IsWindows());
+        Assert.IsTrue(OperatingSystem.IsLinux());
+    }
 #endif
 
 #if LINUX
@@ -55,12 +55,11 @@ namespace JBSnorro.Tests
 		    Assert.IsTrue(OperatingSystem.IsLinux());
 	    }
 #else
-        [Test]
-        public void TestNotLinuxOS()
-        {
-            Assert.IsTrue(OperatingSystem.IsWindows());
-            Assert.IsFalse(OperatingSystem.IsLinux());
-        }
-#endif
+    [Test]
+    public void TestNotLinuxOS()
+    {
+        Assert.IsTrue(OperatingSystem.IsWindows());
+        Assert.IsFalse(OperatingSystem.IsLinux());
     }
+#endif
 }
