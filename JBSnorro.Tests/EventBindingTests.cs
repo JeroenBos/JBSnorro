@@ -8,8 +8,8 @@ namespace Tests.JBSnorro;
 
 public class Foo<T> : DefaultINotifyPropertyChanged
 {
-	private Bar sourceProperty;
-	public Bar SourceProperty
+	private Bar? sourceProperty;
+	public Bar? SourceProperty
 	{
 		get { return sourceProperty; }
 		set { Set(ref sourceProperty, value); }
@@ -18,8 +18,8 @@ public class Foo<T> : DefaultINotifyPropertyChanged
 
 	public class Bar : DefaultINotifyPropertyChanged
 	{
-		private T property;
-		public T Property
+		private T? property;
+		public T? Property
 		{
 			get { return property; }
 			set { Set(ref property, value); }
@@ -196,7 +196,7 @@ public class EventBindingTests
 		var collection = new ProperObservableCollection<Giraffe>();
 		collection.Add(new Giraffe() { Property = expected });
 		int result = -1;
-		void OnCollectivePropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnCollectivePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			result = ((PropertyMutatedEventArgs<int>)e).NewValue;
 		}
@@ -214,7 +214,7 @@ public class EventBindingTests
 		var collection = new ProperObservableCollection<Giraffe>();
 		collection.BindCollective<Giraffe, int>(nameof(Giraffe.Property), OnCollectivePropertyChanged, Math.Min);
 		int result = -1;
-		void OnCollectivePropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnCollectivePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			result = ((PropertyMutatedEventArgs<int>)e).NewValue;
 		}
@@ -232,7 +232,7 @@ public class EventBindingTests
 		var collection = new ProperObservableCollection<Giraffe>();
 		collection.BindCollective<Giraffe, int>(nameof(Giraffe.Property), OnCollectivePropertyChanged, Math.Min);
 		int result = -1;
-		void OnCollectivePropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnCollectivePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			result = ((PropertyMutatedEventArgs<int>)e).NewValue;
 		}
@@ -254,7 +254,7 @@ public class EventBindingTests
 
 		//Act
 		root.SourceProperty.Property = 2;
-		void handle(object sender, PropertyMutatedEventArgs<int> e)
+		void handle(object? sender, PropertyMutatedEventArgs<int> e)
 		{
 			handledCount++;
 		}

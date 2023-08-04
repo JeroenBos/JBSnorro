@@ -160,9 +160,9 @@ public static class DictionaryExtensions
 
     /// <summary> Maps the list to a dictionary (given a key selector and value selector) and maintains the mapping when the list changes. </summary>
     public static IDictionary<TKey, TValue> ToLiveDictionary<T, TKey, TValue>(this ObservableCollection<T> list,
-                                                                                   Func<T, TKey> keySelector,
-                                                                                   Func<T, TValue> valueSelector,
-                                                                                   IEqualityComparer<TKey>? equalityComparer = null) where TKey : notnull
+                                                                              Func<T, TKey> keySelector,
+                                                                              Func<T, TValue> valueSelector,
+                                                                              IEqualityComparer<TKey>? equalityComparer = null) where TKey : notnull
     {
         Contract.Requires(list != null);
         Contract.Requires(keySelector != null);

@@ -11,7 +11,7 @@ public class TypeTests
 	[TestMethod]
 	public void TestToActionOnParameterlessStaticMethod()
 	{
-		var methodInfo = typeof(TypeTests).GetMethod(nameof(dummyStaticMethod), BindingFlags.Static | BindingFlags.NonPublic);
+		var methodInfo = typeof(TypeTests).GetMethod(nameof(dummyStaticMethod), BindingFlags.Static | BindingFlags.NonPublic)!;
 
 		Action method = methodInfo.ToAction();
 
@@ -25,7 +25,7 @@ public class TypeTests
 	[TestMethod]
 	public void TestToActionOnInstanceMethodWithOneParameter()
 	{
-		var methodInfo = typeof(TypeTests).GetMethod(nameof(dummyInstanceMethod), BindingFlags.Instance | BindingFlags.NonPublic);
+		var methodInfo = typeof(TypeTests).GetMethod(nameof(dummyInstanceMethod), BindingFlags.Instance | BindingFlags.NonPublic)!;
 
 		Action<TypeTests> method = methodInfo.ToAction<TypeTests>();
 
@@ -38,7 +38,7 @@ public class TypeTests
 	{
 		var methodInfo = typeof(object).GetMethod(nameof(object.GetType));
 
-		Action<object> method = methodInfo.ToAction<object>();
+		Action<object> method = methodInfo!.ToAction<object>();
 
 		method(new object());
 
@@ -47,7 +47,7 @@ public class TypeTests
 	[TestMethod]
 	public void TestToActionOnStaticMethodWithOneParameter()
 	{
-		var methodInfo = typeof(TypeTests).GetMethod(nameof(dummyStaticMethodWithParameter), BindingFlags.Static | BindingFlags.NonPublic);
+		var methodInfo = typeof(TypeTests).GetMethod(nameof(dummyStaticMethodWithParameter), BindingFlags.Static | BindingFlags.NonPublic)!;
 
 		Action<object> method = methodInfo.ToAction<object>();
 
@@ -58,7 +58,7 @@ public class TypeTests
 	[TestMethod]
 	public void TestToActionOnStaticMethodWithReturnType()
 	{
-		var methodInfo = typeof(Math).GetMethod(nameof(Math.Sin));
+		var methodInfo = typeof(Math).GetMethod(nameof(Math.Sin))!;
 
 		Action<double> method = methodInfo.ToAction<double>();
 
@@ -69,7 +69,7 @@ public class TypeTests
 	[TestMethod]
 	public void TestToFuncOnStaticMethod()
 	{
-		var methodInfo = typeof(Math).GetMethod(nameof(Math.Sin));
+		var methodInfo = typeof(Math).GetMethod(nameof(Math.Sin))!;
 
 		Func<double, double> method = methodInfo.ToFunc<double, double>();
 
@@ -83,7 +83,7 @@ public class TypeTests
 	public void TestInstanceFieldToFunc()
 	{
 		const int expected = 2;
-		var fieldInfo = typeof(TypeTests).GetField(nameof(dummyField), BindingFlags.Instance | BindingFlags.NonPublic);
+		var fieldInfo = typeof(TypeTests).GetField(nameof(dummyField), BindingFlags.Instance | BindingFlags.NonPublic)!;
 
 		var getter = fieldInfo.ToFunc<TypeTests, int>();
 		var setter = fieldInfo.ToAction<TypeTests, int>();
@@ -97,21 +97,21 @@ public class TypeTests
 	[TestMethod]
 	public void TestEventHandlerHasHandlerSignature()
 	{
-		bool hasSignature = typeof(AppDomain).GetEvent(nameof(AppDomain.AssemblyLoad)).HasHandlerSignature<AssemblyLoadEventArgs>();
+		bool hasSignature = typeof(AppDomain).GetEvent(nameof(AppDomain.AssemblyLoad))!.HasHandlerSignature<AssemblyLoadEventArgs>();
 
 		Assert.IsTrue(hasSignature);
 	}
 	[TestMethod]
 	public void TestEventHandlerHasHandlerSignatureIncovariance()
 	{
-		bool hasSignature = typeof(AppDomain).GetEvent(nameof(AppDomain.AssemblyLoad)).HasHandlerSignature<EventArgs>();
+		bool hasSignature = typeof(AppDomain).GetEvent(nameof(AppDomain.AssemblyLoad))!.HasHandlerSignature<EventArgs>();
 
 		Assert.IsFalse(hasSignature);
 	}
 	[TestMethod]
 	public void TestEventHandlerHasSignature()
 	{
-		bool hasSignature = typeof(AppDomain).GetEvent(nameof(AppDomain.AssemblyLoad)).HasSignature<AssemblyLoadEventHandler>();
+		bool hasSignature = typeof(AppDomain).GetEvent(nameof(AppDomain.AssemblyLoad))!.HasSignature<AssemblyLoadEventHandler>();
 
 		Assert.IsTrue(hasSignature);
 	}
