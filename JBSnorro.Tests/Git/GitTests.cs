@@ -520,7 +520,7 @@ public class NewTests : GitHubTestsBase
     [TestMethod]
     public async Task Test_New_Pulls_Remote()
     {
-        var commitHash = new Reference<string>(null);
+        var commitHash = new Reference<string>();
         var repo = await InitGitHubRepoWithRemoteCommit(commitHash);
         await "git checkout -b somebranch".Execute(cwd: repo.Dir);
         Assert.AreEqual(await repo.GetCurrentHash(), ROOT_HASH);
