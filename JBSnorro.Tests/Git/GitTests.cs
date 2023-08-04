@@ -203,7 +203,7 @@ public class GitTestsBase
         Assert.IsTrue(stdErr.StartsWith("Identity added"));
 
         (exitCode, stdOut, stdErr) = await $"git reset --hard {ROOT_HASH}".Execute(cwd: repo.Dir);
-        Assert.AreEqual((exitCode, stdErr), (0, ""));
+        Assert.AreEqual((exitCode, stdErr), (0, ""), message: stdErr);
         Assert.AreEqual(stdOut.Split('\n').Length, 1);
         Assert.IsTrue(stdOut.StartsWith("HEAD is now at"));
 
@@ -220,10 +220,10 @@ public class GitTestsBase
         var repo = await InitRemoteRepo();
         using (File.Create(Path.Combine(repo.Dir, "tmp"))) { }
 
-        var (exitCode, stdOut, stdErr) = await "git add . && git commit -m 'first pushed file'".Execute(cwd: repo.Dir);
-        Assert.AreEqual((exitCode, stdErr), (0, ""));
-        (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git push".Execute(cwd: repo.Dir);
-        Assert.AreEqual(exitCode, 0);
+        var (exitCode, _, stdErr) = await "git add . && git commit -m 'first pushed file'".Execute(cwd: repo.Dir);
+        Assert.AreEqual((exitCode, stdErr), (0, ""), message: stdErr);
+        (exitCode, var stdOut, stdErr) = await $"{SSH_SCRIPT} && git push".Execute(cwd: repo.Dir);
+        Assert.AreEqual(exitCode, 0, message: stdErr);
         Assert.AreEqual(stdOut, "");
 
         if (commitHash != null)
