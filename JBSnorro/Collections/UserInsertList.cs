@@ -9,7 +9,7 @@ namespace JBSnorro.Collections;
 public sealed class UserInsertList<T> : IList<T>
 {
 	/// <summary> The function that determines whether an item would be accepted to be inserted in or added to this list. </summary>
-	private readonly Action<T, int> onInsert;
+	private readonly Action<T, int>? onInsert;
 	/// <summary> The underlying data structure. </summary>
 	
 	private readonly IList<T> data;

@@ -14,7 +14,7 @@ namespace JBSnorro.Collections
 		/// <summary> An immutable set of which this set is a (not necessarily proper) subset. </summary>
 		private readonly IReadOnlyList<T> items;
 		/// <summary> The immutable indices in 'items' that are part of this subset. Can be null, in which case all items are considered to be in this set. </summary>
-		private readonly IList<int> indices;
+		private readonly IList<int>? indices;
 
 		/// <summary> Gets the element in this subset at the specified index. </summary>
 		public T this[int index]
