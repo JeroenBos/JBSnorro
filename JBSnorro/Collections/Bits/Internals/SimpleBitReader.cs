@@ -1,9 +1,4 @@
-﻿#nullable enable
-using JBSnorro;
-using JBSnorro.Diagnostics;
-using JBSnorro.Extensions;
-
-namespace JBSnorro.Collections.Bits.Internals;
+﻿namespace JBSnorro.Collections.Bits.Internals;
 
 /// <summary>
 /// A bit reader that reads floating point numbers assuming they're particularly encoded.

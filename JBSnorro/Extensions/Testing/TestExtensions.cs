@@ -175,11 +175,11 @@ namespace JBSnorro.Testing
                     methodPattern = predicate[(separatorIndex + sep.Length)..].Trim();
                 }
 
-                return match(methodPattern, test.Method.Name) && match(typePattern, test.Type.FullName);
+                return match(methodPattern, test.Method.Name) && match(typePattern, test.Type.FullName!);
             }
             else
             {
-                return match(predicate, test.Method.Name) || match(predicate, test.Type.FullName);
+                return match(predicate, test.Method.Name) || match(predicate, test.Type.FullName!);
             }
 
             [DebuggerHidden]
@@ -195,7 +195,7 @@ namespace JBSnorro.Testing
         {
             CheckTestInvariants(test);
 
-            var ctor = test.Type.GetConstructor(Type.EmptyTypes);
+            var ctor = test.Type.GetConstructor(Type.EmptyTypes)!;
             var initAndCleanup = test.Type.GetInitAndCleanupMethods();
             [DebuggerHidden] Task curry() => execute(test.Method, ctor, initAndCleanup);
             return curry;
@@ -236,7 +236,6 @@ namespace JBSnorro.Testing
             return (initializationMethods, cleanupMethods);
         }
 
-#nullable enable
 
         [DebuggerHidden]
         private static async Task execute(MethodInfo method, ConstructorInfo ctor, (IReadOnlyList<MethodInfo> Inits, IReadOnlyList<MethodInfo> Cleanups) wrappers)
@@ -312,7 +311,7 @@ namespace JBSnorro.Testing
                 throwArgumentException("Expected a regex expression to select tests to execute");
             }
             string filter = args[0];
-            var assembly = assemblyUnderTest ?? Assembly.GetEntryAssembly();
+            var assembly = assemblyUnderTest ?? Assembly.GetEntryAssembly()!;
             var tests = assembly.GetExecutableTestMethods(filter).ToList();
             Console.WriteLine($"Executing {tests.Count} tests" + (tests.Count == 0 ? $" matching '{filter}'" : ""));
             foreach (var test in tests)

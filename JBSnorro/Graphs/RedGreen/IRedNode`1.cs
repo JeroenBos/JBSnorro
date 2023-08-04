@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace JBSnorro.Graphs.RedGreen;
+﻿namespace JBSnorro.Graphs.RedGreen;
 
 public interface IRedNode<TSelf, TGreenNode> where TSelf : class, IRedNode<TSelf, TGreenNode>
 {

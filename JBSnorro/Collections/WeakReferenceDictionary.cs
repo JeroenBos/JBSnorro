@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ namespace JBSnorro.Collections
 			get
 			{
 				this.op();
-				if (this.TryGetValue(key, out TValue result))
+				if (this.TryGetValue(key, out var result))
 				{
 					return result;
 				}
@@ -105,7 +106,7 @@ namespace JBSnorro.Collections
 			this.op();
 			foreach (var pair in this.data)
 			{
-				if (pair.Key.reference.TryGetTarget(out TKey target))
+				if (pair.Key.reference.TryGetTarget(out TKey? target))
 				{
 					yield return new KeyValuePair<TKey, TValue>(target, pair.Value);
 				}
@@ -117,12 +118,12 @@ namespace JBSnorro.Collections
 			var hashedKey = new HashedWeakReference<TKey>(key, this.keyEqualityComparer);
 			return this.data.Remove(hashedKey);
 		}
-		public bool TryGetValue(TKey key, out TValue value)
+		public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
 		{
 			var hashedKey = new HashedWeakReference<TKey>(key, this.keyEqualityComparer);
 			return this.TryGetValue(hashedKey, out value);
 		}
-		internal bool TryGetValue(HashedWeakReference<TKey> key, out TValue value)
+		internal bool TryGetValue(HashedWeakReference<TKey> key, [MaybeNullWhen(false)] out TValue value)
 		{
 			this.op();
 

@@ -19,7 +19,7 @@ namespace JBSnorro
 		/// <param name="start"> The start of the range of all elements to yield. </param>
 		/// <param name="end"> The end of the range of all elements to yield. </param>
 		/// <param name="equalityComparer"> The equality comparer used for determining whether an element in the specified sequence matches that in the range. </param>
-		public static IEnumerable<T> RangeExcept<T>(this ISortedEnumerable<T> sequence, Func<T, T> increment, T start, T end, IEqualityComparer<T> equalityComparer = null)
+		public static IEnumerable<T> RangeExcept<T>(this ISortedEnumerable<T> sequence, Func<T, T> increment, T start, T end, IEqualityComparer<T>? equalityComparer = null)
 		{
 			Contract.Requires(sequence != null);
 			Contract.Requires(increment != null);
@@ -75,7 +75,7 @@ namespace JBSnorro
 
 		/// <summary> Maps the sorted sequence into another sorted sequence. </summary>
 		[DebuggerHidden]
-		public static ISortedEnumerable<TResult> SelectSorted<TSource, TResult>(this ISortedEnumerable<TSource> sequence, Func<TSource, TResult> selector, Func<TResult, TResult, int> resultComparer = null)
+		public static ISortedEnumerable<TResult> SelectSorted<TSource, TResult>(this ISortedEnumerable<TSource> sequence, Func<TSource, TResult> selector, Func<TResult, TResult, int>? resultComparer = null)
 		{
 			Contract.Requires<ArgumentNullException>(sequence != null);
 			Contract.Requires<ArgumentNullException>(selector != null);
@@ -108,7 +108,7 @@ namespace JBSnorro
 		/// <param name="collection"> The collection to insert the item in. </param>
 		/// <param name="item"> The item to insert in the collection in order. </param>
 		/// <param name="comparer"> The comparer determining the order of the collection; specified null to use the default comparer. </param>
-		public static void Insert<T>(this IList<T> collection, T item, IComparer<T> comparer = null)
+		public static void Insert<T>(this IList<T> collection, T item, IComparer<T>? comparer = null)
 		{
 			Contract.Requires(collection != null);
 

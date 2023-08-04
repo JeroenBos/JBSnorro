@@ -102,7 +102,7 @@ namespace JBSnorro.Geometry
 		}
 
 		/// <summary> Determines whether the specified object is equal to the current. </summary>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (ReferenceEquals(null, obj)) return false;
 			if (ReferenceEquals(this, obj)) return true;

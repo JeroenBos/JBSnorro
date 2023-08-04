@@ -19,7 +19,7 @@ public class TestEqualityComparerThroughIEquatable
     {
         static int counter = 0;
         private readonly int id = ++counter;
-        public bool Equals(RefType other)
+        public bool Equals(RefType? other)
         {
             return other?.id == this.id;
         }

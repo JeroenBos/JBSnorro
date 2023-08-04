@@ -1,5 +1,4 @@
-﻿#nullable enable
-using JBSnorro.Diagnostics;
+﻿using JBSnorro.Diagnostics;
 
 namespace JBSnorro.Collections;
 

@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace JBSnorro.Collections;
+﻿namespace JBSnorro.Collections;
 
 class InsufficientBitsException : ArgumentOutOfRangeException
 {

@@ -27,7 +27,7 @@ public class RandomExtensionsTests
         var expected = DrawArray(random);
 
 
-        var deserialized = JsonSerializer.Deserialize<Random>(json, SerializerOptions);
+        var deserialized = JsonSerializer.Deserialize<Random>(json, SerializerOptions)!;
         var actual = DrawArray(deserialized);
 
         Contract.AssertSequenceEqual(expected, actual);

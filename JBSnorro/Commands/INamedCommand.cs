@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace JBSnorro.Commands;
 
-namespace JBSnorro.Commands
+public interface INamedCommand
 {
-	public interface INamedCommand
-	{
-		string CommandName { get; }
-	}
+	string? CommandName { get; }
 }

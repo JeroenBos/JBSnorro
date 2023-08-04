@@ -1,5 +1,4 @@
-﻿#nullable enable
-using JBSnorro.Collections.Bits.Internals;
+﻿using JBSnorro.Collections.Bits.Internals;
 using JBSnorro.Diagnostics;
 using System.Diagnostics;
 

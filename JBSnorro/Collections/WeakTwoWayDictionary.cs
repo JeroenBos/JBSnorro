@@ -20,7 +20,7 @@ namespace JBSnorro.Collections
 		private int operationCountToCleanOn;
 
 		/// <param name="autoCleanup"> After the specified number of calls on this instance, it's internal state is cleaned. </param>
-		public WeakTwoWayDictionary(IEqualityComparer<TValue> equalityComparer = null, int autoCleanup = 10000)
+		public WeakTwoWayDictionary(IEqualityComparer<TValue>? equalityComparer = null, int autoCleanup = 10000)
 		{
 			if (autoCleanup < 1000) { throw new ArgumentException($"'{nameof(autoCleanup)}' must be at least 1000"); } // specify int.MaxValue to disable auto cleanup
 
@@ -48,7 +48,7 @@ namespace JBSnorro.Collections
 				}
 #endif
 				this.op();
-				return this.valueToKey[value];
+				return this.valueToKey[value!];
 			}
 		}
 		/// <summary>
@@ -80,7 +80,7 @@ namespace JBSnorro.Collections
 			this.op();
 			if (this.keyToValue.TryGetValue(key, out var valueReference))
 			{
-				if (valueReference.TryGetTarget(out value))
+				if (valueReference.TryGetTarget(out value!))
 				{
 					return true;
 				}
@@ -89,7 +89,7 @@ namespace JBSnorro.Collections
 					this.keyToValue.Remove(key);
 				}
 			}
-			value = default;
+			value = default!;
 			return false;
 		}
 
@@ -110,7 +110,7 @@ namespace JBSnorro.Collections
 			if (this.keyToValue.TryGetValue(key, out var weakRef))
 			{
 				this.keyToValue.Remove(key);
-				if (weakRef.TryGetTarget(out TValue value))
+				if (weakRef.TryGetTarget(out TValue? value))
 				{
 					this.valueToKey.Remove(value);
 				}
@@ -201,7 +201,7 @@ namespace JBSnorro.Collections
 		{
 			throw new InvalidOperationException($"{nameof(HashedWeakReferenceEqualityComparer<T>)} should be used. ");
 		}
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			throw new InvalidOperationException($"{nameof(HashedWeakReferenceEqualityComparer<T>)} should be used. ");
 		}
@@ -218,8 +218,8 @@ namespace JBSnorro.Collections
 
 		public bool Equals(HashedWeakReference<T> ref1, HashedWeakReference<T> ref2)
 		{
-			bool target1Exists = ref1.reference.TryGetTarget(out T value1);
-			bool target2Exists = ref2.reference.TryGetTarget(out T value2);
+			bool target1Exists = ref1.reference.TryGetTarget(out T? value1);
+			bool target2Exists = ref2.reference.TryGetTarget(out T? value2);
 
 			if (!target1Exists && !target2Exists)
 				return true;

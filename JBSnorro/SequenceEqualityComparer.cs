@@ -14,7 +14,7 @@ namespace JBSnorro
         /// <summary>
         /// Creates a comparer that compares its arguments whether they contain the same elements, in the same order, as determined per the specified (element) equality comparer.
         /// </summary>
-        public static SequenceEqualityComparer<T> CreateInOrderComparer(IEqualityComparer<T> equalityComparer = null)
+        public static SequenceEqualityComparer<T> CreateInOrderComparer(IEqualityComparer<T>? equalityComparer = null)
         {
             Contract.Requires(equalityComparer != null || EqualityComparer<T>.Default != null);
 
@@ -26,10 +26,13 @@ namespace JBSnorro
         {
             this.equalityComparer = equalityComparer;
         }
-        public bool Equals(IEnumerable<T> x, IEnumerable<T> y)
+        public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
         {
-            return ReferenceEquals(x, y)
-                   || (!ReferenceEquals(x, null) && equalityComparer(x, y));
+            if (ReferenceEquals(x, y))
+                return true;
+            if (ReferenceEquals(x, null))
+                return false;
+            return equalityComparer(x, y!);
         }
 
         public static int GetHashCode(IEnumerable<T> obj)

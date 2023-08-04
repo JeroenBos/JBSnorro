@@ -226,7 +226,7 @@ namespace JBSnorro
         /// <param name="options"> The option to fill the interval with. Each option holds the information of which spots it fills. </param>
         /// <param name="length"> The number of spots to fill. </param>
         /// <param name="initialFilling"> Specifies which indices are pre-filled. Specify null to indicate no pre-filling. </param>
-        public static IEnumerable<CombinationWithGaps<T>> AllFillingIntervalCombinations<T>(this IReadOnlyList<T> options, int length, CanExpandFillingDelegate<T> canExpand, IReadOnlyList<bool> initialFilling = null) where T : class, IFillable
+        public static IEnumerable<CombinationWithGaps<T>> AllFillingIntervalCombinations<T>(this IReadOnlyList<T> options, int length, CanExpandFillingDelegate<T> canExpand, IReadOnlyList<bool>? initialFilling = null) where T : class, IFillable
         {
             Contract.Requires(options != null);
             Contract.Requires(0 <= length);
@@ -238,7 +238,7 @@ namespace JBSnorro
                                .SelectMany(i => AllCombinations(options, i))
                                .LazilyAssertForAll(_ => elementsYieldedCount_DEBUG++)
                                .Select(combination => CanCombinationFill(combination, combination.Select(element => element.Occupation), initialFilling, new Interval(0, length), canExpand))
-                               .Where(NotNull)
+                               .WhereNotNull()
                                .OrderBy(_ => _);//perhaps AllCombinations could be made such that this is guaranteed to be already in order? To improve performance
 
             EnsureSingleEnumerationDEBUG(ref result);
@@ -333,10 +333,11 @@ namespace JBSnorro
             {
                 this.Combination = combination;
                 this.cumulativeGapSize = cumulativeGapSize;
+                this.Gaps = new List<Gap>();
             }
 
             /// <summary> Orders by smallest cumulative gap. </summary>
-            int IComparable<CombinationWithGaps<T>>.CompareTo(CombinationWithGaps<T> other)
+            int IComparable<CombinationWithGaps<T>>.CompareTo(CombinationWithGaps<T>? other)
             {
                 Contract.Requires(other != null);
 
@@ -366,8 +367,14 @@ namespace JBSnorro
 
         /// <summary> Determines whether this combination of fillings can fill the entire length, where some fillings may be expanded. </summary>
         /// <returns> The specified combination with the gaps; or null if the entire length couldn't be filled (even with expansions). </returns>
-        private static CombinationWithGaps<T> CanCombinationFill<T>(IReadOnlyList<T> combination, IEnumerable<IReadOnlyList<bool>> combinationFilling, IReadOnlyList<bool> initialFilling, Interval toFill, CanExpandFillingDelegate<T> canExpand) where T : class, IFillable
-        {
+        private static CombinationWithGaps<T>? CanCombinationFill<T>(
+            IReadOnlyList<T> combination, 
+            IEnumerable<IReadOnlyList<bool>> combinationFilling, 
+            IReadOnlyList<bool>? initialFilling, 
+            Interval toFill, 
+            CanExpandFillingDelegate<T> canExpand
+        ) where T : class, IFillable {
+
             //an interval is filled if all positions up to length occur once in the combinationFilling and no positions after length occur.
             //if there are gaps, positions next to the gaps may be queried whether they are capable of filling the gaps. A gap may be multiple positions wide. 
             //a gap may not be filled by two partial expansions
@@ -382,13 +389,15 @@ namespace JBSnorro
             Contract.Requires(!toFill.EndInclusive);
 
             int length = combination[0].Occupation.Count;
-            Func<int, T> getOptionThatFilledIndex = positionIndex =>
+            Func<int, T?> getOptionThatFilledIndex = positionIndex =>
             {
                 int i = combinationFilling.IndexOf(filling => positionIndex >= filling.Count ? false : filling[positionIndex]);
                 if (i == -1)
                 {
                     //in case the leaf at the specified position index was flagged 'alreadyBound'
+#nullable disable
                     Contract.Assert(initialFilling[positionIndex]);
+#nullable restore
                     return null;
                 }
                 return combination[i];
@@ -406,7 +415,7 @@ namespace JBSnorro
             List<Gap> gaps = findGaps(filledPositionIndices, toFill).ToList();
             foreach (Gap gap in gaps)
             {
-                T substitute = null;
+                T? substitute = null;
                 //check whether the element to the left can fill the gap
                 if (gap.Start != 0)
                 {
@@ -491,7 +500,7 @@ namespace JBSnorro
             {
                 return !(a == b);
             }
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Gap && this == (Gap)obj;
             }
@@ -515,7 +524,7 @@ namespace JBSnorro
         /// <param name="options"> The option to fill the interval with. Each option holds the information of which spots it fills. </param>
         /// <param name="length"> The number of spots to fill. </param>
         /// <param name="initialFilling"> Specifies which indices are pre-filled. Specify null to indicate no pre-filling. </param>
-        public static IEnumerable<T[]> AllFillingIntervalCombinations<T>(this IReadOnlyList<T> options, int length, IReadOnlyList<bool> initialFilling = null) where T : IFillable
+        public static IEnumerable<T[]> AllFillingIntervalCombinations<T>(this IReadOnlyList<T> options, int length, IReadOnlyList<bool>? initialFilling = null) where T : IFillable
         {
             return AllFillingIntervalCombinations(options, new Interval(0, length), initialFilling);
         }
@@ -523,7 +532,7 @@ namespace JBSnorro
         /// <param name="options"> The option to fill the interval with. Each option holds the information of which spots it fills (from 0 to end.Length). </param>
         /// <param name="toFill"> The interval to fill. </param>
         /// <param name="initialFilling"> Specifies which indices are pre-filled. Specify null to indicate no pre-filling. </param>
-        public static IEnumerable<T[]> AllFillingIntervalCombinations<T>(this IReadOnlyList<T> options, Interval toFill, IReadOnlyList<bool> initialFilling = null) where T : IFillable
+        public static IEnumerable<T[]> AllFillingIntervalCombinations<T>(this IReadOnlyList<T> options, Interval toFill, IReadOnlyList<bool>? initialFilling = null) where T : IFillable
         {
             //TODO: redo this method, it is terribly inefficient (and the other overload as well)
             //also immediately remove options that have overlap with the initial filling: or change design to ignore overlap with initial filling. Should that overlap then be full? 

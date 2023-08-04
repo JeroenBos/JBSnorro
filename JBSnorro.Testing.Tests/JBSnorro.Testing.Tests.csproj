@@ -2,9 +2,9 @@
 	<PropertyGroup>
 		<TargetFrameworks>net7.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsTestProject>true</IsTestProject>
-		<Nullable>enable</Nullable>
 	    <PublishWithAspNetCoreTargetManifest>False</PublishWithAspNetCoreTargetManifest>
 	</PropertyGroup>
 	

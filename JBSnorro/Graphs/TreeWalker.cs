@@ -136,7 +136,7 @@ namespace JBSnorro.Graphs
 			this.visitedNodes.Add(node);
 		}
 		[DebuggerHidden]
-		public RouteBase(IEqualityComparer<TNode> equalityComparer = null)
+		public RouteBase(IEqualityComparer<TNode>? equalityComparer = null)
 		{
 			equalityComparer = equalityComparer ?? EqualityComparer<TNode>.Default;
 			this.visitedNodes = new HashSet<TNode>(equalityComparer);
@@ -159,7 +159,7 @@ namespace JBSnorro.Graphs
 		private readonly TPayload payload;
 		private readonly IStrategist<TNode, TPayload> strategist;
 		[DebuggerHidden]
-		public SelfSufficientRoute(IStrategist<TNode, TPayload> strategist, TPayload payload, IEqualityComparer<TNode> equalityComparer = null)
+		public SelfSufficientRoute(IStrategist<TNode, TPayload> strategist, TPayload payload, IEqualityComparer<TNode>? equalityComparer = null)
 			: base(equalityComparer)
 		{
 			this.payload = payload;
@@ -210,7 +210,7 @@ namespace JBSnorro.Graphs
 		public static void Walk<TNode, TPayload>(TNode root,
 												 IStrategist<TNode, TPayload> strategySelector,
 												 TPayload payload,
-												 IEqualityComparer<TNode> equalityComparer = null)
+												 IEqualityComparer<TNode>? equalityComparer = null)
 		{
 			var walk = new SelfSufficientRoute<TNode, TPayload>(strategySelector, payload, equalityComparer);
 			walk.Visit(root);
@@ -221,14 +221,14 @@ namespace JBSnorro.Graphs
 		}
 
 #if DEBUG
-		public static object DebuggingInfo { get; private set; }
+		public static object? DebuggingInfo { get; private set; }
 #endif
 
 		/// <param name="navigator"> Always uses this navigator. No strategy selector. </param>
 		public static void Walk<TNode, TPayload>(TNode root,
 												 INavigator<TNode, TPayload> navigator,
 												 TPayload payload,
-												 IEqualityComparer<TNode> equalityComparer = null)
+												 IEqualityComparer<TNode>? equalityComparer = null)
 		{
 			Walk(root, new SingleStrategist<TNode, TPayload>(navigator), payload, equalityComparer);
 		}

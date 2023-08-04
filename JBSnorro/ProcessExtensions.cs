@@ -1,5 +1,4 @@
-﻿#nullable enable
-using JBSnorro;
+﻿using JBSnorro;
 using JBSnorro.Csx;
 using JBSnorro.IO;
 using System.Diagnostics;

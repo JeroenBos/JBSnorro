@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace JBSnorro.Graphs.RedGreen;
+﻿namespace JBSnorro.Graphs.RedGreen;
 
 /// <summary>
 /// Anything that derives from this must be immutable.

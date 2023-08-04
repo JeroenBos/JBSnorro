@@ -3,6 +3,7 @@ using JBSnorro.Diagnostics;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -106,7 +107,7 @@ namespace JBSnorro.Text.Json
 						throw new OverflowException("Too large for decimal"); // How can I copy over the number if it can't even be represented in C#? 
 					break;
 				case JsonTokenType.PropertyName:
-					writer.WritePropertyName(reader.GetString());
+					writer.WritePropertyName(reader.GetString() ?? throw new UnreachableException());
 					break;
 				case JsonTokenType.StartArray:
 					writer.WriteStartArray();
@@ -152,8 +153,8 @@ namespace JBSnorro.Text.Json
 		{
 			Contract.Requires(options != null);
 
-			var field = typeof(JsonSerializerOptions).GetField("_haveTypesBeenCreated", BindingFlags.Instance | BindingFlags.NonPublic);
-			return !(bool)field.GetValue(options);
+			var field = typeof(JsonSerializerOptions).GetField("_haveTypesBeenCreated", BindingFlags.Instance | BindingFlags.NonPublic) ?? throw new UnreachableException();
+			return !(bool)field.GetValue(options)!;
 		}
 		///// <summary> Freezes the specified options. </summary>
 		//public static void Freeze(this JsonSerializerOptions options)
@@ -198,7 +199,7 @@ namespace JBSnorro.Text.Json
 								+ $"and the following {extraProperties} properties were extra: {string.Join(", ", extraProperties)}");
 						}
 					case JsonTokenType.PropertyName:
-						string name = reader.GetString();
+						string name = reader.GetString() ?? throw new UnreachableException();
 						reader.ReadProperty();
 						found.Add(name);
 						string convertedName = options.PropertyNamingPolicy?.ConvertName(name) ?? name;
@@ -220,7 +221,6 @@ namespace JBSnorro.Text.Json
 
 
 		}
-#nullable enable
 		private static readonly MethodInfo JsonConverter_1_Write = typeof(JsonConverter<>).GetMethod("Write")!;
 		public static void Write(this JsonConverter converter, Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
 		{

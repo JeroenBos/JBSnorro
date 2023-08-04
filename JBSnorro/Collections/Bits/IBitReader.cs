@@ -1,9 +1,9 @@
-﻿#nullable enable
-using JBSnorro.Collections.Bits.Internals;
+﻿using JBSnorro.Collections.Bits.Internals;
 using JBSnorro.Diagnostics;
 using System.Diagnostics;
 
 namespace JBSnorro.Collections.Bits;
+
 
 public delegate IBitReader IBitReaderFactory(BitArray data, ulong startBitIndex = 0);
 public interface IBitReader

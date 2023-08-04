@@ -26,8 +26,8 @@ namespace JBSnorro.Extensions
 
             await task.ConfigureAwait(false);
 
-            object result = task.GetType().GetProperty(nameof(Task<object>.Result)).GetValue(task);
-            return (T)result;
+            object? result = task.GetType().GetProperty(nameof(Task<object?>.Result))!.GetValue(task);
+            return (T)result!;
         }
         /// <summary> Casts a task returning a <typeparamref name="TSource"/> to a task returning <typeparamref name="TResult"/>.
         /// An upcast is always safe. </summary>
@@ -38,7 +38,7 @@ namespace JBSnorro.Extensions
             task.ContinueWith(t =>
             {
                 if (t.IsFaulted)
-                    tcs.TrySetException(t.Exception.InnerExceptions);
+                    tcs.TrySetException(t.Exception!.InnerExceptions);
                 else if (t.IsCanceled)
                     tcs.TrySetCanceled();
                 else
@@ -59,7 +59,7 @@ namespace JBSnorro.Extensions
         /// in Visual Basic), no special attribute is required for that parameter in order to invoke the method or constructor using this function. Any object in this array
         /// that is not explicitly initialized with a value will contain the default value for that object type. For reference-type elements, this value is null. For value-type
         /// elements, this value is 0, 0.0, or false, depending on the specific element type.</param>
-        public static Task<object> InvokeAsync(this MethodInfo methodInfo, object obj, object[] arguments)
+        public static Task<object?> InvokeAsync(this MethodInfo methodInfo, object? obj, object?[] arguments)
         {
             Contract.Requires(methodInfo != null);
             Contract.Requires(obj != null || methodInfo.IsStatic);
@@ -69,9 +69,9 @@ namespace JBSnorro.Extensions
             if (invocationResult is Task taskResult)
             {
                 if (invocationResult.GetType() == typeof(Task))
-                    return Task.FromResult<object>(null);
+                    return Task.FromResult<object?>(null);
                 else
-                    return taskResult.Cast<object>();
+                    return taskResult.Cast<object?>();
             }
             else
             {
@@ -161,7 +161,7 @@ namespace JBSnorro.Extensions
         /// <returns>The result of awaiting the delegate that didn't fail.</returns>
         public static async Task Retry(Func<Task> action, int retryCount = 3, int wait_ms = default_wait_ms)
         {
-            await Retry<object>(async () => { await action(); return null; }, retryCount, wait_ms);
+            await Retry<object?>(async () => { await action(); return null; }, retryCount, wait_ms);
         }
         /// <summary>
         /// Retries the specified delegate on exceptions.
@@ -172,7 +172,7 @@ namespace JBSnorro.Extensions
         /// <returns>The result of the delegate that didn't fail.</returns>
         public static void Retry(Action action, int retryCount = 3, int wait_ms = default_wait_ms)
         {
-            Retry<object>(() => { action(); return (object)null; }, retryCount, wait_ms);
+            Retry<object?>(() => { action(); return (object?)null; }, retryCount, wait_ms);
         }
     }
 }

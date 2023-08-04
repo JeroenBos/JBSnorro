@@ -1,8 +1,6 @@
-﻿using JBSnorro.Collections;
-using System;
-using System.Collections.Generic;
+﻿#nullable disable
+using JBSnorro.Collections;
 using System.Diagnostics.Contracts;
-using System.Linq;
 
 /// <summary> Encapsulates finding a route using the A* algorithm. </summary>
 public static class AStar

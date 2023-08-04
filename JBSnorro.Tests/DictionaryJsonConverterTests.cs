@@ -25,7 +25,7 @@ public class DictionaryJsonConverterTests
 		get
 		{
 			var options = new JsonSerializerOptions();
-			options.Converters.Add(new DictionaryJsonConverter<object, ReadOnlyDictionary<string, object>>(_ => new ReadOnlyDictionary<string, object>(_), elementTypes: new Dictionary<string, Type> { { "x", typeof(ITest) } }));
+			options.Converters.Add(new DictionaryJsonConverter<object, ReadOnlyDictionary<string, object>>(_ => new ReadOnlyDictionary<string, object>(_), elementTypes: new Dictionary<string, Type?> { { "x", typeof(ITest) } }));
 			options.Converters.Add(ExactJsonConverter<ITest, Test>.Instance);
 			return options;
 		}
@@ -36,29 +36,29 @@ public class DictionaryJsonConverterTests
 		var options = new JsonSerializerOptions();
 		options.Converters.Add(new DictionaryJsonConverter<object, ReadOnlyDictionary<string, object>>(_ => new ReadOnlyDictionary<string, object>(_)));
 
-		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object>>("{\"x\": \"\"}", options);
+		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object?>>("{\"x\": \"\"}", options);
 		var s = result?.GetValueOrDefault("x", null) as string;
 		Contract.Assert(s == "");
 	}
 	[TestMethod]
 	public void ElementIsNumber()
 	{
-		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object>>("{\"x\": 0}", options);
+		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object?>>("{\"x\": 0}", options);
 		var i = result?.GetValueOrDefault("x", null) as float?;
 		Contract.Assert(i == 0);
 	}
 	[TestMethod]
 	public void ElementIsEmptyArray()
 	{
-		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object>>("{\"x\": []}", options);
+		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object?>>("{\"x\": []}", options);
 		var a = result?.GetValueOrDefault("x", null);
 		Contract.Assert((a as object[])?.Length == 0);
 	}
 	[TestMethod]
 	public void ElementIsEmptyObject()
 	{
-		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object>>("{\"x\": {}}", options);
-		Contract.Assert(result.GetValueOrDefault("x", null) != null);
+		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object?>>("{\"x\": {}}", options);
+		Contract.Assert(result?.GetValueOrDefault("x", null) != null);
 	}
 	[TestMethod]
 	public void ElementIsObjectRemainsJsonElementIfUndeserializable()
@@ -71,8 +71,8 @@ public class DictionaryJsonConverterTests
 	public void ElementIsObject()
 	{
 		var options = optionsWithTest;
-		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object>>("{\"x\": { \"a\": \"\" }}", options);
-		object test = result?.GetValueOrDefault("x", null);
+		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object?>>("{\"x\": { \"a\": \"\" }}", options);
+		object? test = result?.GetValueOrDefault("x", null);
 		Contract.Assert(test is Test);
 	}
 
@@ -88,7 +88,7 @@ public class DictionaryJsonConverterTests
 	public void TwoElements()
 	{
 		var options = optionsWithTest;
-		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object>>("{\"x\": { \"a\": \"\" }, \"y\": { \"a\": \"\" }}", options);
+		var result = JsonSerializer.Deserialize<ReadOnlyDictionary<string, object?>>("{\"x\": { \"a\": \"\" }, \"y\": { \"a\": \"\" }}", options);
 		Contract.Assert(result != null);
 		Contract.Assert(result["x"] is Test);
 		Contract.Assert(result["y"] is JsonElement);
@@ -99,12 +99,12 @@ public class DictionaryJsonConverterTests
 	{
 		var options = optionsWithTest;
 
-		JsonSerializer.Deserialize<ReadOnlyDictionary<string, object>>("{\"x\": { \"a\": \"\", \"b\": \"\" }}", options);
+		JsonSerializer.Deserialize<ReadOnlyDictionary<string, object?>>("{\"x\": { \"a\": \"\", \"b\": \"\" }}", options);
 	}
 
-	interface ITest { string a { get; } }
+	interface ITest { string? a { get; } }
 	class Test : ITest
 	{
-		public string a { get; set; }
+		public string? a { get; set; }
 	}
 }

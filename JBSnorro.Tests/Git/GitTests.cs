@@ -13,10 +13,10 @@ public class GitTestsBase
     protected const string ROOT_HASH = "56f98d2dbf26e00ddd74479250a00a5a8fc25ec3";
 
     // if SSH_FILE cannot be found:
-    // - in testing, add JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
+    // - in testing, add ./test/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
     // - in debugging, add the path to the runSettings as debug env var RUNSETTINGS_PATH
     protected static string ssh_file => EnvironmentExtensions.GetRequiredEnvironmentVariable("SSH_FILE");
-    protected static string ssh_key_path => Path.GetFullPath(ssh_file.ExpandTildeAsHomeDir()).ToBashPath(false);
+    protected static string ssh_key_path => Path.GetFullPath(Environment.ExpandEnvironmentVariables(ssh_file.ExpandTildeAsHomeDir())).ToBashPath(false);
     protected static string init_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/init-ssh-agent.sh";
     protected static string cleanup_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/cleanup-ssh-agent.sh";
     private static string GIT_SSH_COMMAND => $"GIT_SSH_COMMAND=\"ssh -i {ssh_key_path} -F /dev/null\"";
@@ -203,7 +203,7 @@ public class GitTestsBase
         Assert.IsTrue(stdErr.StartsWith("Identity added"));
 
         (exitCode, stdOut, stdErr) = await $"git reset --hard {ROOT_HASH}".Execute(cwd: repo.Dir);
-        Assert.AreEqual((exitCode, stdErr), (0, ""));
+        Assert.AreEqual((exitCode, stdErr), (0, ""), message: stdErr);
         Assert.AreEqual(stdOut.Split('\n').Length, 1);
         Assert.IsTrue(stdOut.StartsWith("HEAD is now at"));
 
@@ -220,10 +220,10 @@ public class GitTestsBase
         var repo = await InitRemoteRepo();
         using (File.Create(Path.Combine(repo.Dir, "tmp"))) { }
 
-        var (exitCode, stdOut, stdErr) = await "git add . && git commit -m 'first pushed file'".Execute(cwd: repo.Dir);
-        Assert.AreEqual((exitCode, stdErr), (0, ""));
-        (exitCode, stdOut, stdErr) = await $"{SSH_SCRIPT} && git push".Execute(cwd: repo.Dir);
-        Assert.AreEqual(exitCode, 0);
+        var (exitCode, _, stdErr) = await "git add . && git commit -m 'first pushed file'".Execute(cwd: repo.Dir);
+        Assert.AreEqual((exitCode, stdErr), (0, ""), message: stdErr);
+        (exitCode, var stdOut, stdErr) = await $"{SSH_SCRIPT} && git push".Execute(cwd: repo.Dir);
+        Assert.AreEqual(exitCode, 0, message: stdErr);
         Assert.AreEqual(stdOut, "");
 
         if (commitHash != null)

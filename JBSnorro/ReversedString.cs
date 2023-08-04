@@ -54,8 +54,9 @@ namespace JBSnorro
 
 		/// <summary> Compares the specified characters with this reversed string. </summary>
 		/// <param name="end"> The characters to compare to, as in, the beginning of the reversed string. </param>
-		public int CompareTo(IEnumerable<char> end)
+		public int CompareTo(IEnumerable<char>? end)
 		{
+			if (end == null) throw new NotImplementedException();
 			return StringExtensions.CompareTo(Value, end);
 		}
 
@@ -104,17 +105,17 @@ namespace JBSnorro
 		{
 			return !(a == b);
 		}
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (ReferenceEquals(null, obj)) return false;
 			if (ReferenceEquals(this, obj)) return true;
 			return obj is ReversedString && Equals((ReversedString)obj);
 		}
-		public bool Equals(string other)
+		public bool Equals(string? other)
 		{
 			return !ReferenceEquals(other, null) && other == this.Value;
 		}
-		public bool Equals(ReversedString other)
+		public bool Equals(ReversedString? other)
 		{
 			return !ReferenceEquals(other, null) && other.Value == this.Value;
 		}
@@ -123,14 +124,14 @@ namespace JBSnorro
 			return (Value != null ? Value.GetHashCode() : 0);
 		}
 
-		public int CompareTo(ReversedString other)
+		public int CompareTo(ReversedString? other)
 		{
 			if (ReferenceEquals(other, null))
 				return 1;
 			return this.Value.CompareTo(other.Value);
 		}
 
-		public int CompareTo(string other)
+		public int CompareTo(string? other)
 		{
 			if (ReferenceEquals(other, null))
 				return 1;

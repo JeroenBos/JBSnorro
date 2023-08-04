@@ -1,5 +1,4 @@
-﻿#nullable enable
-#pragma warning disable CS1066
+﻿#pragma warning disable CS1066
 using JBSnorro;
 using JBSnorro.Csx;
 using JBSnorro.Csx.Node;

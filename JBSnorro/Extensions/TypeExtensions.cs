@@ -15,7 +15,7 @@ namespace JBSnorro.Extensions
     public static class TypeExtensions
     {
         /// <summary> Gets the (boxed) default instance of the specified type. </summary>
-        public static object GetDefault(this Type type)
+        public static object? GetDefault(this Type type)
         {
             if (type.IsValueType)
             {
@@ -55,7 +55,7 @@ namespace JBSnorro.Extensions
         /// <summary> Gets whether the specified type can be assigned to any of the specified candidates. </summary>
         public static bool IsAnyOf(this Type item, params Type[] candidates)
         {
-            return item.IsAnyOf(InterfaceWraps.ToEqualityComparer<Type>((a, b) => b.IsAssignableFrom(a)), candidates);
+            return item.IsAnyOf(InterfaceWraps.ToEqualityComparer<Type>((a, b) => b?.IsAssignableFrom(a) ?? a is null), candidates);
         }
 
         /// <summary> Gets whether the specified method has the same signature as the specified generic type argument. </summary>
@@ -73,7 +73,7 @@ namespace JBSnorro.Extensions
             Contract.Requires(delegateType != null);
             Contract.Requires(delegateType.IsSubclassOf(typeof(MulticastDelegate)));
 
-            MethodInfo f = delegateType.GetMethod("Invoke");
+            MethodInfo f = delegateType.GetMethod("Invoke")!;
 
             if (f.ReturnType != method.ReturnType)
             {
@@ -90,9 +90,9 @@ namespace JBSnorro.Extensions
         {
             Contract.Requires(eventInfo != null);
 
-            MethodInfo f = typeof(F).GetMethod("Invoke");
+            MethodInfo f = typeof(F).GetMethod("Invoke")!;
 
-            return f.HasSignature(eventInfo.EventHandlerType);
+            return f.HasSignature(eventInfo.EventHandlerType ?? throw new UnreachableException());
         }
         /// <summary> Gets whether the specified event has the a handler signature of the form Action&lt;object, TEventArgs&gt;. </summary>
         /// <typeparam name="TEventArgs"> The event arg type used for comparison. </typeparam> 
@@ -128,12 +128,12 @@ namespace JBSnorro.Extensions
 
         /// <summary> Creates a delegate of generic type argument type for the specified method invoked on the specified target. </summary>
         /// <typeparam name="F"> The delegate type to which the specified method is converted. <typeparamref name="F"/> stands for function. </typeparam>
-        public static F ToSignature<F>(this MethodInfo method, object target = null)
+        public static F ToSignature<F>(this MethodInfo method, object? target = null)
         {
             Contract.Requires(method != null);
             Contract.Requires(typeof(F).IsSubclassOf(typeof(MulticastDelegate)));
 
-            return (F)(object)Delegate.CreateDelegate(typeof(F), target, method, throwOnBindFailure: true);
+            return (F)(object)Delegate.CreateDelegate(typeof(F), target, method, throwOnBindFailure: true)!;
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace JBSnorro.Extensions
             Contract.Requires(typeof(F).IsSubclassOf(typeof(MulticastDelegate)));
             Contract.Requires(!method.IsGenericMethodDefinition);
 
-            Type fReturnType = typeof(F).GetMethod("Invoke").ReturnType;
+            Type fReturnType = typeof(F).GetMethod("Invoke")!.ReturnType;
             shortCircuitToSignature = method.IsStatic && fReturnType == method.ReturnType;
 
             if (fReturnType != typeof(void) && method.ReturnType == typeof(void))
@@ -182,7 +182,7 @@ namespace JBSnorro.Extensions
             }
             if (method.IsStatic)
             {
-                return arg => method.Invoke(null, new object[] { arg });
+                return arg => method.Invoke(null, new object?[] { arg });
             }
             else
             {
@@ -200,11 +200,11 @@ namespace JBSnorro.Extensions
             }
             if (method.IsStatic)
             {
-                return (arg1, arg2) => method.Invoke(null, new object[] { arg1, arg2 });
+                return (arg1, arg2) => method.Invoke(null, new object?[] { arg1, arg2 });
             }
             else
             {
-                return (target, arg) => method.Invoke(target, new object[] { arg });
+                return (target, arg) => method.Invoke(target, new object?[] { arg });
             }
         }
         /// <summary> Converts the method info to a func. </summary>
@@ -226,11 +226,11 @@ namespace JBSnorro.Extensions
             }
             else if (method.IsStatic)
             {
-                return arg => (TResult)method.Invoke(null, new object[] { arg });
+                return arg => (TResult)method.Invoke(null, new object?[] { arg })!;
             }
             else
             {
-                return target => (TResult)method.Invoke(target, Array.Empty<object>());
+                return target => (TResult)method.Invoke(target, Array.Empty<object>())!;
             }
         }
         /// <summary> Converts the method info to a func. </summary>
@@ -244,11 +244,11 @@ namespace JBSnorro.Extensions
             }
             else if (method.IsStatic)
             {
-                return (arg1, arg2) => (TResult)method.Invoke(null, new object[] { arg1, arg2 });
+                return (arg1, arg2) => (TResult)method.Invoke(null, new object?[] { arg1, arg2 })!;
             }
             else
             {
-                return (target, arg) => (TResult)method.Invoke(target, new object[] { arg });
+                return (target, arg) => (TResult)method.Invoke(target, new object?[] { arg })!;
             }
         }
         /// <summary>
@@ -257,7 +257,7 @@ namespace JBSnorro.Extensions
         /// <seealso href="https://stackoverflow.com/a/4117437/308451"/>
         /// </summary>
         [DebuggerHidden]
-        public static Func<object> ToDelegate(this MethodInfo method, object target = null)
+        public static Func<object?> ToDelegate(this MethodInfo method, object? target = null)
         {
             if (method.ReturnType == typeof(void))
             {
@@ -280,7 +280,7 @@ namespace JBSnorro.Extensions
                 this.Action = action;
             }
             [DebuggerHidden]
-            public object Wrap()
+            public object? Wrap()
             {
                 Action();
                 return null;
@@ -294,7 +294,7 @@ namespace JBSnorro.Extensions
             Contract.Requires(staticField.IsStatic, "Expected 2 type parameters for non-static field");
             Contract.Requires(typeof(TField) == staticField.FieldType);
 
-            return () => (TField)staticField.GetValue(null);
+            return () => (TField)staticField.GetValue(null)!;
         }
         /// <summary> Wraps setting the static field value with a getter function. </summary>
         public static Action<TField> ToAction<TField>(this FieldInfo staticField)
@@ -312,10 +312,10 @@ namespace JBSnorro.Extensions
             Contract.Requires(nonstaticField != null);
             Contract.Requires(!nonstaticField.IsStatic, "Expected 1 type parameter for static field");
             Contract.Requires(typeof(TField).IsAssignableFrom(nonstaticField.FieldType));
-            Contract.Requires(nonstaticField.DeclaringType.IsAssignableFrom(typeof(TDeclaringType)));
+            Contract.Requires(nonstaticField.DeclaringType!.IsAssignableFrom(typeof(TDeclaringType)));
             Contract.Requires(!nonstaticField.IsInitOnly);
 
-            return target => (TField)nonstaticField.GetValue(target);
+            return target => (TField)nonstaticField.GetValue(target)!;
         }
         /// <summary> Wraps setting the non-static field value with a setter function. </summary>
         public static Action<TDeclaringType, TField> ToAction<TDeclaringType, TField>(this FieldInfo nonstaticField)
@@ -385,9 +385,9 @@ namespace JBSnorro.Extensions
             Contract.Requires(interfaceType.IsInterface, "The specified type is not an interface");
             Contract.Requires(obj.GetType().Implements(interfaceType), "The specified object does not implement the specified interface");
             Contract.Requires(interfaceType.GetProperty(propertyName) != null, $"No property found on interface '{interfaceType}' with the name '{propertyName}");
-            Contract.Requires(interfaceType.GetProperty(propertyName).GetMethod != null, "The specified property is write-only");
+            Contract.Requires(interfaceType.GetProperty(propertyName)!.GetMethod != null, "The specified property is write-only");
 
-            object typeunsafeResult = interfaceType.GetProperty(propertyName).GetMethod.Invoke(obj, EmptyCollection<object>.Array);
+            object typeunsafeResult = interfaceType.GetProperty(propertyName)!.GetMethod!.Invoke(obj, EmptyCollection<object>.Array)!;
             T result = (T)typeunsafeResult;
             return result;
         }
@@ -397,7 +397,7 @@ namespace JBSnorro.Extensions
         ///  object for the method on the direct or indirect base class in which the method
         ///  represented by this instance was first declared. Otherwise null is returned.
         /// </summary>
-        public static PropertyInfo GetBaseDefinition(this PropertyInfo propertyInfo)
+        public static PropertyInfo? GetBaseDefinition(this PropertyInfo propertyInfo)
         {
             Contract.Requires(propertyInfo != null);
 
@@ -410,7 +410,7 @@ namespace JBSnorro.Extensions
             var baseType = accessor.GetBaseDefinition()?.DeclaringType;
             if (baseType == null)
                 return null;
-            var baseProperty = baseType.GetProperty(propertyInfo.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+            var baseProperty = baseType.GetProperty(propertyInfo.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)!;
             Contract.Ensures(baseProperty.DeclaringType != propertyInfo.DeclaringType);
             return baseProperty;
         }
@@ -460,7 +460,6 @@ namespace JBSnorro.Extensions
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public;
             return type.GetProperties(flags);
         }
-#nullable enable
         /// <summary>
         /// Similar to <see cref="Type.IsAssignableFrom(Type)" />, except that it also allows for the type being assigned to generic type definitions.
         /// </summary>
