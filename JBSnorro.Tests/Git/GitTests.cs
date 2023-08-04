@@ -13,10 +13,10 @@ public class GitTestsBase
     protected const string ROOT_HASH = "56f98d2dbf26e00ddd74479250a00a5a8fc25ec3";
 
     // if SSH_FILE cannot be found:
-    // - in testing, add JBSnorro.Tests/Properties/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
+    // - in testing, add ./test/.runSettings as VS -> Test -> Configure Run Settings -> Select ...
     // - in debugging, add the path to the runSettings as debug env var RUNSETTINGS_PATH
     protected static string ssh_file => EnvironmentExtensions.GetRequiredEnvironmentVariable("SSH_FILE");
-    protected static string ssh_key_path => Path.GetFullPath(ssh_file.ExpandTildeAsHomeDir()).ToBashPath(false);
+    protected static string ssh_key_path => Path.GetFullPath(Environment.ExpandEnvironmentVariables(ssh_file.ExpandTildeAsHomeDir())).ToBashPath(false);
     protected static string init_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/init-ssh-agent.sh";
     protected static string cleanup_ssh_agent_path = TestProject.CurrentDirectory.ToBashPath(false) + "/cleanup-ssh-agent.sh";
     private static string GIT_SSH_COMMAND => $"GIT_SSH_COMMAND=\"ssh -i {ssh_key_path} -F /dev/null\"";
