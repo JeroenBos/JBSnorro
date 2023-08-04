@@ -215,7 +215,7 @@ public class GitTestsBase
         // Assert.IsTrue(stdErr.Split('\n')[1].StartsWith("Everything up-to-date"));
         return repo;
     }
-    protected async Task<IGitRepo> InitRemoteRepoWithCommit(Reference<string?>? commitHash = null)
+    protected async Task<IGitRepo> InitRemoteRepoWithCommit(Reference<string>? commitHash = null)
     {
         var repo = await InitRemoteRepo();
         using (File.Create(Path.Combine(repo.Dir, "tmp"))) { }
@@ -232,7 +232,7 @@ public class GitTestsBase
         }
         return repo;
     }
-    protected async Task<IGitRepo> InitRemoteRepoWithRemoteCommit(Reference<string?>? remoteCommitHash = null)
+    protected async Task<IGitRepo> InitRemoteRepoWithRemoteCommit(Reference<string>? remoteCommitHash = null)
     {
         var repo = await InitRemoteRepoWithCommit(remoteCommitHash);
 
@@ -473,7 +473,7 @@ public class TrackUntrackedFilesTests : GitTestsBase
 
 public class GitHubTestsBase : GitTestsBase
 {
-    protected async Task<IGitHubRepo> InitGitHubRepoWithRemoteCommit(Reference<string?>? remoteCommitHash = null)
+    protected async Task<IGitHubRepo> InitGitHubRepoWithRemoteCommit(Reference<string>? remoteCommitHash = null)
     {
         IGitRepo git = await base.InitRemoteRepoWithRemoteCommit(remoteCommitHash);
         return IGitHubRepo.Create(git);
@@ -520,7 +520,7 @@ public class NewTests : GitHubTestsBase
     [TestMethod]
     public async Task Test_New_Pulls_Remote()
     {
-        var commitHash = new Reference<string?>(null);
+        var commitHash = new Reference<string>(null);
         var repo = await InitGitHubRepoWithRemoteCommit(commitHash);
         await "git checkout -b somebranch".Execute(cwd: repo.Dir);
         Assert.AreEqual(await repo.GetCurrentHash(), ROOT_HASH);
