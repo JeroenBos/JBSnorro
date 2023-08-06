@@ -201,4 +201,23 @@ public class FloatingPointBitReaderTests
 
         Contract.Assert(result == 0b1111100000);
     }
+
+    [TestMethod]
+    public void Numbers_remain_invariant_prepended_with_zeroes()
+    {
+        var samples = new ulong[] { 0b11 };
+        foreach (var sample in samples)
+        {
+            int sampleLength = sample.CountBits();
+            var referenceReader = new BitArray(new ulong[] { sample }, sampleLength).ToBitReader(IFloatingPointBitReaders.Default);
+            var expected = referenceReader.ReadDouble(sampleLength);
+            for (int i = 0; i < 5; i++)
+            {
+                sampleLength++;
+                var reader = new BitArray(new ulong[] { sample }, sampleLength).ToBitReader(IFloatingPointBitReaders.Default);
+                var actual = reader.ReadDouble(sampleLength);
+                Contract.Assert(actual == expected);
+            }
+        }
+    }
 }

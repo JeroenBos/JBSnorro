@@ -5,7 +5,7 @@ namespace JBSnorro.Tests;
 
 class Program
 {
-    [DebuggerHidden]
+    //[DebuggerHidden]
     public static Task Main(string[] args)
     {
         RunSettingsUtilities.LoadEnvironmentVariables(runSettingsXmlPath: GetRequiredEnvironmentVariable("RUNSETTINGS_PATH"));

@@ -831,6 +831,10 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     {
         return IBitReader.Create(this);
     }
+    public IFloatingPointBitReader ToBitReader(IFloatingPointBitReaders floatingPointReaderType)
+    {
+        return IFloatingPointBitReader.Create(this.ToBitReader(), floatingPointReaderType);
+    }
 
     void IList<bool>.Insert(int index, bool item)
     {

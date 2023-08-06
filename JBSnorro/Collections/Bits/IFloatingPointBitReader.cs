@@ -1,14 +1,47 @@
 ﻿using JBSnorro.Collections.Bits.Internals;
 using JBSnorro.Diagnostics;
 using System.Diagnostics;
+using System.Reflection.PortableExecutable;
 
 namespace JBSnorro.Collections.Bits;
 
+public delegate double ReadDoubleDelegate(int bitCount, IBitReader bitReader);
+public enum IFloatingPointBitReaders
+{
+    /// <summary>
+    /// Reads an exponent and then mantissa.
+    /// </summary>
+    Default = 0,
+    /// <summary>
+    /// Reads a ulong and divides bits into significant (i.e. big numbers) and insignificant (high precision) ones.
+    /// </summary>
+    ULongLike = 1,
+}
 public interface IFloatingPointBitReader : IBitReader
 {
-    public static IFloatingPointBitReader Create(IBitReader reader, Func<int /*bitCount*/, IBitReader, double>? readDouble = null)
+    /// <summary>
+    /// Creates a <see cref="IFloatingPointBitReader"/> from a custom floating-point reading function.
+    /// </summary>
+    /// <param name="reader">The bits.</param>
+    /// <param name="customReadDouble"> The function taking a capable of converting a specified number (=first argument) of bits from a <see cref="BitReader"/> to a floating-point number.</param>
+    public static IFloatingPointBitReader Create(IBitReader reader, ReadDoubleDelegate? customReadDouble = null)
     {
-        return new FloatingPointBitReader(reader, readDouble ?? DefaultReadDouble);
+        return new FloatingPointBitReader(reader, customReadDouble ?? (ReadDoubleDelegate)DefaultReadDouble);
+    }
+    /// <summary>
+    /// Creates a <see cref="IFloatingPointBitReader"/> from a predefined list of floating-point reading functions.
+    /// </summary>
+    /// <param name="reader">The bit reader to read bits from.</param>
+    public static IFloatingPointBitReader Create(IBitReader reader, IFloatingPointBitReaders readerType)
+    {
+        Contract.Requires(Enum.IsDefined<IFloatingPointBitReaders>(readerType));
+
+        ReadDoubleDelegate readDouble = readerType switch
+        {
+            IFloatingPointBitReaders.Default => DefaultReadDouble,
+            _ => throw new UnreachableException(),
+        };
+        return new FloatingPointBitReader(reader, readDouble);
     }
     internal static double DefaultReadDouble(int bitCount, IBitReader self)
     {
@@ -55,29 +88,49 @@ public interface IFloatingPointBitReader : IBitReader
         return (float)ReadDouble(bitCount);
     }
     public double ReadDouble(int bitCount = 64);
+
+    #region IBitReader Members
+    protected IBitReader Reader { get; }
+    IBitReader IBitReader.this[Range range]
+    {
+        get => this.Reader[range];
+    }
+    ulong IBitReader.Length
+    {
+        get => this.Reader.Length;
+    }
+    ulong IBitReader.Position
+    {
+        get => this.Reader.Position;
+    }
+    ulong IBitReader.ReadUInt64(int bitCount)
+    {
+        return this.Reader.ReadUInt64(bitCount);
+    }
+    void IBitReader.Seek(ulong bitIndex)
+    {
+        this.Reader.Seek(bitIndex);
+    }
+    #endregion
+}
+internal class FloatingPointBitReader : IFloatingPointBitReader
+{
+    private readonly ReadDoubleDelegate readDouble;
+    public IBitReader Reader { get; }
+
+    public FloatingPointBitReader(IBitReader reader, ReadDoubleDelegate readDouble)
+    {
+        this.Reader = reader ?? throw new ArgumentNullException(nameof(reader));
+        this.readDouble = readDouble ?? throw new ArgumentNullException(nameof(readDouble));
+    }
+
+    public double ReadDouble(int bitCount = 64)
+    {
+        return this.readDouble(bitCount, this.Reader);
+    }
+    IBitReader IBitReader.Clone()
+    {
+        return new FloatingPointBitReader(this.Reader.Clone(), readDouble);
+    }
 }
 
-public static class IBitReaderExtensions
-{
-    /// <summary>
-    /// Reads a <see cref="Half"/> using the default floating-point precision encoding.
-    /// </summary>
-    public static Half ReadHalf(this IBitReader reader, int bitCount = 16)
-    {
-        return (Half)IFloatingPointBitReader.DefaultReadDouble(bitCount, reader);
-    }
-    /// <summary>
-    /// Reads a <see cref="float"/> using the default floating-point precision encoding.
-    /// </summary>
-    public static float ReadSingle(this IBitReader reader, int bitCount = 16)
-    {
-        return (float)IFloatingPointBitReader.DefaultReadDouble(bitCount, reader);
-    }
-    /// <summary>
-    /// Reads a <see cref="double"/> using the default floating-point precision encoding.
-    /// </summary>
-    public static float ReadDouble(this IBitReader reader, int bitCount = 16)
-    {
-        return (float)IFloatingPointBitReader.DefaultReadDouble(bitCount, reader);
-    }
-}
