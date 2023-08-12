@@ -28,6 +28,12 @@
 		<RunSettingsFilePath>$(MSBuildThisFileDirectory)../test.runsettings</RunSettingsFilePath>
 	</PropertyGroup>
 	
+	<ItemGroup>
+	  <Watch Remove="Collections\Bits\DefaultFloatingPointBitReaderTests.cs" />
+	  <Watch Remove="Collections\Bits\ULongLikeFloatingPointBitReaderTests.cs" />
+	  <Watch Remove="IFloatingPointBitReaderTests.cs" />
+	</ItemGroup>
+	
 	
 	<ItemGroup>
 	  <None Update="Git\SetSSHPermissions.bat">

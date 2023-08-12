@@ -4,80 +4,61 @@ using JBSnorro.Collections.Bits;
 using JBSnorro.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
+using JBSnorro.Collections.Bits.Internals;
 
 namespace Tests.JBSnorro.Collections.Bits;
 
 [TestClass]
-public class IFloatingPointBitReaderTests
+public abstract class IFloatingPointBitReaderTests
 {
-    private static IFloatingPointBitReader Create(BitArray array)
-    {
-        // to prove that this only tests IBitReader functions, but we need to create an instance, we encapsulate the call to SomeBitReader:
-        return IFloatingPointBitReader.Create(array.ToBitReader());
-    }
+    public abstract IFloatingPointBitReader CreateFloatingPointBitReader(BitArray bitArray);
+    public virtual IFloatingPointBitReader CreateFloatingPointBitReader(bool[] bits) => CreateFloatingPointBitReader(new BitArray(bits));
 
-    [TestMethod]
-    public void ReadDoubleFrom3TrueBits()
-    {
-        IFloatingPointBitReader bitReader = Create(new BitArray(new bool[] { true, true, true }));
 
-        var value = bitReader.ReadDouble(3);
-
-        Contract.Assert(value == -8);
-    }
     [TestMethod]
     public void ReadDoubleFrom3FalseBits()
     {
-        IFloatingPointBitReader bitReader = Create(new BitArray(new bool[] { false, false, false }));
+        var bitReader = CreateFloatingPointBitReader(new[] { false, false, false });
 
         var value = bitReader.ReadDouble(3);
 
-        Contract.Assert(value == 0);
+        Assert(value == 0);
     }
-
     [TestMethod]
-    public void SensibilityCheckOnSpecificity()
+    public void Uniformity()
     {
-        const double init = 8;
-        const double min = 0.5;
-        // var ranges = Enumerable.Range(3, 8).Select(i => (i, double.Pow(2, i + 4), double.Pow(2, -i)));
-        var ranges = new (int length, double maxAbsoluteRange, double minAbsolutePrecision)[] {
-            (3, init * double.Pow(2, 1), min * double.Pow(2, -1)),
-            (4, init * double.Pow(2, 2), min * double.Pow(2, -2)),
-            (5, init * double.Pow(2, 2), min * double.Pow(2, -2)),
-            (6, init * double.Pow(2, 4), min * double.Pow(2, -4)),
-            (7, init * double.Pow(2, 7), min * double.Pow(2, -7)),
-            (8, init * double.Pow(2, 8), min * double.Pow(2, -7)),
-            (9, init * double.Pow(2, 16), min * double.Pow(2, -14)),
-        };
-
-        foreach (var (bitLength, maxRange, minPrecision) in ranges)
+        var set = new HashSet<double>();
+        for (ulong u = 0; u < 100; u++)
         {
-            int combinationsCount = (int)double.Pow(2, bitLength);
+            int length = Math.Max(3, u.CountBits());
+            var reader = new ULongLikeFloatingPointBitReader(new BitArray(new ulong[] { u }, length).ToBitReader());
+            var result = reader.ReadDouble(length);
 
-            var allBitCombinations = Enumerable.Range(0, combinationsCount).Select(i => new BitArray(new[] { (ulong)i }, bitLength)).ToList();
+            Assert(!set.Contains(result));
 
-            foreach (var bitarray in allBitCombinations)
-            {
-                IFloatingPointBitReader bitreader = Create(bitarray);
-                var value = bitreader.ReadDouble(bitLength);
-                var absValue = double.Abs(value);
-
-                if (absValue == 0)
-                    Console.Write("0");
-                else
-                    Console.Write(string.Format("{0:#,0.000}", value).TrimEnd('0', '.'));
-                Console.Write(", ");
-
-                Contract.Assert(absValue <= maxRange);
-                if (absValue != 0)
-                {
-                    Contract.Assert(absValue >= minPrecision);
-                }
-            }
-            Console.WriteLine();
+            set.Add(result);
         }
     }
+    [TestMethod]
+    public virtual void Numbers_remain_invariant_prepended_with_zeroes()
+    {
+        var samples = new ulong[] { 0b111111, 0b111, 0b101, 0b1101 };
+        foreach (var sample in samples)
+        {
+            int sampleLength = sample.CountBits();
+            var referenceReader = CreateFloatingPointBitReader(new BitArray(new ulong[] { sample }, sampleLength));
+            var expected = referenceReader.ReadDouble(sampleLength);
+            for (int i = 0; i < 5; i++)
+            {
+                sampleLength++;
+                var reader = CreateFloatingPointBitReader(new BitArray(new ulong[] { sample }, sampleLength));
+                var actual = reader.ReadDouble(sampleLength);
+                Assert(actual == expected);
+            }
+        }
+    }
+
+
 }
 
 
@@ -178,46 +159,22 @@ public class BinaryReaderTests
     [TestMethod]
     public void Can_read_bytes_over_ulong_crossing()
     {
-        IBitReader reader = Create(new[] { (0b1001UL << 60) | 1234, 0b1100UL }, 100);
+        IBitReader reader = Create(new[] { 0b1001UL << 60 | 1234, 0b1100UL }, 100);
         var x = reader.ReadUInt64(bitCount: 60);
         Assert(x == 1234);
         var y = reader.ReadByte();
         Assert(y == 0b1100_1001);
     }
-}
-
-
-
-[TestClass]
-public class FloatingPointBitReaderTests
-{
     [TestMethod]
-    public void SimpleTest()
+    public void CaseTest()
     {
         var data = new BitArray(new ulong[] { 0b1111100000 }, 10);
         var reader = data[..].ToBitReader();
 
         var result = reader.ReadUInt64(10);
 
-        Contract.Assert(result == 0b1111100000);
+        Assert(result == 0b1111100000);
     }
 
-    [TestMethod]
-    public void Numbers_remain_invariant_prepended_with_zeroes()
-    {
-        var samples = new ulong[] { 0b11 };
-        foreach (var sample in samples)
-        {
-            int sampleLength = sample.CountBits();
-            var referenceReader = new BitArray(new ulong[] { sample }, sampleLength).ToBitReader(IFloatingPointBitReaders.Default);
-            var expected = referenceReader.ReadDouble(sampleLength);
-            for (int i = 0; i < 5; i++)
-            {
-                sampleLength++;
-                var reader = new BitArray(new ulong[] { sample }, sampleLength).ToBitReader(IFloatingPointBitReaders.Default);
-                var actual = reader.ReadDouble(sampleLength);
-                Contract.Assert(actual == expected);
-            }
-        }
-    }
 }
+

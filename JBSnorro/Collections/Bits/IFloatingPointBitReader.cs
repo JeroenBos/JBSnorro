@@ -1,12 +1,10 @@
 ﻿using JBSnorro.Collections.Bits.Internals;
 using JBSnorro.Diagnostics;
 using System.Diagnostics;
-using System.Reflection.PortableExecutable;
 
 namespace JBSnorro.Collections.Bits;
 
-public delegate double ReadDoubleDelegate(int bitCount, IBitReader bitReader);
-public enum IFloatingPointBitReaders
+public enum IFloatingPointBitReaderEncoding
 {
     /// <summary>
     /// Reads an exponent and then mantissa.
@@ -19,6 +17,7 @@ public enum IFloatingPointBitReaders
 }
 public interface IFloatingPointBitReader : IBitReader
 {
+    public const int MIN_BIT_COUNT = 3;
     /// <summary>
     /// Creates a <see cref="IFloatingPointBitReader"/> from a custom floating-point reading function.
     /// </summary>
@@ -26,26 +25,26 @@ public interface IFloatingPointBitReader : IBitReader
     /// <param name="customReadDouble"> The function taking a capable of converting a specified number (=first argument) of bits from a <see cref="BitReader"/> to a floating-point number.</param>
     public static IFloatingPointBitReader Create(IBitReader reader, ReadDoubleDelegate? customReadDouble = null)
     {
-        return new FloatingPointBitReader(reader, customReadDouble ?? (ReadDoubleDelegate)DefaultReadDouble);
+        return new FloatingPointBitReader(reader, customReadDouble ?? DefaultReadDouble);
     }
     /// <summary>
     /// Creates a <see cref="IFloatingPointBitReader"/> from a predefined list of floating-point reading functions.
     /// </summary>
     /// <param name="reader">The bit reader to read bits from.</param>
-    public static IFloatingPointBitReader Create(IBitReader reader, IFloatingPointBitReaders readerType)
+    public static IFloatingPointBitReader Create(IBitReader reader, IFloatingPointBitReaderEncoding readerType)
     {
-        Contract.Requires(Enum.IsDefined<IFloatingPointBitReaders>(readerType));
+        Contract.Requires(Enum.IsDefined(readerType));
 
-        ReadDoubleDelegate readDouble = readerType switch
+        return readerType switch
         {
-            IFloatingPointBitReaders.Default => DefaultReadDouble,
+            IFloatingPointBitReaderEncoding.Default => new FloatingPointBitReader(reader, DefaultReadDouble),
+            IFloatingPointBitReaderEncoding.ULongLike => new ULongLikeFloatingPointBitReader(reader),
             _ => throw new UnreachableException(),
         };
-        return new FloatingPointBitReader(reader, readDouble);
     }
-    internal static double DefaultReadDouble(int bitCount, IBitReader self)
+    internal static double DefaultReadDouble(IBitReader self, int bitCount)
     {
-        if (bitCount < 2 || bitCount > 32)
+        if (bitCount < MIN_BIT_COUNT || bitCount > 64)
             throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (self.RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("double");
@@ -68,7 +67,7 @@ public interface IFloatingPointBitReader : IBitReader
     [DebuggerHidden]
     public Half ReadHalf(int bitCount = 16)
     {
-        if (bitCount < 2 || bitCount > 32)
+        if (bitCount < MIN_BIT_COUNT || bitCount > 32)
             throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("Half");
@@ -79,7 +78,7 @@ public interface IFloatingPointBitReader : IBitReader
     [DebuggerHidden]
     public float ReadSingle(int bitCount = 32)
     {
-        if (bitCount < 2 || bitCount > 32)
+        if (bitCount < MIN_BIT_COUNT || bitCount > 32)
             throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("float");
@@ -93,44 +92,26 @@ public interface IFloatingPointBitReader : IBitReader
     protected IBitReader Reader { get; }
     IBitReader IBitReader.this[Range range]
     {
-        get => this.Reader[range];
+        get => Reader[range];
     }
     ulong IBitReader.Length
     {
-        get => this.Reader.Length;
+        get => Reader.Length;
     }
     ulong IBitReader.Position
     {
-        get => this.Reader.Position;
+        get => Reader.Position;
     }
     ulong IBitReader.ReadUInt64(int bitCount)
     {
-        return this.Reader.ReadUInt64(bitCount);
+        return Reader.ReadUInt64(bitCount);
     }
     void IBitReader.Seek(ulong bitIndex)
     {
-        this.Reader.Seek(bitIndex);
+        Reader.Seek(bitIndex);
     }
     #endregion
 }
-internal class FloatingPointBitReader : IFloatingPointBitReader
-{
-    private readonly ReadDoubleDelegate readDouble;
-    public IBitReader Reader { get; }
 
-    public FloatingPointBitReader(IBitReader reader, ReadDoubleDelegate readDouble)
-    {
-        this.Reader = reader ?? throw new ArgumentNullException(nameof(reader));
-        this.readDouble = readDouble ?? throw new ArgumentNullException(nameof(readDouble));
-    }
 
-    public double ReadDouble(int bitCount = 64)
-    {
-        return this.readDouble(bitCount, this.Reader);
-    }
-    IBitReader IBitReader.Clone()
-    {
-        return new FloatingPointBitReader(this.Reader.Clone(), readDouble);
-    }
-}
-
+public delegate double ReadDoubleDelegate(IBitReader bitReader, int bitCount);
