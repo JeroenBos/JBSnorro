@@ -12,7 +12,7 @@
 	
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<!-- Publishing properties-->
-		<Version>0.0.3</Version>
+		<Version>0.0.4</Version>
 		<Authors>JeroenBos</Authors>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<RepositoryUrl>https://github.com/jeroenbos/JBSnorro</RepositoryUrl>
@@ -31,7 +31,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="JBSnorro" Version="0.0.15"   Condition="'$(Configuration)'!='Debug'" />
+		<PackageReference Include="JBSnorro" Version="0.0.18"   Condition="'$(Configuration)'!='Debug'" />
 		<ProjectReference Include="..\JBSnorro\JBSnorro.csproj" Condition="'$(Configuration)'=='Debug'" />
 	</ItemGroup>
 

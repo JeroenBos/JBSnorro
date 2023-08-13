@@ -104,7 +104,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
               """
 #else
               """
-                      <PackageReference Include="JBSnorro.Testing" Version="0.0.2.1" />
+                      <PackageReference Include="JBSnorro.Testing" Version="0.0.4" />
               """
 #endif
             + """
