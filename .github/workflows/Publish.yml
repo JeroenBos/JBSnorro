@@ -38,9 +38,9 @@ jobs:
 
           if [[ "$current_version" == "$published_version" ]]; then
               echo "Up-to-date"
-              echo "NEW_VERSION=$current_version" >> $GITHUB_ENV
           else
               echo "PUBLISH=true" >> $GITHUB_ENV
+              echo "NEW_VERSION=$current_version" >> $GITHUB_ENV
               echo "Publishing"
           fi
 
