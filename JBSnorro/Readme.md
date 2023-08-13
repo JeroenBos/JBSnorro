@@ -1,3 +1,9 @@
+# This package
+
+is a collection of general-purpose constructs that I use in other projects.
+
+# Notes to self:
+
 ## Publishing to nuget
 
 Happens automatically in a GitHub workflow on the `master` branch whenever the version changes.
