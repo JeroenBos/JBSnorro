@@ -63,7 +63,9 @@ jobs:
 
           ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
-    - run: dotnet build --configuration ${{ matrix.configuration }}
+    - run: |
+        dotnet build --configuration ${{ matrix.configuration }} JBSnorro/JBSnorro.csproj
+        dotnet build --configuration ${{ matrix.configuration }} JBSnorro.Tests/JBSnorro.Tests.csproj
 
     - id: should-test-gh
       uses: tj-actions/changed-files@v35
