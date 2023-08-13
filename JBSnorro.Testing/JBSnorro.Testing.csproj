@@ -22,6 +22,13 @@
 		<IsPackable>true</IsPackable>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<PackageReadmeFile>Readme.md</PackageReadmeFile>
+		<Copyright>Copyright $([System.DateTime]::Now.Year) JeroenBos</Copyright>
+	</PropertyGroup>
+	<ItemGroup>
+		<Content Include="Readme.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="JBSnorro" Version="0.0.15"   Condition="'$(Configuration)'!='Debug'" />
