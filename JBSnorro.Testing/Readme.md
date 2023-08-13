@@ -1,0 +1,1 @@
+﻿This is a package that contains general-purpose constructs that I use in other testing projects.

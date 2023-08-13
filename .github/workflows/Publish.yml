@@ -39,6 +39,7 @@ jobs:
               echo "Up-to-date"
           else
               echo "PUBLISH=true" >> $GITHUB_ENV
+              echo "NEW_VERSION=$current_version" >> $GITHUB_ENV
               echo "Publishing"
           fi
 
@@ -48,6 +49,21 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Create local Package Source
+        if: ${{ env.PUBLISH == 'true' }}
+        run: |
+          TempPackageSource="$(mktemp -d)"
+          echo "TempPackageSource=$TempPackageSource" | tee $GITHUB_ENV
+          dotnet nuget add source "$TempPackageSource" --name 'TempPackageSource'
+          dotnet nuget enable source 'TempPackageSource'
+      - name: Publish to local Package Source (such that `dotnet build` can resolve latest package versions)
+        if: ${{ env.PUBLISH == 'true' }}
+        run: |
+          dotnet build                         \
+                 --configuration Release       \
+                 --output "$TempPackageSource" \
+                 JBSnorro/JBSnorro.csproj
 
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}

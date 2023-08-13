@@ -116,7 +116,7 @@ namespace JBSnorro.Text.Json
 					throw new InvalidCastException(message);
 				}
 #endif
-				value = (T)deserialized;
+				value = (T?)deserialized;
 				return true;
 			}
 			value = default;

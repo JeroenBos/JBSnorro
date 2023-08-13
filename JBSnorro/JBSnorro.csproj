@@ -6,17 +6,26 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Version>0.0.17</Version>
+		<Version>0.0.18</Version>
 		<Authors>JeroenBos</Authors>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<RepositoryUrl>https://github.com/jeroenbos/JBSnorro</RepositoryUrl>
 		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<IncludeSymbols>true</IncludeSymbols>
 		<IncludeSource>true</IncludeSource>
 		<NoWarn>1701;1702;1591;1573;1712</NoWarn>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageReadmeFile>Readme.md</PackageReadmeFile>
+		<Copyright>Copyright $([System.DateTime]::Now.Year) $(Authors)</Copyright>
+	</PropertyGroup>
+	<ItemGroup>
+		<Content Include="Readme.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
+	
 	<ItemGroup>
 		<PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
 		<PackageReference Include="System.Text.Json" Version="4.7.0" />
