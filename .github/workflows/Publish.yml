@@ -58,16 +58,12 @@ jobs:
           echo "TempPackageSource=$TempPackageSource" >> $GITHUB_ENV
           dotnet nuget add source "$TempPackageSource" --name '$TempPackageSource'
           dotnet nuget enable source '$TempPackageSource'
-           dotnet publish                       \
+          dotnet build                         \
                  --configuration Release       \
-                 --framework net7.0            \
                  --output "$TempPackageSource" \
                  JBSnorro/JBSnorro.csproj
           cd "$TempPackageSource"
-          if ! ls *.nupkg 1> /dev/null 2>&1; then
-             echo '*.nupkg files do not exist..' >&2
-             exit 1
-          fi
+          ls
 
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}

@@ -45,9 +45,8 @@ jobs:
       run: |
           TempPackageSource="$(mktemp -d)"
           echo "TempPackageSource=$TempPackageSource" >> $GITHUB_ENV
-          dotnet publish                       \
+          dotnet build                         \
                  --configuration Release       \
-                 --framework "$DOTNET_VERSION" \
                  --output "$TempPackageSource" \
                  JBSnorro/JBSnorro.csproj
           dotnet nuget add source "$TempPackageSource"
