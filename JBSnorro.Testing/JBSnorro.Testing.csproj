@@ -25,7 +25,7 @@
 
 	<PropertyGroup>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
-		<Copyright>Copyright $([System.DateTime]::Now.Year) JeroenBos</Copyright>
+		<Copyright>Copyright $([System.DateTime]::Now.Year) $(Authors)</Copyright>
 	</PropertyGroup>
 	<ItemGroup>
 		<Content Include="Readme.md" Pack="true" PackagePath="\"/>
