@@ -25,6 +25,7 @@ jobs:
           workflowName: CI (JBSnorro.Testing)
     env:
       CSPROJ_PATH: '${{ matrix.project }}/${{ matrix.project }}.csproj'
+      ASSEMBLY_INFO_PATH: '${{ matrix.project }}/${{ matrix.project }}/Properties/AssemblyInfo.cs'
       LANG: 'C.UTF-8'  # necessary for grep on Windows
     steps:
       - uses: actions/checkout@v3
@@ -37,6 +38,7 @@ jobs:
 
           if [[ "$current_version" == "$published_version" ]]; then
               echo "Up-to-date"
+              echo "NEW_VERSION=$current_version" >> $GITHUB_ENV
           else
               echo "PUBLISH=true" >> $GITHUB_ENV
               echo "Publishing"
@@ -48,6 +50,11 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Encode version in AssemblyInfo
+        if: ${{ env.PUBLISH == 'true' }}
+        run: |
+          echo '[assembly: global::System.Reflection.AssemblyVersion("${{ env.NEW_VERSION }}")]' >> "$ASSEMBLY_INFO_PATH"
 
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}
