@@ -39,19 +39,22 @@ jobs:
       # in CI env vars are passed in directly, so the runsettings file can be empty
       run: echo '<RunSettings></RunSettings>' > test.runsettings
     
-    - name: build
-      run: dotnet build JBSnorro.Testing/JBSnorro.Testing.csproj
-    - name: Publish to local Package Source (such that `dotnet build` can resolve latest package versions)
+    - name: Create local Package Source
       run: |
           TempPackageSource="$(mktemp -d)"
-          echo "TempPackageSource=$TempPackageSource" >> $GITHUB_ENV
-          dotnet build                         \
-                 --configuration Release       \
-                 --output "$TempPackageSource" \
-                 JBSnorro/JBSnorro.csproj
-          dotnet nuget add source "$TempPackageSource"
-          cd "$TempPackageSource"
-          ls
+          if [[ "$(uname -s)" =~ MING* ]]; then
+              # on Windows
+              TempPackageSource="$(echo "$TempPackageSource" | sed 's/\/tmp/%TMP%/')"
+          fi
+          echo "TempPackageSource=$TempPackageSource" | tee $GITHUB_ENV
+          dotnet nuget add source "$TempPackageSource" --name 'TempPackageSource'
+          dotnet nuget enable source 'TempPackageSource'
+    - name: Publish to local Package Source (such that `dotnet build` can resolve latest package versions)
+      run: dotnet build JBSnorro/JBSnorro.csproj --configuration Release --output "$TempPackageSource"
+                  
+    - name: build
+      run: dotnet build JBSnorro.Testing/JBSnorro.Testing.csproj
+  
     - name: build tests
       run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --configuration ${{ matrix.configuration }}
     - name: test

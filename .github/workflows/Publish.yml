@@ -52,12 +52,9 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Create local Package Source
+        if: ${{ env.PUBLISH == 'true' }}
         run: |
           TempPackageSource="$(mktemp -d)"
-          if [[ "$(uname -s)" =~ MING* ]]; then
-              # on Windows
-              TempPackageSource="$(echo "$TempPackageSource" | sed 's/\/tmp/%TMP%/')"
-          fi
           echo "TempPackageSource=$TempPackageSource" | tee $GITHUB_ENV
           dotnet nuget add source "$TempPackageSource" --name 'TempPackageSource'
           dotnet nuget enable source 'TempPackageSource'
