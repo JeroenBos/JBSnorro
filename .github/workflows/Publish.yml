@@ -55,7 +55,7 @@ jobs:
         if: ${{ env.PUBLISH == 'true' }}
         run: |
           TempPackageSource="$(mktemp -d)"
-          echo "TempPackageSource=$TempPackageSource" >> $GITHUB_ENV
+          echo "TempPackageSource=$TempPackageSource" | tee $GITHUB_ENV
           dotnet nuget add source "$TempPackageSource" --name '$TempPackageSource'
           dotnet nuget enable source '$TempPackageSource'
           dotnet build                         \
