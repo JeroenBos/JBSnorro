@@ -14,7 +14,7 @@ public static class FileExtensions
     /// <param name="cancellationToken">A cancellation token for regular throw-on-canceled use.</param>
     public static async IAsyncEnumerable<string> ReadAllLinesContinuously(
         string path,
-        Reference<bool> done,
+        Reference<bool>? done = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -31,7 +31,7 @@ public static class FileExtensions
             }
             catch (TaskCanceledException)
             {
-                if (done.Value)
+                if (done?.Value == true)
                     break;
                 else
                     throw;
@@ -60,7 +60,7 @@ public static class FileExtensions
                 }
 
             }
-            else if (done.Value)
+            else if (done?.Value == true)
             {
                 break;
             }
@@ -72,7 +72,7 @@ public static class FileExtensions
                 }
                 catch (TaskCanceledException)
                 {
-                    if (done.Value)
+                    if (done?.Value == true)
                         break;
                     else
                         throw;
