@@ -65,8 +65,6 @@ jobs:
                  --configuration Release       \
                  --output "$TempPackageSource" \
                  JBSnorro/JBSnorro.csproj
-          cd "$TempPackageSource"
-          ls
 
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}
