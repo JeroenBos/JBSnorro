@@ -56,12 +56,12 @@ jobs:
         run: |
           TempPackageSource="$(mktemp -d)"
           echo "TempPackageSource=$TempPackageSource" >> $GITHUB_ENV
-          dotnet nuget add source "$TempPackageSource"
           dotnet publish                       \
                  --configuration Release       \
                  --framework net7.0            \
                  --output "$TempPackageSource" \
                  JBSnorro/JBSnorro.csproj
+          dotnet nuget add source "$TempPackageSource"
       
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}
