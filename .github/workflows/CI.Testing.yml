@@ -51,7 +51,8 @@ jobs:
                  --output "$TempPackageSource" \
                  JBSnorro/JBSnorro.csproj
           dotnet nuget add source "$TempPackageSource"
-          
+          cd "$TempPackageSource"
+          ls
     - name: build tests
       run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --configuration ${{ matrix.configuration }}
     - name: test

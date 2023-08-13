@@ -64,6 +64,7 @@ jobs:
           dotnet nuget add source "$TempPackageSource"
           cd "$TempPackageSource"
           ls
+
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}
         run: dotnet build --configuration Release
