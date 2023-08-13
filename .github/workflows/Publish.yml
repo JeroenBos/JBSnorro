@@ -51,11 +51,6 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Encode version in AssemblyInfo
-        if: ${{ env.PUBLISH == 'true' }}
-        run: |
-          echo '[assembly: global::System.Reflection.AssemblyVersion("${{ env.NEW_VERSION }}")]' >> "$ASSEMBLY_INFO_PATH"
-
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}
         run: dotnet build --configuration Release
