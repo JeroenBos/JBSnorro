@@ -60,11 +60,7 @@ jobs:
       
       - name: Publish to local Package Source (such that `dotnet build` can resolve latest package versions)
         if: ${{ env.PUBLISH == 'true' }}
-        run: dotnet publish                       \
-                    JBSnorro/JBSnorro.csproj      \
-                    --configuration Release       \
-                    --framework net7.0            \
-                    --output "$TempPackageSource"
+        run: dotnet publish JBSnorro/JBSnorro.csproj --configuration Release --framework net7.0 --output "$TempPackageSource"
 
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}
