@@ -51,17 +51,18 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Create temp Package Source
+      - name: Publish to local Package Source (such that `dotnet build` can resolve latest package versions)
         if: ${{ env.PUBLISH == 'true' }}
         run: |
           TempPackageSource="$(mktemp -d)"
           echo "TempPackageSource=$TempPackageSource" >> $GITHUB_ENV
           dotnet nuget add source "$TempPackageSource"
+          dotnet publish                       \
+                 --configuration Release       \
+                 --framework net7.0            \
+                 --output "$TempPackageSource" \
+                 JBSnorro/JBSnorro.csproj
       
-      - name: Publish to local Package Source (such that `dotnet build` can resolve latest package versions)
-        if: ${{ env.PUBLISH == 'true' }}
-        run: dotnet publish JBSnorro/JBSnorro.csproj --configuration Release --framework net7.0 --output "$TempPackageSource"
-
       - name: Build
         if: ${{ env.PUBLISH == 'true' }}
         run: dotnet build --configuration Release
