@@ -25,7 +25,7 @@ jobs:
           workflowName: CI (JBSnorro.Testing)
     env:
       CSPROJ_PATH: '${{ matrix.project }}/${{ matrix.project }}.csproj'
-      ASSEMBLY_INFO_PATH: '${{ matrix.project }}/${{ matrix.project }}/Properties/AssemblyInfo.cs'
+      ASSEMBLY_INFO_PATH: '${{ matrix.project }}/Properties/AssemblyInfo.cs'
       LANG: 'C.UTF-8'  # necessary for grep on Windows
     steps:
       - uses: actions/checkout@v3
