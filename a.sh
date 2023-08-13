@@ -15,5 +15,5 @@ rm -rf JBSnorro.Testing.Tests/bin
 rm -rf JBSnorro.Testing.Tests/obj
 # delete all bins and objs
 
-dotnet publish --configuration Release --framework net7.0 --output "$TempPackageSource" JBSnorro/JBSnorro.csproj
+dotnet build --configuration Release --output "$TempPackageSource" JBSnorro/JBSnorro.csproj
 dotnet restore JBSnorro.Testing/JBSnorro.Testing.csproj -p:Configuration=Release
