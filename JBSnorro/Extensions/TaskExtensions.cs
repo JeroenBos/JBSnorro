@@ -174,5 +174,36 @@ namespace JBSnorro.Extensions
         {
             Retry<object?>(() => { action(); return (object?)null; }, retryCount, wait_ms);
         }
+
+        /// <summary>
+        /// Runs a task for a specified duration, and cancels it afterwards.
+        /// </summary>
+        public static async Task WithTimeout(this Func<CancellationToken, Task> createTask, TimeSpan duration)
+        {
+            using var cts = new CancellationTokenSource(duration);
+            await createTask(cts.Token);
+        }
+        /// <summary>
+        /// Runs a task for a specified duration, and cancels it afterwards.
+        /// </summary>
+        public static async Task<T> WithTimeout<T>(this Func<CancellationToken, Task<T>> createTask, TimeSpan duration)
+        {
+            using var cts = new CancellationTokenSource(duration);
+            return await createTask(cts.Token);
+        }
+        /// <summary>
+        /// Enumeratos an <see cref="IAsyncEnumerable{T}"/> for a specified duration, and cancels it afterwards.
+        /// </summary>
+        public static async IAsyncEnumerable<T> WithTimeout<T>(this IAsyncEnumerable<T> asyncSequence, TimeSpan duration)
+        {
+            using var cts = new CancellationTokenSource(duration);
+            
+            await using var enumerator = asyncSequence.GetAsyncEnumerator(cts.Token);
+            while (await enumerator.MoveNextAsync())
+            {
+                yield return enumerator.Current;
+            }
+            // maybe the above is equivalent to asyncSequence.WithCancellation(cts.Token)?
+        }
     }
 }
