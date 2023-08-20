@@ -8,6 +8,7 @@ using JBSnorro.Geometry;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Numerics;
 using static JBSnorro.Global;
 
 namespace JBSnorro;
@@ -2699,14 +2700,14 @@ public static class EnumerableExtensions
     /// <typeparam name="T"> The type of the elements. </typeparam>
     /// <param name="sequence"> The sequence that is checked for being sorted. </param>
     /// <param name="comparer"> A comparer for determining the order checked for. Specifying null will use the default comparer. </param>
-    [DebuggerStepThrough]
+    [DebuggerHidden]
     public static bool IsSorted<T>(this IEnumerable<T> sequence, Func<T, T, int>? comparer = null)
     {
         Contract.Requires(sequence != null);
 
         comparer = comparer.OrDefault();
 
-        T? previous = default(T);
+        T? previous = default;
         bool first = true;
         foreach (T element in sequence)
         {
@@ -2717,6 +2718,12 @@ public static class EnumerableExtensions
             previous = element;
         }
         return true;
+    }
+    [DebuggerHidden]
+    public static bool IsSortedDescendingly<T>(this IEnumerable<T> sequence)
+    {
+        Func<T, T, int> comparer = Comparer<T>.Default.Compare;
+        return sequence.IsSorted((a, b) => comparer(b, a));
     }
     /// <summary> Returns whether the specified sequence is sorted, optionally according to some comparer. The empty sequence is considered sorted. </summary>
     /// <typeparam name="T"> The type of the elements. </typeparam>
@@ -3175,60 +3182,68 @@ public static class EnumerableExtensions
 
         list.Sort(Comparer<T>.Create((Comparison<T>)((x, y) => comparer(x, y))));
     }
+
+    [DebuggerHidden]
+    public static T Average<T>(this IEnumerable<T> source) where T : struct, INumber<T>
+    {
+        return Average<T, T, T>(source);
+    }
+    /// <summary>
+    /// Copied from System.Linq.dll
+    /// </summary>
+    [DebuggerHidden]
+    public static TResult Average<TSource, TAccumulator, TResult>(this IEnumerable<TSource> source)
+        where TSource : struct, INumber<TSource>
+        where TAccumulator : struct, INumber<TAccumulator>
+        where TResult : struct, INumber<TResult>
+    {
+
+        using (IEnumerator<TSource> e = source.GetEnumerator())
+        {
+            if (!e.MoveNext())
+            {
+                throw new ArgumentException($"{nameof(source)} is empty");
+            }
+
+            TAccumulator sum = TAccumulator.CreateChecked(e.Current);
+            long count = 1;
+            while (e.MoveNext())
+            {
+                checked { sum += TAccumulator.CreateChecked(e.Current); }
+                count++;
+            }
+
+            return TResult.CreateChecked(sum) / TResult.CreateChecked(count);
+        }
+    }
     /// <summary>
     /// Gets the standard deviation of the specified numbers.
     /// </summary>
     /// <param name="average">Provide the average as performance optimization.</param>
-    public static float StandardDeviation(this IEnumerable<float> numbers, float? average = null)
+    public static T StandardDeviation<T>(this IEnumerable<T> numbers, T? average = null) where T : struct, INumber<T>
     {
-        float μ = average ?? numbers.Average();
+        T μ = average ?? numbers.Average();
 
         int count = 0;
-        float sum = 0;
+        T sum = T.Zero;
         foreach (var number in numbers)
         {
             sum += (number - μ) * (number - μ);
             count++;
         }
         if (count == 0)
-            return 0;
-        return (float)Math.Sqrt(sum / count);
+            return T.Zero;
+
+        var result = Math.Sqrt(Convert.ToDouble(T.CreateChecked(sum) / T.CreateChecked(count)));
+        return T.CreateChecked(result);
     }
     /// <summary>
     /// Gets the standard deviation of the specified numbers.
     /// </summary>
     /// <param name="average">Provide the average as performance optimization.</param>
-    public static float StandardDeviation(this IEnumerable<float> numbers, out float average)
+    public static T StandardDeviation<T>(this IEnumerable<T> numbers, out T average) where T : struct, INumber<T>
     {
         average = numbers.Average();
-        return StandardDeviation(numbers, average);
-    }
-    /// <summary>
-    /// Gets the standard deviation of the specified numbers.
-    /// </summary>
-    /// <param name="average">Provide the average as performance optimization.</param>
-    public static float StandardDeviation(this IEnumerable<int> numbers, float? average = null)
-    {
-        double μ = average ?? numbers.Average();
-
-        int count = 0;
-        double sum = 0;
-        foreach (var number in numbers)
-        {
-            sum += (number - μ) * (number - μ);
-            count++;
-        }
-        if (count == 0)
-            return 0;
-        return (float)Math.Sqrt(sum / count);
-    }
-    /// <summary>
-    /// Gets the standard deviation of the specified numbers.
-    /// </summary>
-    /// <param name="average">Provide the average as performance optimization.</param>
-    public static float StandardDeviation(this IEnumerable<int> numbers, out float average)
-    {
-        average = (float)numbers.Average();
         return StandardDeviation(numbers, average);
     }
     /// <summary>
@@ -3248,7 +3263,7 @@ public static class EnumerableExtensions
             list[n] = temp;
         }
     }
-    /// <inheritdoc cref="System.Linq.Enumerable.Sum{TSource}(IEnumerable{TSource}, Func{TSource, long})"/>
+    /// <inheritdoc cref="Enumerable.Sum{TSource}(IEnumerable{TSource}, Func{TSource, long})"/>
     public static ulong Sum<T>(this IEnumerable<T> source, Func<T, ulong> selector)
     {
         Contract.Requires(source != null);
