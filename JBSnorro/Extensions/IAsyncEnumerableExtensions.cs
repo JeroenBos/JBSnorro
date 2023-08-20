@@ -68,7 +68,6 @@ public static class IAsyncEnumerableExtensions
 
         void Yield(bool result)
         {
-            Console.WriteLine("IAsync setting result");
             lock (_lock)
             {
                 if (!reference!.Value!.Task.IsCompleted)
@@ -82,7 +81,6 @@ public static class IAsyncEnumerableExtensions
         {
             while (await reference.Value.Task)
             {
-                Console.WriteLine("yield return null");
                 yield return null;
                 lock (_lock)
                 {
