@@ -1,5 +1,4 @@
-﻿using JBSnorro.Diagnostics;
-using JBSnorro.Text;
+﻿using JBSnorro.Text;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -24,11 +23,13 @@ public static class FileExtensions
 
 
         IAsyncEnumerable<object?> everyFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
+        string? error = null;
         var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path)) { EnableRaisingEvents = true };
-        watcher.Changed += fileChanged;
-        watcher.Error += (sender, e) => dispose();
-        watcher.Deleted += (sender, e) => dispose();
-        watcher.Disposed += (sender, e) => dispose();
+        watcher.Changed += (sender, e) => yield();
+        watcher.Error += (sender, e) => { error = "error"; dispose(); };
+        watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
+        watcher.Disposed += (sender, e) => { error = "disposed"; dispose(); };
+        watcher.Renamed += (sender, e) => { error = "renamed"; dispose(); };
 
 
         done ??= new Reference<bool>();
@@ -41,10 +42,8 @@ public static class FileExtensions
             await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken))
                 yield return line;
 
-        void fileChanged(object sender, FileSystemEventArgs e)
-        {
-            yield();
-        }
+        if (error != null)
+            throw new Exception(error);
     }
     /// <summary>
     /// Continuously reads all lines of a file and yields are lines written to it within this process (or so it appears to work).
