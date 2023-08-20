@@ -83,8 +83,8 @@ public class StringReaderThatYieldsWholeLines : StreamReader
                         {
                             _charPos++;
                         }
-                        this.LastCharacterWasNewLine = true; // ONLY THIS MINI CHANGE HERE COMPARED TO BASE CLASS IMPLEMENTATION
                     }
+                    this.LastCharacterWasNewLine = true; // ONLY THIS MINI CHANGE HERE COMPARED TO BASE CLASS IMPLEMENTATION
                     return s;  
                 }
                 i++;
