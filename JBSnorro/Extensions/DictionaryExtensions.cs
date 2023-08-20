@@ -218,11 +218,12 @@ public static class DictionaryExtensions
     /// Creates a readonly dictionary by mapping the specified sequence to keys and values.
     /// </summary>
     public static IReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TSource, TKey, TValue>(
-        this IEnumerable<TSource> sequence, 
-        Func<TSource, TKey> keySelector, 
-        Func<TSource, TKey, TValue> valueSelector, 
+        this IEnumerable<TSource> sequence,
+        Func<TSource, TKey> keySelector,
+        Func<TSource, TKey, TValue> valueSelector,
         IEqualityComparer<TKey>? equalityComparer = null
-    ) where TKey : notnull {
+    ) where TKey : notnull
+    {
         Contract.Requires(sequence != null);
         Contract.Requires(keySelector != null);
         Contract.Requires(valueSelector != null);
@@ -316,6 +317,11 @@ public static class DictionaryExtensions
     }
     public static bool IncrementCounter<TKey>(this IDictionary<TKey, int> dict, TKey key)
     {
+        int _ = 0;
+        return dict.IncrementCounter(key, ref _);
+    }
+    public static bool IncrementCounter<TKey>(this IDictionary<TKey, int> dict, TKey key, ref int uniqueCount)
+    {
         if (dict.TryGetValue(key, out var currentValue))
         {
             dict[key] = currentValue + 1;
@@ -324,9 +330,11 @@ public static class DictionaryExtensions
         else
         {
             dict[key] = 1;
+            uniqueCount++;
             return false;
         }
     }
+
     public static bool DecrementCounter<TKey>(this IDictionary<TKey, int> dict, TKey key)
     {
         if (dict.TryGetValue(key, out var currentValue))
