@@ -2159,6 +2159,7 @@ public static class EnumerableExtensions
         return ((IReadOnlyList<T>)list).Map(resultSelector);
     }
     /// <summary> Maps the specified collection to another by identity conversions of the elements. </summary>
+    [DebuggerHidden]
     public static ReadOnlyCollection<TResult> Map<T, TResult>(this ReadOnlyCollection<T> list)
     {
         return list.Map((T t) => (TResult)(object)t!);
@@ -2168,6 +2169,7 @@ public static class EnumerableExtensions
     /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
     /// <param name="list"> The collection to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
+    [DebuggerHidden]
     public static ReadOnlyCollection<TResult> Map<T, TResult>(this IReadOnlyList<T> list, Func<T, TResult> resultSelector)
     {
         var result = new TResult[list.Count];
@@ -2181,6 +2183,7 @@ public static class EnumerableExtensions
     /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
     /// <param name="list"> The collection to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
+    [DebuggerHidden]
     public static ReadOnlyCollection<TResult> Map<T, TResult>(this IReadOnlyList<T> list, Func<T, int, TResult> resultSelector)
     {
         var result = new TResult[list.Count];
