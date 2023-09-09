@@ -1,4 +1,5 @@
-﻿using JBSnorro.Diagnostics;
+﻿using JBSnorro.Collections;
+using JBSnorro.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -205,6 +206,18 @@ public static class DictionaryExtensions
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Creates a lazy dictionary from a collection of values, whose index can be computed from a source object.
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="list">The list of values of the resulting dictionary.</param>
+    /// <param name="getIndex">A function returns the index of the representation in the list; or -1 if the specified source has no representation.</param>
+    public static IReadOnlyDictionary<TSource, TValue> ToLazyDictionary<TSource, TValue>(this IReadOnlyList<TValue> list, Func<TSource, int> getIndex)
+    {
+        return new LazyReadOnlyDictionary<TSource, TValue>(list, getIndex);
     }
 
     /// <summary>
