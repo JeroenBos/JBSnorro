@@ -1,4 +1,4 @@
-﻿namespace JBSnorro.Collections;
+﻿namespace JBSnorro.Collections.Bits;
 
 public class InsufficientBitsException : ArgumentOutOfRangeException
 {

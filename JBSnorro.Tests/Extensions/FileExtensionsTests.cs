@@ -9,15 +9,15 @@ namespace Tests.JBSnorro.Extensions;
 [TestClass]
 public class FileExtensionsTests
 {
-    const int step_ms = 500;
-    const int timeout_ms = 6 /* = #steps + 1 */ * step_ms;
+    const int step_ms = 200;
+    const int timeout_ms = 10 * step_ms + 5000 /* because in CI it's rather slow */;
     [TestMethod, Timeout(timeout_ms)]
     public async Task TestReadAllLinesContinuously()
     {
         // Arrange
-        const int step_ms = 200;
-        await using AsyncDisposable<string> pathContainer = IOExtensions.CreateTemporaryFile();
+        AsyncDisposable<string> pathContainer = IOExtensions.CreateTemporaryFile();
         var path = pathContainer.Value;
+        Contract.Requires(File.Exists(path));
 
         var isDone = new Reference<bool>();
         var readLines = new List<string>();
@@ -31,7 +31,6 @@ public class FileExtensionsTests
             File.AppendAllText(path, "partial line 2. ");
             await Task.Delay(4 * step_ms);
             File.AppendAllLines(path, new string[] { "end of line 2" });
-
         }
 
 

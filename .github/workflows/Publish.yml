@@ -70,8 +70,8 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: Wait for CI
-        uses: deepinsight-io/action-wait-on-workflow@v2.1.1
         if: ${{ env.PUBLISH == 'true' }}
+        uses: deepinsight-io/action-wait-on-workflow@v2.1.1
         with:
           workflowName: ${{ matrix.workflowName }}
           token: ${{ secrets.GITHUB_TOKEN }}

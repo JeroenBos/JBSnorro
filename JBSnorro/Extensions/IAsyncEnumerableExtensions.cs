@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace JBSnorro.Extensions;
 
@@ -39,5 +37,56 @@ public static class IAsyncEnumerableExtensions
             result.Add(enumerator.Current);
         }
         return result;
+    }
+    /// <summary>
+    /// Creates an <see cref="IAsyncEnumerable{T}"/> that yields everytime <paramref name="yield"/> is called.
+    /// </summary>
+    /// <param name="yield">A function to be called that triggers the returned <see cref="IAsyncEnumerable{T}"/> to yield. </param>
+    /// <param name="duration"> A length of time for which the async enumerable will run. </param>
+    /// <remarks>I'm sure RX extensions has something like this, but whatever. </remarks>
+    public static IAsyncEnumerable<object?> Create(out Action yield, TimeSpan duration)
+    {
+        var result = Create(out yield, out var dispose);
+        Task.Delay(duration).ContinueWith(t => dispose());
+        return result;
+    }
+    /// <summary>
+    /// Creates an <see cref="IAsyncEnumerable{T}"/> that yields everytime <paramref name="yield"/> is called.
+    /// </summary>
+    /// <param name="yield">A function to be called that triggers the returned <see cref="IAsyncEnumerable{T}"/> to yield. </param>
+    /// <param name="dispose"> A function that terminates this loop. </param>
+    /// <remarks>I'm sure RX extensions has something like this, but whatever. </remarks>
+    public static IAsyncEnumerable<object?> Create(out Action yield, out Action dispose)
+    {
+        object _lock = new object();
+        var reference = new Reference<TaskCompletionSource<bool>>();
+        reference.Value = new TaskCompletionSource<bool>();
+
+        yield = () => Yield(true);
+        dispose = () => Yield(false);
+        return Loop();
+
+        void Yield(bool result)
+        {
+            lock (_lock)
+            {
+                if (!reference!.Value!.Task.IsCompleted)
+                {
+                    reference.Value.SetResult(result);
+                }
+            }
+        }
+
+        async IAsyncEnumerable<object?> Loop()
+        {
+            while (await reference.Value.Task)
+            {
+                yield return null;
+                lock (_lock)
+                {
+                    reference.Value = new TaskCompletionSource<bool>();
+                }
+            }
+        }
     }
 }

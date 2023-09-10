@@ -1,4 +1,5 @@
-﻿using JBSnorro.Diagnostics;
+﻿using JBSnorro.Collections;
+using JBSnorro.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -208,6 +209,18 @@ public static class DictionaryExtensions
     }
 
     /// <summary>
+    /// Creates a lazy dictionary from a collection of values, whose index can be computed from a source object.
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="list">The list of values of the resulting dictionary.</param>
+    /// <param name="getIndex">A function returns the index of the representation in the list; or -1 if the specified source has no representation.</param>
+    public static IReadOnlyDictionary<TSource, TValue> ToLazyDictionary<TSource, TValue>(this IReadOnlyList<TValue> list, Func<TSource, int> getIndex)
+    {
+        return new LazyReadOnlyDictionary<TSource, TValue>(list, getIndex);
+    }
+
+    /// <summary>
     /// Creates a readonly dictionary by mapping the specified sequence to keys and values.
     /// </summary>
     public static IReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TSource, TKey, TValue>(this IEnumerable<TSource> sequence, Func<TSource, TKey> keySelector, Func<TSource, TValue> valueSelector, IEqualityComparer<TKey>? equalityComparer = null) where TKey : notnull
@@ -218,11 +231,12 @@ public static class DictionaryExtensions
     /// Creates a readonly dictionary by mapping the specified sequence to keys and values.
     /// </summary>
     public static IReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TSource, TKey, TValue>(
-        this IEnumerable<TSource> sequence, 
-        Func<TSource, TKey> keySelector, 
-        Func<TSource, TKey, TValue> valueSelector, 
+        this IEnumerable<TSource> sequence,
+        Func<TSource, TKey> keySelector,
+        Func<TSource, TKey, TValue> valueSelector,
         IEqualityComparer<TKey>? equalityComparer = null
-    ) where TKey : notnull {
+    ) where TKey : notnull
+    {
         Contract.Requires(sequence != null);
         Contract.Requires(keySelector != null);
         Contract.Requires(valueSelector != null);
@@ -316,6 +330,11 @@ public static class DictionaryExtensions
     }
     public static bool IncrementCounter<TKey>(this IDictionary<TKey, int> dict, TKey key)
     {
+        int _ = 0;
+        return dict.IncrementCounter(key, ref _);
+    }
+    public static bool IncrementCounter<TKey>(this IDictionary<TKey, int> dict, TKey key, ref int uniqueCount)
+    {
         if (dict.TryGetValue(key, out var currentValue))
         {
             dict[key] = currentValue + 1;
@@ -324,9 +343,11 @@ public static class DictionaryExtensions
         else
         {
             dict[key] = 1;
+            uniqueCount++;
             return false;
         }
     }
+
     public static bool DecrementCounter<TKey>(this IDictionary<TKey, int> dict, TKey key)
     {
         if (dict.TryGetValue(key, out var currentValue))
