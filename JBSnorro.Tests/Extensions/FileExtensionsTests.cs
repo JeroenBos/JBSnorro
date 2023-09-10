@@ -10,7 +10,7 @@ namespace Tests.JBSnorro.Extensions;
 public class FileExtensionsTests
 {
     const int step_ms = 200;
-    const int timeout_ms = 10 * step_ms;
+    const int timeout_ms = 10 * step_ms + 5000 /* because in CI it's rather slow */;
     [TestMethod, Timeout(timeout_ms)]
     public async Task TestReadAllLinesContinuously()
     {
