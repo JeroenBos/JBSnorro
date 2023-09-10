@@ -106,7 +106,27 @@ public static class EnumerableExtensions
 
         return Enumerate();
     }
+    /// <summary>
+    /// Copies all elements of the source to <paramref name="destination"/> at the specified <paramref name="destinationStartIndex"/>.
+    /// </summary>
+    public static void CopyTo<T>(this IReadOnlyList<T> source, T[] destination, int destinationStartIndex)
+    {
+        Contract.Requires(source != null);
+        Contract.Requires(destination != null);
+        Contract.Requires(destinationStartIndex + source.Count <= destination.Length);
 
+        if (source is IList<T> ilist)
+        {
+            ilist.CopyTo(destination, destinationStartIndex);
+        }
+        else
+        {
+            for (int i = 0; i < source.Count; i++)
+            {
+                destination[i + destinationStartIndex] = source[i];
+            }
+        }
+    }
 
     /// <summary> Determines whether a sequence starts with the specified sequence according to a specified equality comparer. </summary>
     /// <param name="source"> The sequence to check whether its starts with <paramref name="startSequence"/>. </param>
