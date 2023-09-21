@@ -2,6 +2,7 @@
 
 namespace JBSnorro;
 
+public static class DOESNTEXIST { }
 /// <summary>
 /// Compares two directory paths for equality, dismissing any final directory separator.
 /// </summary>

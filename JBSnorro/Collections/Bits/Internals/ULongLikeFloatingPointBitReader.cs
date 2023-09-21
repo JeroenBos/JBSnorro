@@ -18,7 +18,7 @@ internal class ULongLikeFloatingPointBitReader : IFloatingPointBitReader
             return 1;
         value--;
         bool sign = (value & 1) == 0;
-        value >>= 1; 
+        value >>= 1;
         double result = 0;
         for (int i = 0; i <= Math.Min(31, bitCount / 2) + 1; i++)
         {
@@ -29,7 +29,34 @@ internal class ULongLikeFloatingPointBitReader : IFloatingPointBitReader
         }
         return result * (sign ? 1 : -1);
     }
+    internal static double ComputeMax(int bitCount)
+    {
+        return computeExtrema(bitCount).Max();
+    }
+    internal static double ComputeMin(int bitCount)
+    {
+        return computeExtrema(bitCount).Min();
+    }
+    private static IEnumerable<double> computeExtrema(int bitCount)
+    {
+        // can't be bothered to do this theoretically. Just pick the correct extremum of the extrema
+        var sequences = new[]
+{
+            Enumerable.Range(0, bitCount).Select(i => i != 0),
+            Enumerable.Range(0, bitCount).Select(i => i != bitCount - 1),
+            Enumerable.Range(0, bitCount).Select(i => i == 0),
+            Enumerable.Range(0, bitCount).Select(i => i == bitCount - 1),
+            Enumerable.Range(0, bitCount).Select(_ => true),
+            Enumerable.Range(0, bitCount).Select(_ => false),
+        };
+        return sequences.Select(sequence => computeHelper(sequence, bitCount));
 
+        static double computeHelper(IEnumerable<bool> sequence, int bitCount)
+        {
+            var reader = new BitArray(sequence).ToBitReader(IFloatingPointBitReaderEncoding.ULongLike);
+            return ReadDouble(reader, bitCount);
+        }
+    }
 
     public IBitReader Reader { get; }
 

@@ -1,6 +1,7 @@
 ﻿using JBSnorro.Collections.Bits.Internals;
 using JBSnorro.Diagnostics;
 using System.Diagnostics;
+using System.Text;
 
 namespace JBSnorro.Collections.Bits;
 
@@ -64,6 +65,17 @@ public interface IFloatingPointBitReader : IBitReader
         return value;
     }
 
+    internal static double ComputeDefaultMax(int bitCount)
+    {
+        var reader = new BitArray(Enumerable.Range(0, bitCount).Select(i => i != 0)).ToBitReader(IFloatingPointBitReaderEncoding.Default);
+        return DefaultReadDouble(reader, bitCount);
+    }
+    internal static double ComputeDefaultMin(int bitCount)
+    {
+        var reader = new BitArray(Enumerable.Repeat(true, bitCount)).ToBitReader(IFloatingPointBitReaderEncoding.Default);
+        return DefaultReadDouble(reader, bitCount);
+    }
+
     [DebuggerHidden]
     public Half ReadHalf(int bitCount = 16)
     {
@@ -113,5 +125,47 @@ public interface IFloatingPointBitReader : IBitReader
     #endregion
 }
 
+public static class IFloatingPointBitReaderEncodingExtensions
+{
+    private static readonly IReadOnlyDictionary<(IFloatingPointBitReaderEncoding, int BitCount), double> cachedMaxValues = Cache<(IFloatingPointBitReaderEncoding, int), double>.CreateThreadSafe(computeMaxValue);
+    private static double computeMaxValue((IFloatingPointBitReaderEncoding Encoding, int BitCount) tuple)
+    {
+        var (encoding, bitCount) = tuple;
+        switch (encoding)
+        {
+            case IFloatingPointBitReaderEncoding.Default:
+                return IFloatingPointBitReader.ComputeDefaultMax(bitCount);
+            case IFloatingPointBitReaderEncoding.ULongLike:
+                return ULongLikeFloatingPointBitReader.ComputeMax(bitCount);
+
+            default:
+                throw new ArgumentException(encoding.ToString(), nameof(tuple) + "." + nameof(tuple.Encoding));
+        }
+    }
+    public static double GetMaxValue(this IFloatingPointBitReaderEncoding encoding, int bitCount)
+    {
+        return cachedMaxValues[(encoding, bitCount)];
+    }
+
+    private static readonly IReadOnlyDictionary<(IFloatingPointBitReaderEncoding, int BitCount), double> cachedMinValues = Cache<(IFloatingPointBitReaderEncoding, int), double>.CreateThreadSafe(computeMinValue);
+    private static double computeMinValue((IFloatingPointBitReaderEncoding Encoding, int BitCount) tuple)
+    {
+        var (encoding, bitCount) = tuple;
+        switch (encoding)
+        {
+            case IFloatingPointBitReaderEncoding.Default:
+                return IFloatingPointBitReader.ComputeDefaultMin(bitCount);
+            case IFloatingPointBitReaderEncoding.ULongLike:
+                return ULongLikeFloatingPointBitReader.ComputeMin(bitCount);
+
+            default:
+                throw new ArgumentException(encoding.ToString(), nameof(tuple) + "." + nameof(tuple.Encoding));
+        }
+    }
+    public static double GetMinValue(this IFloatingPointBitReaderEncoding encoding, int bitCount)
+    {
+        return cachedMinValues[(encoding, bitCount)];
+    }
+}
 
 public delegate double ReadDoubleDelegate(IBitReader bitReader, int bitCount);

@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace JBSnorro.Collections
 {
     /// <summary>
-    /// Represents a collectino of lazily computed elements (and are cached upon first computation).
+    /// Represents a collection of lazily computed elements (and are cached upon first computation).
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [DebuggerDisplay("Count: {Count}")]
