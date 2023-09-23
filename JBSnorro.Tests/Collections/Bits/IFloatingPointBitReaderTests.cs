@@ -25,8 +25,11 @@ public abstract class IFloatingPointBitReaderTests
 
         Assert(value == 0);
     }
+    /// <summary>
+    /// I.e. that distinct bit ranges are mapped to distinct values.
+    /// </summary>
     [TestMethod]
-    public void Uniformity()
+    public void Is_injective()
     {
         var set = new HashSet<double>();
         for (ulong u = 0; u < 100; u++)
