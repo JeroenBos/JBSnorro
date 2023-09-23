@@ -96,6 +96,49 @@ public abstract class IFloatingPointBitReaderTests
             yield return number;
         }
     }
+
+    /// <summary>
+    /// There must be at least one element in every range of length δ between [start, end]:
+    /// </summary>
+    [TestMethod]
+    public virtual void Is_sufficiently_dense() 
+    {
+        const int bitCount = 9;
+        const double δ = 0.1;
+        const double rangeStart = -10;
+        const double rangeEnd = 10;
+
+
+        var list = getAllPossibleNumbers(bitCount).Order().ToArray();
+
+        static double? findInRange(IEnumerable<double> sortedSequence, double start, double end)
+        {
+            var previous = 0d;
+            foreach (var item in sortedSequence)
+            {
+                if (item > end)
+                {
+                    break;
+                }
+                if (start < item && item < end)
+                {
+                    return item;
+                }
+                previous = item;
+            }
+            return null;
+        }
+
+        var current = rangeStart;
+        while (current < rangeEnd)
+        {
+            var temp = findInRange(list, start: current, end: current + δ);
+
+            Contract.Assert(temp != null, $"Not sufficiently dense at {current}");
+
+            current = temp.Value;
+        }
+    }
 }
 
 

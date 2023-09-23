@@ -24,7 +24,7 @@ internal class ULongLikeFloatingPointBitReader : IFloatingPointBitReader
         {
             bool hasSignificantBit = (value & 1UL << 2 * i) != 0;
             bool hasInsignificantBit = (value & 1UL << 2 * i + 1) != 0;
-            result += Math.Pow(2, i + 1) * (hasSignificantBit ? 1 : 0);
+            result += Math.Pow(2, i) * (hasSignificantBit ? 1 : 0);
             result += Math.Pow(2, -i - 1) * (hasInsignificantBit ? 1 : 0);
         }
         return result * (sign ? 1 : -1);
