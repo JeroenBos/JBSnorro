@@ -1,7 +1,6 @@
 ﻿using JBSnorro.Collections.Bits.Internals;
 using JBSnorro.Diagnostics;
 using System.Diagnostics;
-using System.Text;
 
 namespace JBSnorro.Collections.Bits;
 
@@ -67,13 +66,29 @@ public interface IFloatingPointBitReader : IBitReader
 
     internal static double ComputeDefaultMax(int bitCount)
     {
-        var reader = new BitArray(Enumerable.Range(0, bitCount).Select(i => i != 0)).ToBitReader(IFloatingPointBitReaderEncoding.Default);
-        return DefaultReadDouble(reader, bitCount);
+        // empirically the above algorithm has a min if a single bit is 0 (around halfway) and the rest is 1, or all are 1
+        var result = Enumerable.Range(0, bitCount + 1)
+                               .Select(indexOfZero =>
+                               {
+                                   var reader = new BitArray(Enumerable.Range(0, bitCount).Select(i => i != 0 && i != indexOfZero)).ToBitReader(IFloatingPointBitReaderEncoding.Default);
+                                   var result = DefaultReadDouble(reader, bitCount);
+                                   return result;
+                               })
+                               .Max();
+        return result;
     }
     internal static double ComputeDefaultMin(int bitCount)
     {
-        var reader = new BitArray(Enumerable.Repeat(true, bitCount)).ToBitReader(IFloatingPointBitReaderEncoding.Default);
-        return DefaultReadDouble(reader, bitCount);
+        // empirically the above algorithm has a min if a single bit is 0 (around halfway) and the rest is 1, or all are 1
+        var result = Enumerable.Range(0, bitCount + 1)
+                               .Select(indexOfZero =>
+                               {
+                                   var reader = new BitArray(Enumerable.Range(0, bitCount).Select(i => i != indexOfZero)).ToBitReader(IFloatingPointBitReaderEncoding.Default);
+                                   var result = DefaultReadDouble(reader, bitCount);
+                                   return result;
+                               })
+                               .Min();
+        return result;
     }
 
     [DebuggerHidden]
@@ -99,6 +114,7 @@ public interface IFloatingPointBitReader : IBitReader
         return (float)ReadDouble(bitCount);
     }
     public double ReadDouble(int bitCount = 64);
+    public static abstract IFloatingPointBitReaderEncoding Encoding { get; }
 
     #region IBitReader Members
     protected IBitReader Reader { get; }

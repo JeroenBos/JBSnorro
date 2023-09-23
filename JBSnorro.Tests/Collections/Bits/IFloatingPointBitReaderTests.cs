@@ -13,6 +13,7 @@ public abstract class IFloatingPointBitReaderTests
 {
     public abstract IFloatingPointBitReader CreateFloatingPointBitReader(BitArray bitArray);
     public virtual IFloatingPointBitReader CreateFloatingPointBitReader(bool[] bits) => CreateFloatingPointBitReader(new BitArray(bits));
+    public abstract IFloatingPointBitReaderEncoding Encoding { get; }
 
 
     [TestMethod]
@@ -58,7 +59,40 @@ public abstract class IFloatingPointBitReaderTests
         }
     }
 
+    [TestMethod]
+    public void GetMinimum_gets_the_minimum()
+    {
+        var list = new List<double>();
+        for (int bitCount = IFloatingPointBitReader.MIN_BIT_COUNT; bitCount < 11; bitCount++)
+        {
+            var actual = Encoding.GetMinValue(bitCount);
+            var expected = getAllPossibleNumbers(bitCount).Min();
+            list.Add(expected);
 
+            Contract.Assert(actual == expected);
+        }
+    }
+    [TestMethod]
+    public void GetMaximum_gets_the_maximum()
+    {
+        for (int bitCount = IFloatingPointBitReader.MIN_BIT_COUNT; bitCount < 11; bitCount++)
+        {
+            var actual = Encoding.GetMaxValue(bitCount);
+            var expected = getAllPossibleNumbers(bitCount).Max();
+
+            Contract.Assert(actual == expected);
+        }
+    }
+
+    private IEnumerable<double> getAllPossibleNumbers(int bitCount)
+    {
+        for (ulong bits = 0; bits < (1UL << bitCount); bits++)
+        {
+            var reader = CreateFloatingPointBitReader(new BitArray(new ulong[] { bits }, bitCount));
+            var number = reader.ReadDouble(bitCount);
+            yield return number;
+        }
+    }
 }
 
 

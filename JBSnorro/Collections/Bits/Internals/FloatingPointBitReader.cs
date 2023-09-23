@@ -19,5 +19,7 @@ internal class FloatingPointBitReader : IFloatingPointBitReader
     {
         return new FloatingPointBitReader(Reader.Clone(), readDouble);
     }
+
+    static IFloatingPointBitReaderEncoding IFloatingPointBitReader.Encoding => IFloatingPointBitReaderEncoding.Default;
 }
 
