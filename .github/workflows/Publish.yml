@@ -73,6 +73,7 @@ jobs:
         run: |
           cd "./JBSnorro/bin/Release"
           ls
+          echo 'This should exist: "./JBSnorro/bin/Release/JBSnorro.${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg"'
 
       - name: Wait for CI
         if: ${{ env.PUBLISH == 'true' }}
@@ -83,4 +84,4 @@ jobs:
 
       - name: Publish
         if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
-        run: dotnet nuget push "./JBSnorro/bin/Release/JBSnorro.${{ matrix.project }}.symbols.nupkg" -k '${{ secrets.NUGET_API_KEY }}' -s 'https://api.nuget.org/v3/index.json'
+        run: dotnet nuget push "./JBSnorro/bin/Release/JBSnorro.${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg" -k '${{ secrets.NUGET_API_KEY }}' -s 'https://api.nuget.org/v3/index.json'
