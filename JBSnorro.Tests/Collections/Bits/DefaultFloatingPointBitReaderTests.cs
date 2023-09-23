@@ -11,6 +11,7 @@ public class DefaultFloatingPointBitReaderTests : IFloatingPointBitReaderTests
     {
         return bits.ToBitReader(IFloatingPointBitReaderEncoding.Default);
     }
+    public override IFloatingPointBitReaderEncoding Encoding => IFloatingPointBitReaderEncoding.Default;
     [TestMethod]
     public void ReadDoubleFrom3TrueBits()
     {
@@ -69,4 +70,6 @@ public class DefaultFloatingPointBitReaderTests : IFloatingPointBitReaderTests
     {
         // the interface test is violated for this DefaultFloatingPointBitReader and I don't think it's necessary to fix it
     }
+
+    
 }

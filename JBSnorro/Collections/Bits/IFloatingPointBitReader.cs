@@ -64,6 +64,33 @@ public interface IFloatingPointBitReader : IBitReader
         return value;
     }
 
+    internal static double ComputeDefaultMax(int bitCount)
+    {
+        // empirically the above algorithm has a min if a single bit is 0 (around halfway) and the rest is 1, or all are 1
+        var result = Enumerable.Range(0, bitCount + 1)
+                               .Select(indexOfZero =>
+                               {
+                                   var reader = new BitArray(Enumerable.Range(0, bitCount).Select(i => i != 0 && i != indexOfZero)).ToBitReader(IFloatingPointBitReaderEncoding.Default);
+                                   var result = DefaultReadDouble(reader, bitCount);
+                                   return result;
+                               })
+                               .Max();
+        return result;
+    }
+    internal static double ComputeDefaultMin(int bitCount)
+    {
+        // empirically the above algorithm has a min if a single bit is 0 (around halfway) and the rest is 1, or all are 1
+        var result = Enumerable.Range(0, bitCount + 1)
+                               .Select(indexOfZero =>
+                               {
+                                   var reader = new BitArray(Enumerable.Range(0, bitCount).Select(i => i != indexOfZero)).ToBitReader(IFloatingPointBitReaderEncoding.Default);
+                                   var result = DefaultReadDouble(reader, bitCount);
+                                   return result;
+                               })
+                               .Min();
+        return result;
+    }
+
     [DebuggerHidden]
     public Half ReadHalf(int bitCount = 16)
     {
@@ -87,6 +114,7 @@ public interface IFloatingPointBitReader : IBitReader
         return (float)ReadDouble(bitCount);
     }
     public double ReadDouble(int bitCount = 64);
+    public static abstract IFloatingPointBitReaderEncoding Encoding { get; }
 
     #region IBitReader Members
     protected IBitReader Reader { get; }
@@ -113,5 +141,47 @@ public interface IFloatingPointBitReader : IBitReader
     #endregion
 }
 
+public static class IFloatingPointBitReaderEncodingExtensions
+{
+    private static readonly IReadOnlyDictionary<(IFloatingPointBitReaderEncoding, int BitCount), double> cachedMaxValues = Cache<(IFloatingPointBitReaderEncoding, int), double>.CreateThreadSafe(computeMaxValue);
+    private static double computeMaxValue((IFloatingPointBitReaderEncoding Encoding, int BitCount) tuple)
+    {
+        var (encoding, bitCount) = tuple;
+        switch (encoding)
+        {
+            case IFloatingPointBitReaderEncoding.Default:
+                return IFloatingPointBitReader.ComputeDefaultMax(bitCount);
+            case IFloatingPointBitReaderEncoding.ULongLike:
+                return ULongLikeFloatingPointBitReader.ComputeMax(bitCount);
+
+            default:
+                throw new ArgumentException(encoding.ToString(), nameof(tuple) + "." + nameof(tuple.Encoding));
+        }
+    }
+    public static double GetMaxValue(this IFloatingPointBitReaderEncoding encoding, int bitCount)
+    {
+        return cachedMaxValues[(encoding, bitCount)];
+    }
+
+    private static readonly IReadOnlyDictionary<(IFloatingPointBitReaderEncoding, int BitCount), double> cachedMinValues = Cache<(IFloatingPointBitReaderEncoding, int), double>.CreateThreadSafe(computeMinValue);
+    private static double computeMinValue((IFloatingPointBitReaderEncoding Encoding, int BitCount) tuple)
+    {
+        var (encoding, bitCount) = tuple;
+        switch (encoding)
+        {
+            case IFloatingPointBitReaderEncoding.Default:
+                return IFloatingPointBitReader.ComputeDefaultMin(bitCount);
+            case IFloatingPointBitReaderEncoding.ULongLike:
+                return ULongLikeFloatingPointBitReader.ComputeMin(bitCount);
+
+            default:
+                throw new ArgumentException(encoding.ToString(), nameof(tuple) + "." + nameof(tuple.Encoding));
+        }
+    }
+    public static double GetMinValue(this IFloatingPointBitReaderEncoding encoding, int bitCount)
+    {
+        return cachedMinValues[(encoding, bitCount)];
+    }
+}
 
 public delegate double ReadDoubleDelegate(IBitReader bitReader, int bitCount);

@@ -1,7 +1,4 @@
-﻿using JBSnorro;
-using JBSnorro.Collections.Bits;
-using JBSnorro.Collections.Bits.Internals;
-using JBSnorro.Diagnostics;
+﻿using JBSnorro.Collections.Bits;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tests.JBSnorro.Collections.Bits;
@@ -13,6 +10,6 @@ public class ULongLikeFloatingPointBitReaderTests : IFloatingPointBitReaderTests
     {
         return bitArray.ToBitReader(IFloatingPointBitReaderEncoding.ULongLike);
     }
-
+    public override IFloatingPointBitReaderEncoding Encoding => IFloatingPointBitReaderEncoding.ULongLike;
     // other tests are inherited
 }
