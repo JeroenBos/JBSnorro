@@ -69,6 +69,11 @@ jobs:
         if: ${{ env.PUBLISH == 'true' }}
         run: dotnet build --configuration Release
 
+      - name: Debug
+        run: |
+          cd "./JBSnorro/bin/Release"
+          ls
+
       - name: Wait for CI
         if: ${{ env.PUBLISH == 'true' }}
         uses: deepinsight-io/action-wait-on-workflow@v2.1.1
