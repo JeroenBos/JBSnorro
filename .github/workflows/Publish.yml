@@ -75,9 +75,12 @@ jobs:
           ls
           echo 'This should exist: "./JBSnorro/bin/Release/${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg"'
           echo -----
-          cd ../../../JBSnorro.Testing
+          cd ../../../JBSnorro.Testing/bin/Release
           ls
           echo 'This should exist: "./JBSnorro/bin/Release/${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg"'
+          echo -------
+          cd "$TempPackageSource"
+          ls
 
       - name: Wait for CI
         if: env.PUBLISH == 'true'
