@@ -45,20 +45,20 @@ jobs:
 
 
       - name: Setup .NET Core
-        if: ${{ env.PUBLISH == 'true' }}
+        if: env.PUBLISH == 'true'
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Create local Package Source
-        if: ${{ env.PUBLISH == 'true' }}
+        if: env.PUBLISH == 'true'
         run: |
           TempPackageSource="$(mktemp -d)"
           echo "TempPackageSource=$TempPackageSource" | tee $GITHUB_ENV
           dotnet nuget add source "$TempPackageSource" --name 'TempPackageSource'
           dotnet nuget enable source 'TempPackageSource'
       - name: Publish to local Package Source (such that `dotnet build` can resolve latest package versions)
-        if: ${{ env.PUBLISH == 'true' }}
+        if: env.PUBLISH == 'true'
         run: |
           dotnet build                         \
                  --configuration Release       \
@@ -66,16 +66,19 @@ jobs:
                  JBSnorro/JBSnorro.csproj
 
       - name: Build
-        if: ${{ env.PUBLISH == 'true' }}
+        if: env.PUBLISH == 'true'
         run: dotnet build --configuration Release
 
       - name: Wait for CI
-        if: ${{ env.PUBLISH == 'true' }}
+        if: env.PUBLISH == 'true'
         uses: deepinsight-io/action-wait-on-workflow@v2.1.1
         with:
           workflowName: ${{ matrix.workflowName }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish
-        if: ${{ env.PUBLISH == 'true' && github.ref == 'refs/heads/main' }}
-        run: dotnet nuget push "./JBSnorro/bin/Release/JBSnorro.${{ matrix.project }}.symbols.nupkg" -k '${{ secrets.NUGET_API_KEY }}' -s 'https://api.nuget.org/v3/index.json'
+        if: env.PUBLISH == 'true' && github.ref == 'refs/heads/main'
+        run: |
+          dotnet nuget push "./${{ matrix.project }}/bin/Release/${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg" \
+            --api-key '${{ secrets.NUGET_API_KEY }}'                                                                         \
+            --source 'https://api.nuget.org/v3/index.json'
