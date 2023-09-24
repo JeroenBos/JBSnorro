@@ -113,7 +113,6 @@ public abstract class IFloatingPointBitReaderTests
 
         static double? findInRange(IEnumerable<double> sortedSequence, double start, double end)
         {
-            var previous = 0d;
             foreach (var item in sortedSequence)
             {
                 if (item > end)
@@ -124,7 +123,6 @@ public abstract class IFloatingPointBitReaderTests
                 {
                     return item;
                 }
-                previous = item;
             }
             return null;
         }
