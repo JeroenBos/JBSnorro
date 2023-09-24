@@ -25,14 +25,17 @@ public abstract class IFloatingPointBitReaderTests
 
         Assert(value == 0);
     }
+    /// <summary>
+    /// I.e. that distinct bit ranges are mapped to distinct values.
+    /// </summary>
     [TestMethod]
-    public void Uniformity()
+    public virtual void Is_injective()
     {
         var set = new HashSet<double>();
         for (ulong u = 0; u < 100; u++)
         {
             int length = Math.Max(3, u.CountBits());
-            var reader = new ULongLikeFloatingPointBitReader(new BitArray(new ulong[] { u }, length).ToBitReader());
+            var reader = CreateFloatingPointBitReader(new BitArray(new ulong[] { u }, length));
             var result = reader.ReadDouble(length);
 
             Assert(!set.Contains(result));
@@ -91,6 +94,47 @@ public abstract class IFloatingPointBitReaderTests
             var reader = CreateFloatingPointBitReader(new BitArray(new ulong[] { bits }, bitCount));
             var number = reader.ReadDouble(bitCount);
             yield return number;
+        }
+    }
+
+    /// <summary>
+    /// There must be at least one element in every range of length δ between [start, end]:
+    /// </summary>
+    [TestMethod]
+    public virtual void Is_sufficiently_dense() 
+    {
+        const int bitCount = 9;
+        const double δ = 0.1;
+        const double rangeStart = -10;
+        const double rangeEnd = 10;
+
+
+        var list = getAllPossibleNumbers(bitCount).Order().ToArray();
+
+        static double? findInRange(IEnumerable<double> sortedSequence, double start, double end)
+        {
+            foreach (var item in sortedSequence)
+            {
+                if (item > end)
+                {
+                    break;
+                }
+                if (start < item && item < end)
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+
+        var current = rangeStart;
+        while (current < rangeEnd)
+        {
+            var temp = findInRange(list, start: current, end: current + δ);
+
+            Contract.Assert(temp != null, $"Not sufficiently dense at {current}");
+
+            current = temp.Value;
         }
     }
 }
