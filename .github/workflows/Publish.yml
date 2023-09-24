@@ -19,8 +19,8 @@ jobs:
     strategy:
       matrix:
         include:
-        # - project: JBSnorro 🚧
-#           workflowName: CI
+        - project: JBSnorro
+          workflowName: CI
         - project: JBSnorro.Testing
           workflowName: CI (JBSnorro.Testing)
     env:
@@ -69,19 +69,6 @@ jobs:
         if: env.PUBLISH == 'true'
         run: dotnet build --configuration Release
 
-      - name: Debug
-        run: |
-          cd "./JBSnorro/bin/Release"
-          ls
-          echo 'This should exist: "./JBSnorro/bin/Release/${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg"'
-          echo -----
-          cd ../../../JBSnorro.Testing/bin/Release
-          ls
-          echo 'This should exist: "./JBSnorro/bin/Release/${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg"'
-          echo -------
-          cd "$TempPackageSource"
-          ls
-
       - name: Wait for CI
         if: env.PUBLISH == 'true'
         uses: deepinsight-io/action-wait-on-workflow@v2.1.1
@@ -90,7 +77,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish
-        if: env.PUBLISH == 'true' # && github.ref == 'refs/heads/main'
+        if: env.PUBLISH == 'true' && github.ref == 'refs/heads/main'
         run: |
           dotnet nuget push "./${{ matrix.project }}/bin/Release/${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg" \
             --api-key '${{ secrets.NUGET_API_KEY }}'                                                                         \
