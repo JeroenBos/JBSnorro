@@ -146,6 +146,16 @@ public static class RandomExtensions
         return minValue + (ulong)random.NextInt64((long)(maxValue - minValue));
     }
 
+    public static int[] NextArray(this Random random, int length, int minValue, int maxValue)
+    {
+        var result = new int[length];
+        for (int i = 0; i < length; i++)
+        {
+            result[i] = random.Next(minValue, maxValue);
+        }
+        return result;
+    }
+
     /// <summary>
     /// Draws a number in [0, length) with a linearly decreasing (normalized) probability function.
     /// <seealso cref="https://stats.stackexchange.com/a/171631/176526"/>
@@ -328,6 +338,7 @@ public static class RandomExtensions
         private static readonly FieldInfo inextInfo;
         private static readonly FieldInfo inextpInfo;
 
+        private const int seedStateLength = 32;
         public int[] seedState { get; set; }
         public int inext { get; set; }
         public int inextp { get; set; }
@@ -394,6 +405,30 @@ public static class RandomExtensions
             builder.AppendLine("  ]");
             builder.AppendLine("}");
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Draws a new random state from the specified random.
+        /// </summary>
+        public static RandomState Draw(Random random)
+        {
+            var seedState = random.NextArray(seedStateLength, int.MinValue, int.MaxValue);
+            return new RandomState()
+            {
+                seedState = seedState,
+                inext = random.Next(),
+                inextp = random.Next(),
+            };
+        }
+    }
+
+    public static IEnumerable<Random> GenerateRandomGenerators(int? seed = null)
+    {
+        var random = new Random(seed ?? Random.Shared.Next(0, int.MaxValue));
+
+        while (true)
+        {
+            yield return RandomState.Draw(random).ToRandom();
         }
     }
 }

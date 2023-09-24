@@ -43,3 +43,24 @@ public class RandomExtensionsTests
         return result;
     }
 }
+
+[TestClass]
+public class TestRandomGeneratorDrawer
+{
+    [TestMethod]
+    public static void Just_check_no_exception_is_thrown()
+    {
+        var allGeneratedNumbers = new HashSet<int>();
+        var generatedGenerators = RandomExtensions.GenerateRandomGenerators(0).Take(10);
+
+        foreach (var generator in generatedGenerators)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                allGeneratedNumbers.Add(generator.Next());
+            }
+        }
+
+        Contract.Assert(allGeneratedNumbers.Count > 90);
+    }
+}
