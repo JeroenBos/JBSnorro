@@ -90,7 +90,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish
-        if: env.PUBLISH == 'true' && github.ref == 'refs/heads/main'
+        if: env.PUBLISH == 'true' # && github.ref == 'refs/heads/main'
         run: |
           dotnet nuget push "./${{ matrix.project }}/bin/Release/${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg" \
             --api-key '${{ secrets.NUGET_API_KEY }}'                                                                         \
