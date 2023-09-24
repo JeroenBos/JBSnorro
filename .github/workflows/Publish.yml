@@ -83,5 +83,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish
-        if: env.PUBLISH == 'true' && github.ref == 'refs/heads/main'
+        if: env.PUBLISH == 'true' # && github.ref == 'refs/heads/main'
         run: dotnet nuget push "./JBSnorro/bin/Release/JBSnorro.${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg" -k '${{ secrets.NUGET_API_KEY }}' -s 'https://api.nuget.org/v3/index.json'
