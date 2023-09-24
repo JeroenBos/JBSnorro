@@ -15,6 +15,13 @@ public class Disposable : IDisposable
     {
         dispose();
     }
+    /// <summary>
+    /// Creates a disposable action, by providing both the action and its disposal function.
+    public static Disposable Create(Action action, Action dispose)
+    {
+        action();
+        return new Disposable(dispose);
+    }
 }
 
 public class Disposable<T> : Disposable
