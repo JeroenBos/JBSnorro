@@ -14,9 +14,9 @@ internal class ULongLikeFloatingPointBitReader : IFloatingPointBitReader
             return 0;
         // under the current scheme, 1 and 2 map to zero, which already exists. I just choose these numbers randomly:
         if (value == 1)
-           return -0.9;
+            return -0.9;
         if (value == 2)
-           return 0.9;
+            return 0.9;
         value--;
         bool sign = (value & 1) == 0;
         value >>= 1;
