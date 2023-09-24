@@ -101,7 +101,7 @@ public abstract class IFloatingPointBitReaderTests
     /// There must be at least one element in every range of length δ between [start, end]:
     /// </summary>
     [TestMethod]
-    public virtual void Is_sufficiently_dense() 
+    public virtual void Is_sufficiently_dense()
     {
         const int bitCount = 9;
         const double δ = 0.1;
@@ -127,14 +127,12 @@ public abstract class IFloatingPointBitReaderTests
             return null;
         }
 
-        var current = rangeStart;
-        while (current < rangeEnd)
+        double? temp;
+        for (double cursor = rangeStart; cursor < rangeEnd; cursor = temp.Value)
         {
-            var temp = findInRange(list, start: current, end: current + δ);
+            temp = findInRange(list, start: cursor, end: cursor + δ);
 
-            Contract.Assert(temp != null, $"Not sufficiently dense at {current}");
-
-            current = temp.Value;
+            Contract.Assert(temp != null, $"Not sufficiently dense at {cursor}");
         }
     }
 }
