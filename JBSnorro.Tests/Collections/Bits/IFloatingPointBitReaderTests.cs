@@ -29,13 +29,13 @@ public abstract class IFloatingPointBitReaderTests
     /// I.e. that distinct bit ranges are mapped to distinct values.
     /// </summary>
     [TestMethod]
-    public void Is_injective()
+    public virtual void Is_injective()
     {
         var set = new HashSet<double>();
         for (ulong u = 0; u < 100; u++)
         {
             int length = Math.Max(3, u.CountBits());
-            var reader = new ULongLikeFloatingPointBitReader(new BitArray(new ulong[] { u }, length).ToBitReader());
+            var reader = CreateFloatingPointBitReader(new BitArray(new ulong[] { u }, length));
             var result = reader.ReadDouble(length);
 
             Assert(!set.Contains(result));
