@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using JBSnorro.Text.Json;
@@ -338,7 +339,7 @@ public static class RandomExtensions
         private static readonly FieldInfo inextInfo;
         private static readonly FieldInfo inextpInfo;
 
-        private const int seedStateLength = 32;
+        private const int seedStateLength = 56;
         public int[] seedState { get; set; }
         public int inext { get; set; }
         public int inextp { get; set; }
@@ -413,11 +414,17 @@ public static class RandomExtensions
         public static RandomState Draw(Random random)
         {
             var seedState = random.NextArray(seedStateLength, int.MinValue, int.MaxValue);
+
+            // these numbers are internal numbers from the algorithm and seem to be always yield viable generators
+            // see https://github.com/dotnet/runtime/blob/d60f44a940ebfedf6faac5499512e3bdd9167c95/src/libraries/System.Private.CoreLib/src/System/Random.Net5CompatImpl.cs#L241
+            const int initialInext = 0;
+            const int initialInextp = 21;
+
             return new RandomState()
             {
                 seedState = seedState,
-                inext = random.Next(),
-                inextp = random.Next(),
+                inext = initialInext,
+                inextp = initialInextp,
             };
         }
     }
@@ -430,5 +437,38 @@ public static class RandomExtensions
         {
             yield return RandomState.Draw(random).ToRandom();
         }
+    }
+    public static SerializableRandomGenerator GenerateSerializableRandomGenerators(int? seed = null)
+    {
+        return new SerializableRandomGenerator(seed ?? Random.Shared.Next(0, int.MaxValue), currentIndex: 0);
+    }
+
+    public class SerializableRandomGenerator : IEnumerable<Random>
+    {
+        public int Seed { get; }
+        public int CurrentIndex { get; private set; }
+
+        private readonly IEnumerator<Random> enumerator;
+        public SerializableRandomGenerator(int seed, int currentIndex = 0)
+        {
+            this.Seed = seed;
+            this.CurrentIndex = currentIndex;
+            this.enumerator = GenerateRandomGenerators(seed).GetEnumerator();
+            for (int i = 0; i < currentIndex; i++)
+            {
+                enumerator.MoveNext();
+            }
+        }
+
+        public IEnumerator<Random> GetEnumerator()
+        {
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+                this.CurrentIndex++;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
