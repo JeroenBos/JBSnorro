@@ -443,6 +443,10 @@ public static class RandomExtensions
         return new SerializableRandomGenerator(seed ?? Random.Shared.Next(0, int.MaxValue), currentIndex: 0);
     }
 
+    /// <summary>
+    /// Represents a sequence of <see cref="Random"/>s.
+    /// This sequence contains more distinct generators than could be naively obtained by randomly generating seeds, as that has ~2 billion possibilities which would lead to collisions.
+    /// </summary>
     public class SerializableRandomGenerator : IEnumerable<Random>
     {
         public static JsonConverter<SerializableRandomGenerator> JsonConverter { get; } = new JsonConverterBy2<SerializableRandomGenerator, (int Seed, int Index)>(tuple => new SerializableRandomGenerator(tuple.Seed, tuple.Index), obj => (obj.Seed, obj.CurrentIndex));
