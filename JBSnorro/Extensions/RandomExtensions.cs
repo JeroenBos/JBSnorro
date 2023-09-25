@@ -470,8 +470,8 @@ public static class RandomExtensions
         {
             while (enumerator.MoveNext())
             {
-                yield return enumerator.Current;
                 this.CurrentIndex++;
+                yield return enumerator.Current;
             }
         }
 
