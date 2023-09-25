@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using JBSnorro.Text.Json;
@@ -144,6 +145,16 @@ public static class RandomExtensions
         if (minValue > maxValue) throw new NotImplementedException("minValue > maxValue");
 
         return minValue + (ulong)random.NextInt64((long)(maxValue - minValue));
+    }
+
+    public static int[] NextArray(this Random random, int length, int minValue, int maxValue)
+    {
+        var result = new int[length];
+        for (int i = 0; i < length; i++)
+        {
+            result[i] = random.Next(minValue, maxValue);
+        }
+        return result;
     }
 
     /// <summary>
@@ -328,6 +339,7 @@ public static class RandomExtensions
         private static readonly FieldInfo inextInfo;
         private static readonly FieldInfo inextpInfo;
 
+        private const int seedStateLength = 56;
         public int[] seedState { get; set; }
         public int inext { get; set; }
         public int inextp { get; set; }
@@ -395,5 +407,74 @@ public static class RandomExtensions
             builder.AppendLine("}");
             return builder.ToString();
         }
+
+        /// <summary>
+        /// Draws a new random state from the specified random.
+        /// </summary>
+        public static RandomState Draw(Random random)
+        {
+            var seedState = random.NextArray(seedStateLength, int.MinValue, int.MaxValue);
+
+            // these numbers are internal numbers from the algorithm and seem to be always yield viable generators
+            // see https://github.com/dotnet/runtime/blob/d60f44a940ebfedf6faac5499512e3bdd9167c95/src/libraries/System.Private.CoreLib/src/System/Random.Net5CompatImpl.cs#L241
+            const int initialInext = 0;
+            const int initialInextp = 21;
+
+            return new RandomState()
+            {
+                seedState = seedState,
+                inext = initialInext,
+                inextp = initialInextp,
+            };
+        }
+    }
+
+    public static IEnumerable<Random> GenerateRandomGenerators(int? seed = null)
+    {
+        var random = new Random(seed ?? Random.Shared.Next(0, int.MaxValue));
+
+        while (true)
+        {
+            yield return RandomState.Draw(random).ToRandom();
+        }
+    }
+    public static SerializableRandomGenerator GenerateSerializableRandomGenerators(int? seed = null)
+    {
+        return new SerializableRandomGenerator(seed ?? Random.Shared.Next(0, int.MaxValue), currentIndex: 0);
+    }
+
+    /// <summary>
+    /// Represents a sequence of <see cref="Random"/>s.
+    /// This sequence contains more distinct generators than could be naively obtained by randomly generating seeds, as that has ~2 billion possibilities which would lead to collisions.
+    /// </summary>
+    public class SerializableRandomGenerator : IEnumerable<Random>
+    {
+        public static JsonConverter<SerializableRandomGenerator> JsonConverter { get; } = new JsonConverterBy2<SerializableRandomGenerator, (int Seed, int Index)>(tuple => new SerializableRandomGenerator(tuple.Seed, tuple.Index), obj => (obj.Seed, obj.CurrentIndex));
+
+        public int Seed { get; }
+        public int CurrentIndex { get; private set; }
+
+        private readonly IEnumerator<Random> enumerator;
+        public SerializableRandomGenerator(int seed, int currentIndex = 0)
+        {
+            this.Seed = seed;
+            this.CurrentIndex = currentIndex;
+            this.enumerator = GenerateRandomGenerators(seed).GetEnumerator();
+            for (int i = 0; i < currentIndex; i++)
+            {
+                enumerator.MoveNext();
+            }
+        }
+
+        public IEnumerator<Random> GetEnumerator()
+        {
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+                this.CurrentIndex++;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
