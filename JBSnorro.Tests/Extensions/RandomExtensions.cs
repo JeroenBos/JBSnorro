@@ -77,15 +77,17 @@ public class TestRandomGeneratorDrawer
     [TestMethod]
     public void Same_results_should_be_yielded_on_deserialization()
     {
-        var sequence = RandomExtensions.GenerateSerializableRandomGenerators(0);
+        for (int sequenceDrawnCount = 0; sequenceDrawnCount < 3; sequenceDrawnCount++)
+        {
+            var sequence = RandomExtensions.GenerateSerializableRandomGenerators(0);
 
-        var generator = sequence.Skip(10).First();
-        var expected = generator.NextArray(10, 0, int.MaxValue);
+            var generator = sequence.Skip(sequenceDrawnCount).First();
+            var expected = generator.NextArray(10, 0, int.MaxValue);
 
+            var deserializedSequence = new RandomExtensions.SerializableRandomGenerator(sequence.Seed, sequence.CurrentIndex - 1);
+            var actual = deserializedSequence.First().NextArray(10, 0, int.MaxValue);
 
-        var deserializedSequence = new RandomExtensions.SerializableRandomGenerator(sequence.Seed, sequence.CurrentIndex);
-        var actual = deserializedSequence.First().NextArray(10, 0, int.MaxValue);
-
-        Contract.AssertSequenceEqual(actual, expected);
+            Contract.AssertSequenceEqual(actual, expected);
+        }
     }
 }
