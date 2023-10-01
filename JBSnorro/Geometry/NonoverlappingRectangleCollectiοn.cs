@@ -1,9 +1,7 @@
 ﻿using JBSnorro.Diagnostics;
 using JBSnorro.SystemTypes;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace JBSnorro.Geometry;
 
