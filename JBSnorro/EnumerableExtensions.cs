@@ -3474,4 +3474,37 @@ public static class EnumerableExtensions
     {
         return sequence.Where(x => x != null)!;
     }
+    /// <summary>
+    /// Groups the elements of a sequence and compares the by a specified comparer.
+    /// </summary>
+    [DebuggerHidden]
+    public static IEnumerable<IGrouping<T, T>> GroupBy<T>(this IEnumerable<T> sequence, IEqualityComparer<T> equalityComparer)
+    {
+        return sequence.GroupBy(_ => _, equalityComparer);
+    }
+    /// <summary>
+    /// Removes all the specified elements from the list.
+    /// Ignores elements that weren't present.
+    /// </summary>
+    public static void Remove<T>(this IList<T> list, IEnumerable<T> itemsToRemove)
+    {
+        foreach (var item in itemsToRemove)
+        {
+            list.Remove(item);
+        }
+    }
+    /// <summary>
+    /// Removes all the specified elements from the list.
+    /// Throws when removing an element that wasn't present.
+    /// </summary>
+    public static void RemoveAll<T>(this IList<T> list, IEnumerable<T> itemsToRemove)
+    {
+        foreach (var item in itemsToRemove)
+        {
+            if (!list.Remove(item))
+            {
+                throw new KeyNotFoundException();
+            }
+        }
+    }
 }
