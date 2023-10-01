@@ -314,7 +314,18 @@ public static class DictionaryExtensions
     {
         return dict.Select(kvp => selector(kvp.Key, kvp.Value));
     }
-
+    /// <summary>
+    /// Gets the dictionary's <see cref="KeyValuePair{TKey, TValue}"/>s as a list of <see cref="(TKey, TValue)"/>-tuples.
+    /// </summary>
+    public static List<TResult> AsTuplesMap<TKey, TValue, TResult>(this IReadOnlyDictionary<TKey, TValue> dict, Func<TKey, TValue, TResult> selector) where TKey : notnull
+    {
+        var result = new List<TResult>(dict.Count);
+        foreach (var kvp in dict)
+        {
+            result.Add(selector(kvp.Key, kvp.Value));
+        }
+        return result;
+    }
     public static bool SetOrUpdate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value, Func<TValue, TValue> update)
     {
         if (dict.TryGetValue(key, out var currentValue))
