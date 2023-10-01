@@ -3205,6 +3205,66 @@ public static class EnumerableExtensions
 
         list.Sort(Comparer<T>.Create((Comparison<T>)((x, y) => comparer(x, y))));
     }
+    /// <summary>
+    /// Sorts both arrays in place, first on the <paramref name="sortKeys"/>, then on the <paramref name="secondarySortKeys"/>.
+    /// </summary>
+    public static void Sort<T, U>(T[] sortKeys, U[] secondarySortKeys, IComparer<T>? keyComparer = null, IComparer<U>? secondaryKeyComparer = null)
+    {
+        Contract.Requires(sortKeys is not null);
+        Contract.Requires(secondarySortKeys is not null);
+        Contract.Requires(sortKeys.Length == secondarySortKeys.Length);
+
+        keyComparer ??= Comparer<T>.Default;
+        secondaryKeyComparer ??= Comparer<U>.Default;
+        var comparer = InterfaceWraps.ToComparer<(T, U)>((a, b) =>
+        {
+            int keyComparison = keyComparer.Compare(a.Item1, b.Item1);
+            if (keyComparison != 0)
+                return keyComparison;
+            return secondaryKeyComparer.Compare(a.Item2, b.Item2);
+        });
+
+        var intermediate = sortKeys.Zip(secondarySortKeys).ToArray(sortKeys.Length);
+        Array.Sort(intermediate, comparer);
+
+        for (int i = 0; i < intermediate.Length; i++)
+        {
+            sortKeys[i] = intermediate[i].First;
+            secondarySortKeys[i] = intermediate[i].Second;
+        }
+    }
+
+    /// <summary>
+    /// Sorts all 3 arrays in place, first on the <paramref name="sortKeys"/>, then on the <paramref name="secondarySortKeys"/>.
+    /// </summary>
+    public static void Sort<TKey, UKey, T>(this T[] items, TKey[] sortKeys, UKey[] secondarySortKeys, IComparer<TKey>? keyComparer = null, IComparer<UKey>? secondaryKeyComparer = null)
+    {
+        Contract.Requires(sortKeys is not null);
+        Contract.Requires(secondarySortKeys is not null);
+        Contract.Requires(items is not null);
+        Contract.Requires(sortKeys.Length == secondarySortKeys.Length);
+        Contract.Requires(sortKeys.Length == items.Length);
+
+        keyComparer ??= Comparer<TKey>.Default;
+        secondaryKeyComparer ??= Comparer<UKey>.Default;
+        var comparer = InterfaceWraps.ToComparer<(TKey, UKey, T)>((a, b) =>
+        {
+            int keyComparison = keyComparer.Compare(a.Item1, b.Item1);
+            if (keyComparison != 0)
+                return keyComparison;
+            return secondaryKeyComparer.Compare(a.Item2, b.Item2);
+        });
+
+        var intermediate = sortKeys.Zip(secondarySortKeys, items).ToArray(sortKeys.Length);
+        Array.Sort(intermediate, comparer);
+
+        for (int i = 0; i < intermediate.Length; i++)
+        {
+            sortKeys[i] = intermediate[i].First;
+            secondarySortKeys[i] = intermediate[i].Second;
+            items[i] = intermediate[i].Third;
+        }
+    }
 
     [DebuggerHidden]
     public static T Average<T>(this IEnumerable<T> source) where T : struct, INumber<T>

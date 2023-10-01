@@ -94,6 +94,28 @@ public static class InterfaceWraps
     {
         return EqualityComparerThroughIEquatable.Create(typeImplementingIEquatable);
     }
+    /// <summary>
+    /// Creates a comparer of <typeparamref name="T"/> by comparing them using comparable comparison tokens.
+    /// </summary>
+    [DebuggerHidden]
+    public static IComparer<T> ComparerBy<T, TComparison>(Func<T, TComparison> getComparisonToken) where TComparison : IComparable<TComparison>
+    {
+        return new ComparerByImpl<T, TComparison>(getComparisonToken);
+    }
+    private sealed class ComparerByImpl<T, TComparison> : IComparer<T> where TComparison : IComparable<TComparison>
+    {
+        private readonly Func<T, TComparison> getComparisonToken;
+        [DebuggerHidden]
+        public ComparerByImpl(Func<T, TComparison> getComparisonToken)
+        {
+            this.getComparisonToken = getComparisonToken;
+        }
+        [DebuggerHidden]
+        public int Compare(T? x, T? y)
+        {
+            return getComparisonToken(x!).CompareTo(getComparisonToken(y!));
+        }
+    }
     /// <summary> Wraps around a <code>Func&lt;T, T&gt;</code> to represent an IComparer&lt;T&gt;. </summary>
     /// <typeparam name="T"> The type of the elements to compare. </typeparam>
     private sealed class SimpleIComparer<T> : IComparer<T>
