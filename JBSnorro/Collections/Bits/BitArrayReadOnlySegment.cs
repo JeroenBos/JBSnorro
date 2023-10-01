@@ -23,6 +23,16 @@ public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
 
     public bool this[int index] => this[(ulong)index];
     public bool this[ulong index] => data[start + index];
+    public BitArrayReadOnlySegment this[ulong index, ulong exclusiveEnd]
+    {
+        get
+        {
+            checked
+            {
+                return this[new Range((int)index, (int)exclusiveEnd)];
+            };
+        }
+    }
     public BitArrayReadOnlySegment this[Range range]
     {
         get
@@ -220,6 +230,49 @@ public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
             var result = data.UnderlyingData[checked((int)startBoundaryByteIndex..(int)endBoundaryByteIndex)];
             return result;
         }
+    }
+
+    /// <summary>
+    /// Counts the number of ones in this bitarray.
+    /// </summary>
+    public ulong CountOnes()
+    {
+        ulong result = 0;
+        foreach (bool bit in this)
+        {
+            if (bit)
+            {
+                result++;
+            }
+        }
+        return result;
+    }
+    public BitArrayReadOnlySegment Or(BitArrayReadOnlySegment other)
+    {
+        Contract.Requires(other != null);
+        Contract.Requires(other.Length == this.Length);
+
+        var cloned = new BitArray(this);
+        cloned.Or(other);
+        return new BitArrayReadOnlySegment(cloned, 0, cloned.Length);
+    }
+    public BitArrayReadOnlySegment Xor(BitArrayReadOnlySegment other)
+    {
+        Contract.Requires(other != null);
+        Contract.Requires(other.Length == this.Length);
+
+        var cloned = new BitArray(this);
+        cloned.Xor(other);
+        return new BitArrayReadOnlySegment(cloned, 0, cloned.Length);
+    }
+    public BitArrayReadOnlySegment And(BitArrayReadOnlySegment other)
+    {
+        Contract.Requires(other != null);
+        Contract.Requires(other.Length == this.Length);
+
+        var cloned = new BitArray(this);
+        cloned.And(other);
+        return new BitArrayReadOnlySegment(cloned, 0, cloned.Length);
     }
 }
 
