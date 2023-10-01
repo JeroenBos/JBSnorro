@@ -413,6 +413,50 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
             this[i] |= bitSequence[i];
         }
     }
+    /// <summary> Performs the OR operation on this array with the specified bit segment. </summary>
+    public void Or(BitArrayReadOnlySegment segment)
+    {
+        // PERF
+        Or((IReadOnlyList<bool>)segment);
+    }
+    /// <summary> Performs the XOR operation on this array with the specified array. </summary>
+    public void Xor(BitArray array)
+    {
+        Contract.Requires(array != null);
+        Contract.Requires(array.Length == Length);
+
+        Contract.Assert(array.data.Length == data.Length);
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            data[i] ^= array.data[i];
+        }
+    }
+    /// <summary> Performs the XOR operation on this array with the specified array. </summary>
+    public void Xor(ImmutableBitArray array)
+    {
+        Contract.Requires(!ReferenceEquals(array, null));
+        Contract.Requires(array.Length == Length);
+
+        Xor(array.data);
+    }
+    /// <summary> Performs the XOR operation on this array with the specified bit sequence. </summary>
+    public void Xor(IReadOnlyList<bool> bitSequence)
+    {
+        Contract.Requires(bitSequence != null);
+        Contract.Requires(bitSequence.Count == checked((int)Length));
+
+        for (int i = 0; i < bitSequence.Count; i++)
+        {
+            this[i] ^= bitSequence[i];
+        }
+    }
+    /// <summary> Performs the XOR operation on this array with the specified bit segment. </summary>
+    public void Xor(BitArrayReadOnlySegment segment)
+    {
+        // PERF
+        Xor((IReadOnlyList<bool>)segment);
+    }
     /// <summary> Performs the AND operation on this array with the specified array. </summary>
     public void And(BitArray array)
     {
@@ -444,6 +488,12 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
         {
             this[i] &= bitSequence[i];
         }
+    }
+    /// <summary> Performs the AND operation on this array with the specified bit segment. </summary>
+    public void And(BitArrayReadOnlySegment segment)
+    {
+        // PERF
+        And((IReadOnlyList<bool>)segment);
     }
     /// <summary> Gets a clone of the current bit array and sets the bit at the specified index to the specified value. </summary>
     /// <param name="index"> The index of the bit to set in the new array. </param>
@@ -502,6 +552,32 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
         for (int i = 0; i < result.data.Length; i++)
         {
             result.data[i] = a.data[i] & ~b.data[i];
+        }
+        return result;
+    }
+    /// <summary> Returns a new bit array containing the nonoverlapping bits of the specified bit arrays. </summary>
+    public static BitArray operator ^(BitArray a, BitArray b)
+    {
+        Contract.Requires(a != null);
+        Contract.Requires(b != null);
+        Contract.Requires(a.Length == b.Length);
+
+        var result = a.Clone();
+        result.Xor(b);
+        return result;
+    }
+    /// <summary>
+    /// Counts the number of ones in this bitarray.
+    /// </summary>
+    public ulong CountOnes()
+    {
+        ulong result = 0;
+        foreach (bool bit in this)
+        {
+            if (bit)
+            {
+                result++;
+            }
         }
         return result;
     }
