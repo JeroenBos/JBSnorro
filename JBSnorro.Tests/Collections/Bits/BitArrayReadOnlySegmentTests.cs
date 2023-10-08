@@ -12,7 +12,7 @@ public class BitArrayReadOnlySegmentTests
     public void TestHashCode()
     {
         int count = 100;
-        var hashCodes = new HashSet<int>(); 
+        var hashCodes = new HashSet<int>();
         for (ulong bits = 0; bits < 100; bits++)
         {
             var segment = new BitArray(new ulong[] { bits }, 10)[..];
@@ -29,5 +29,23 @@ public class BitArrayReadOnlySegmentTests
         }
         Contract.Assert(hashCodes.Count == count);
     }
-   
+    [TestMethod]
+    public void TestXor()
+    {
+        BitArray.ReverseToString = true;
+        var ulong1 = 0b110000UL;
+        var ulong2 = 0b100010UL;
+        var expctd = 0b010010UL;
+        const int length = 70;
+
+        var array1 = new BitArray(new[] { ulong1, 0b1100UL }, length);
+        var array2 = new BitArray(new[] { ulong2, 0b1010UL }, length);
+        var expected = new BitArray(new[] { expctd, 0b0110UL }, length);
+
+        var actual = array1.Clone();
+        actual.Xor(array2);
+
+        Contract.Assert(actual.Equals(expected));
+    }
+
 }
