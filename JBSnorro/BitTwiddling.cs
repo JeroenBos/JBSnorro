@@ -109,7 +109,7 @@ namespace JBSnorro
         public static int RoundUpToNearestMultipleOf(this int i, int multiple)
         {
             Contract.Requires(i >= 0);
-            Contract.Requires(multiple >= 0);
+            Contract.Requires(multiple > 0);
 
             int remainder = i % multiple;
 
@@ -123,6 +123,7 @@ namespace JBSnorro
         }
         public static ulong RoundUpToNearestMultipleOf(this ulong i, ulong multiple)
         {
+            Contract.Requires(multiple > 0);
             ulong remainder = i % multiple;
 
             if (remainder == 0)
@@ -131,6 +132,20 @@ namespace JBSnorro
             unchecked
             {
                 return i - remainder + multiple;
+            }
+        }
+        public static ulong RoundUpToNearestMultipleOf(this double d, ulong multiple)
+        {
+            Contract.Requires(d >= 0);
+            Contract.Requires(multiple > 0);
+
+            if ((double)(ulong)d == d)
+            {
+                return ((ulong)d).RoundUpToNearestMultipleOf(multiple);
+            }
+            else
+            {
+                return ((ulong)d + 1).RoundUpToNearestMultipleOf(multiple);
             }
         }
         /// <summary>

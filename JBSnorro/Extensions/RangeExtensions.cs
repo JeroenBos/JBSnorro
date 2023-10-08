@@ -82,4 +82,11 @@ public static class RangeExtensions
             return range.Start.Value <= index && index < range.End.Value;
         }
     }
+    /// <summary>
+    /// Gets the length of the specified range in a collection of the specified length.
+    /// </summary>
+    public static int GetLength(this Range range, int length)
+    {
+        return range.GetOffsetAndLength(length).Length;
+    }
 }
