@@ -78,14 +78,14 @@ public class BitArrayReadOnlySegmentTests
     public void TestXorSegment()
     {
         BitArray.ReverseToString = true;
-        var ulong1 = 0b1UL;
-        var ulong2 = 0b1UL;
-        var expctd = 0b0UL;
-        const int length = 1;
+        var ulong1 = 0b0101UL;
+        var ulong2 = 0b1001UL;
+        var expctd = 0b1100UL;
+        const int length = 70;
 
-        var segment1 = new BitArray(new[] { ulong1/*, 0b1100UL*/ }, length)[..];
-        var segment2 = new BitArray(new[] { ulong2/*, 0b1010UL*/ }, length)[..];
-        var expected = new BitArray(new[] { expctd/*, 0b0110UL*/ }, length);
+        var segment1 = new BitArray(new[] { ulong1, 0b1100UL }, length)[..];
+        var segment2 = new BitArray(new[] { ulong2, 0b1010UL }, length)[..];
+        var expected = new BitArray(new[] { expctd, 0b0110UL }, length);
 
         var actual = segment1.Xor(segment2);
 
