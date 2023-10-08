@@ -14,6 +14,10 @@ namespace JBSnorro.Collections.Bits;
 [DebuggerDisplay("BitArray(Length={Length}, {this.ToString()})")]
 public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
 {
+    /// <summary>
+    /// Affects whether this.ToString prints from least significant to most (true) or from most significat to least (false);
+    /// </summary>
+    public static bool ReverseToString;
     private const int bitCountPerInternalElement = 64;
     private static void ToInternalAndBitIndex(int index, out int dataIndex, out int bitIndex)
     {
@@ -932,7 +936,10 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     [DebuggerHidden]
     public string ToString(ulong length)
     {
-        return data.FormatAsBits(length);
+        var result = data.FormatAsBits(length);
+        if (BitArray.ReverseToString)
+            result = result.Reverse();
+        return result;
     }
     [DebuggerHidden]
     public string ToString(ulong startIndex, ulong length)

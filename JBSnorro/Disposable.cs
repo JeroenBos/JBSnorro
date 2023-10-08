@@ -1,4 +1,6 @@
-﻿namespace JBSnorro;
+﻿using JBSnorro.Diagnostics;
+
+namespace JBSnorro;
 
 /// <summary>
 /// Executes an action whenever this class is disposed of.
@@ -21,6 +23,25 @@ public class Disposable : IDisposable
     {
         action();
         return new Disposable(dispose);
+    }
+    /// <param name="getEnumerable">Yields exactly once</param>
+    public static Disposable Create(Func<System.Collections.IEnumerable> getEnumerable)
+    {
+        System.Collections.IEnumerator? enumerator = null;
+        return Create(_action, _dispose);
+        void _action()
+        {
+            Contract.Requires(enumerator is null);
+            enumerator = getEnumerable().GetEnumerator();
+            var hasValue = enumerator.MoveNext();
+            Contract.Requires(hasValue);
+        }
+        void _dispose()
+        {
+            Contract.Requires(enumerator is not null);
+            var hasValue = enumerator.MoveNext();
+            Contract.Requires(!hasValue);
+        }
     }
 }
 

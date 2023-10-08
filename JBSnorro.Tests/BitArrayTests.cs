@@ -1,6 +1,7 @@
 ﻿using JBSnorro;
 using JBSnorro.Collections.Bits;
 using JBSnorro.Diagnostics;
+using JBSnorro.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tests.JBSnorro;
@@ -583,9 +584,23 @@ public class BitArrayShaTests
 [TestClass]
 public class BitArrayToStringTests
 {
+    static readonly object BitArray_ReverseToString_lock = new object();
+    private static Disposable Set_BitArrayReverseToString(bool value)
+    {
+        return Disposable.Create(impl);
+        System.Collections.IEnumerable impl()
+        {
+            Monitor.Enter(BitArray_ReverseToString_lock);
+            BitArray.ReverseToString = value;
+            yield return null;
+            Monitor.Exit(BitArray_ReverseToString_lock);
+        }
+    }
     [TestMethod]
     public void TestFormatToBitsSingleUlong()
     {
+        using var _ = Set_BitArrayReverseToString(false);
+
         const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
         string expected = "11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011";
         Contract.Assert(item.FormatAsBits() == expected);
@@ -596,6 +611,8 @@ public class BitArrayToStringTests
     [TestMethod]
     public void TestFormatToBitsSubstring()
     {
+        using var _ = Set_BitArrayReverseToString(false);
+
         const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
         string expected = "10101010_01010101_11111111_11110000_00000000_00000000_11110011";
         Contract.Assert(item.FormatAsBits(56) == expected);
@@ -606,9 +623,10 @@ public class BitArrayToStringTests
     [TestMethod]
     public void TestFormatToBitsMulti()
     {
+        using var _ = Set_BitArrayReverseToString(false);
         const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
         const ulong item2 = 0b11110000_11111111_00000000_00000000_11110000_10101010_01010101_11110011UL;
-        const string EXPECTED = "11110000_11111111_00000000_00000000_11110000_10101010_01010101_11110011+11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011";
+        string EXPECTED = "11110000_11111111_00000000_00000000_11110000_10101010_01010101_11110011+11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011";
 
         foreach (bool withExtraUlong in new[] { false, true })
         {
@@ -625,5 +643,19 @@ public class BitArrayToStringTests
                 Contract.Assert(array.ToString() == expected);
             }
         }
+    }
+    [TestMethod]
+    public void TestToString()
+    {
+        using var _ = Set_BitArrayReverseToString(true);
+
+        var ulong1 = 0b1_0000_1111UL;
+        var ulong2 = 0b1_0101_0101UL;
+        var array = new BitArray(new[] { ulong1, ulong2 }, length: 80);
+
+        var actual = array.ToString();
+        var expected = "00000001_01010101+00000000_00000000_00000000_00000000_00000000_00000000_00000001_00001111".Reverse();
+
+        Contract.Assert(actual == expected);
     }
 }
