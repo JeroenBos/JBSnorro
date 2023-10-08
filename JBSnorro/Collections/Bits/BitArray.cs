@@ -944,7 +944,10 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     [DebuggerHidden]
     public string ToString(ulong startIndex, ulong length)
     {
-        return data.FormatAsBits(startIndex, length);
+        var result = data.FormatAsBits(startIndex, length);
+        if (BitArray.ReverseToString)
+            result = result.Reverse();
+        return result;
     }
 }
 
