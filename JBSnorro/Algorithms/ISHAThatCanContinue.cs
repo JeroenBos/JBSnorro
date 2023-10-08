@@ -115,8 +115,26 @@ public interface ISHAThatCanContinue : IDisposable
                 ((ISHAThatCanContinue)this).AppendFinalHashData(Array.Empty<byte>());
             }
 
-            var result = BitConverter.ToString(digest);
-            return result;
+            return BitConverter.ToString(digest);
+        }
+        public override int GetHashCode()
+        {
+            if (!_started) throw new InvalidOperationException("Not yet started");
+            if (_running)
+            {
+                ((ISHAThatCanContinue)this).AppendFinalHashData(Array.Empty<byte>());
+            }
+
+            int hc = digest.Length;
+            foreach (int val in digest)
+            {
+                hc = unchecked(hc * 314159 + val);
+            }
+            return hc;
+        }
+        public override bool Equals(object? obj)
+        {
+            throw new NotImplementedException();
         }
     }
 

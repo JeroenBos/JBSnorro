@@ -187,7 +187,8 @@ public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     }
     public override int GetHashCode()
     {
-        throw new NotImplementedException();
+        ComputeSHA1(out ISHAThatCanContinue hasher);
+        return hasher.GetHashCode();
     }
 
     public string ComputeSHA1()
