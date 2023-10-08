@@ -175,7 +175,7 @@ public static class InterfaceWraps
                 return getHashCode(obj);
             if (obj == null)
                 return 0;
-            return obj.GetHashCode();
+            throw new InvalidOperationException("Can't get hashcode of because it wasn't provided to InterfaceWrap");
         }
     }
     private sealed class MyOwnDefaultEqualityComparer : IEqualityComparer<object?>

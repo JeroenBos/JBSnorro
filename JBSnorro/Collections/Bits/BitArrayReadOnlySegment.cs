@@ -67,7 +67,7 @@ public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     }
     int IReadOnlyCollection<bool>.Count
     {
-        get
+        [DebuggerHidden] get
         {
             Contract.Assert<NotImplementedException>(Length <= int.MaxValue);
             return (int)Length;
@@ -187,7 +187,8 @@ public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     }
     public override int GetHashCode()
     {
-        throw new NotImplementedException();
+        ComputeSHA1(out ISHAThatCanContinue hasher);
+        return hasher.GetHashCode();
     }
 
     public string ComputeSHA1()

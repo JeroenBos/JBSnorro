@@ -14,6 +14,10 @@ namespace JBSnorro.Collections.Bits;
 [DebuggerDisplay("BitArray(Length={Length}, {this.ToString()})")]
 public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
 {
+    /// <summary>
+    /// Affects whether this.ToString prints from least significant to most (true) or from most significat to least (false);
+    /// </summary>
+    public static bool ReverseToString;
     private const int bitCountPerInternalElement = 64;
     private static void ToInternalAndBitIndex(int index, out int dataIndex, out int bitIndex)
     {
@@ -85,11 +89,15 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
             int i = (int)index;
             Contract.Requires<IndexOutOfRangeException>(index < Length);
 
+            int dataIndex, bitIndex;
+            ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
             if (value)
             {
-                int dataIndex, bitIndex;
-                ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
                 data[dataIndex] |= 1UL << bitIndex;
+            }
+            else
+            {
+                data[dataIndex] &= ~(1UL << bitIndex);
             }
         }
     }
@@ -454,6 +462,11 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     /// <summary> Performs the XOR operation on this array with the specified bit segment. </summary>
     public void Xor(BitArrayReadOnlySegment segment)
     {
+        if (segment.start == 0 && this.Length <= segment.Length)
+        {
+            this.Xor(segment.data);
+            return;
+        }
         // PERF
         Xor((IReadOnlyList<bool>)segment);
     }
@@ -932,12 +945,18 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     [DebuggerHidden]
     public string ToString(ulong length)
     {
-        return data.FormatAsBits(length);
+        var result = data.FormatAsBits(length);
+        if (BitArray.ReverseToString)
+            result = result.Reverse();
+        return result;
     }
     [DebuggerHidden]
     public string ToString(ulong startIndex, ulong length)
     {
-        return data.FormatAsBits(startIndex, length);
+        var result = data.FormatAsBits(startIndex, length);
+        if (BitArray.ReverseToString)
+            result = result.Reverse();
+        return result;
     }
 }
 
