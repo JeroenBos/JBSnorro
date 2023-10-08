@@ -89,11 +89,15 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
             int i = (int)index;
             Contract.Requires<IndexOutOfRangeException>(index < Length);
 
+            int dataIndex, bitIndex;
+            ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
             if (value)
             {
-                int dataIndex, bitIndex;
-                ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
                 data[dataIndex] |= 1UL << bitIndex;
+            }
+            else
+            {
+                data[dataIndex] &= ~(1UL << bitIndex);
             }
         }
     }
@@ -458,6 +462,11 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     /// <summary> Performs the XOR operation on this array with the specified bit segment. </summary>
     public void Xor(BitArrayReadOnlySegment segment)
     {
+        if (segment.start == 0 && this.Length <= segment.Length)
+        {
+            this.Xor(segment.data);
+            return;
+        }
         // PERF
         Xor((IReadOnlyList<bool>)segment);
     }

@@ -323,6 +323,7 @@ public class TestCopyBitArray
     public void CopySingleByte()
     {
         var src = new BitArray(new bool[] { true, false, true, false, true, false, true, false });
+        Contract.Assert(src[0] is true);
         var dest = new byte[1];
 
         src.CopyTo(dest.AsSpan(), 0);

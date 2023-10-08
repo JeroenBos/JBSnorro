@@ -67,7 +67,7 @@ public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     }
     int IReadOnlyCollection<bool>.Count
     {
-        get
+        [DebuggerHidden] get
         {
             Contract.Assert<NotImplementedException>(Length <= int.MaxValue);
             return (int)Length;
