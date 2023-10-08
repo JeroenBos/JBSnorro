@@ -47,5 +47,14 @@ public class BitArrayReadOnlySegmentTests
 
         Contract.Assert(actual.Equals(expected));
     }
+    [TestMethod]
+    public void TestCountOnes()
+    {
+        var array = new BitArray(new[] { 0b110000UL, 0b1100UL }, 70);
 
+        var expected = 4UL;
+        var actual = array.CountOnes();
+
+        Contract.Assert(expected == actual);
+    }
 }
