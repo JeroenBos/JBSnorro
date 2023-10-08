@@ -28,4 +28,16 @@ public class BitArrayReadOnlySegmentTests
         }
         Contract.Assert(hashCodes.Count == count);
     }
+    [TestMethod]
+    public void TestToString()
+    {
+        var ulong1 = 0b1_0000_1111UL;
+        var ulong2 = 0b1_0101_0101UL;
+        var array = new BitArray(new[] { ulong1, ulong2 }, length: 80);
+
+        var actual = array.ToString();
+        var expected = "00000001_01010101+00000000_00000000_00000000_00000000_00000000_00000000_00000001_00001111";
+
+        Contract.Assert(actual == expected);
+    }
 }
