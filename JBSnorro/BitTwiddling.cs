@@ -819,4 +819,11 @@ public static class BitTwiddling
         }
         return i;
     }
+
+    public static ulong Xor(this ulong x, int bitIndex)
+    {
+        Contract.Requires(0 <= bitIndex && bitIndex < 64);
+
+        return x ^ (1UL << bitIndex);
+    }
 }
