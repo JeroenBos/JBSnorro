@@ -19,13 +19,18 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     /// </summary>
     public static bool ReverseToString;
     private const int bitCountPerInternalElement = 64;
-    private static void ToInternalAndBitIndex(int index, out int dataIndex, out int bitIndex)
+    private static void ToInternalAndBitIndex(ulong index, out int dataIndex, out int bitIndex)
     {
         dataIndex = ToInternalAndBitIndex(index, out bitIndex);
     }
-    private static int ToInternalAndBitIndex(int index, out int bitIndex)
+    private static int ToInternalAndBitIndex(ulong index, out int bitIndex)
     {
-        return Math.DivRem(index, bitCountPerInternalElement, out bitIndex);
+        checked
+        {
+            var tuple = Math.DivRem(index, bitCountPerInternalElement);
+            bitIndex = (int)tuple.Remainder;
+            return (int)tuple.Quotient;
+        }
     }
     /// <summary> Gets the length of the internal data structure given the number of bits it should hold. </summary>
     /// <param name="bitCount"> The number of bits to store in the internal data. </param>
@@ -71,26 +76,20 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
         {
             Contract.Requires<IndexOutOfRangeException>(0 <= index);
             Contract.Requires<NotImplementedException>(index <= int.MaxValue);
-            int i = (int)index;
             Contract.Requires<IndexOutOfRangeException>(index < Length);
 
             int bitIndex;
-#if DEBUG
-            int dataIndex;
-            ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
-#endif
-            return (data[ToInternalAndBitIndex(i, out bitIndex)] & 1UL << bitIndex) != 0;
+            return (data[ToInternalAndBitIndex(index, out bitIndex)] & 1UL << bitIndex) != 0;
         }
         [DebuggerHidden]
         set
         {
             Contract.Requires<IndexOutOfRangeException>(0 <= index);
             Contract.Requires<NotImplementedException>(index <= int.MaxValue);
-            int i = (int)index;
             Contract.Requires<IndexOutOfRangeException>(index < Length);
 
             int dataIndex, bitIndex;
-            ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
+            ToInternalAndBitIndex(index, out dataIndex, out bitIndex);
             if (value)
             {
                 data[dataIndex] |= 1UL << bitIndex;
