@@ -373,21 +373,33 @@ public static class BitTwiddling
     }
     static uint ClearLowBits(uint bits, int numberOfBits)
     {
+        Contract.Requires(0 <= numberOfBits && numberOfBits <= 32);
+        if (numberOfBits == 32)
+            return 0;
         uint mask = uint.MaxValue << numberOfBits;
         return bits & mask;
     }
     static ulong ClearLowBits(ulong bits, int numberOfBits)
     {
+        Contract.Requires(0 <= numberOfBits && numberOfBits <= 64);
+        if (numberOfBits == 64)
+            return 0;
         ulong mask = ulong.MaxValue << numberOfBits;
         return bits & mask;
     }
     static uint ClearHighBits(uint bits, int numberOfBitsToClear)
     {
+        Contract.Requires(0 <= numberOfBitsToClear && numberOfBitsToClear <= 32);
+        if (numberOfBitsToClear == 32)
+            return 0;
         uint mask = uint.MaxValue >> numberOfBitsToClear;
         return bits & mask;
     }
     static ulong ClearHighBits(ulong bits, int numberOfBitsToClear)
     {
+        Contract.Requires(0 <= numberOfBitsToClear && numberOfBitsToClear <= 64);
+        if (numberOfBitsToClear == 64)
+            return 0;
         ulong mask = ulong.MaxValue >> numberOfBitsToClear;
         return bits & mask;
     }
