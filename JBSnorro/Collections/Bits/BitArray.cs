@@ -19,13 +19,18 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     /// </summary>
     public static bool ReverseToString;
     private const int bitCountPerInternalElement = 64;
-    private static void ToInternalAndBitIndex(int index, out int dataIndex, out int bitIndex)
+    private static void ToInternalAndBitIndex(ulong index, out int dataIndex, out int bitIndex)
     {
         dataIndex = ToInternalAndBitIndex(index, out bitIndex);
     }
-    private static int ToInternalAndBitIndex(int index, out int bitIndex)
+    private static int ToInternalAndBitIndex(ulong index, out int bitIndex)
     {
-        return Math.DivRem(index, bitCountPerInternalElement, out bitIndex);
+        checked
+        {
+            var tuple = Math.DivRem(index, bitCountPerInternalElement);
+            bitIndex = (int)tuple.Remainder;
+            return (int)tuple.Quotient;
+        }
     }
     /// <summary> Gets the length of the internal data structure given the number of bits it should hold. </summary>
     /// <param name="bitCount"> The number of bits to store in the internal data. </param>
@@ -71,26 +76,20 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
         {
             Contract.Requires<IndexOutOfRangeException>(0 <= index);
             Contract.Requires<NotImplementedException>(index <= int.MaxValue);
-            int i = (int)index;
             Contract.Requires<IndexOutOfRangeException>(index < Length);
 
             int bitIndex;
-#if DEBUG
-            int dataIndex;
-            ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
-#endif
-            return (data[ToInternalAndBitIndex(i, out bitIndex)] & 1UL << bitIndex) != 0;
+            return (data[ToInternalAndBitIndex(index, out bitIndex)] & 1UL << bitIndex) != 0;
         }
         [DebuggerHidden]
         set
         {
             Contract.Requires<IndexOutOfRangeException>(0 <= index);
             Contract.Requires<NotImplementedException>(index <= int.MaxValue);
-            int i = (int)index;
             Contract.Requires<IndexOutOfRangeException>(index < Length);
 
             int dataIndex, bitIndex;
-            ToInternalAndBitIndex(i, out dataIndex, out bitIndex);
+            ToInternalAndBitIndex(index, out dataIndex, out bitIndex);
             if (value)
             {
                 data[dataIndex] |= 1UL << bitIndex;
@@ -121,8 +120,7 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
 
         checked
         {
-            int ulongIndex = (int)(bitIndex / 64);
-            int bitIndexInUlong = (int)(bitIndex % 64);
+            ToInternalAndBitIndex(bitIndex, out var ulongIndex, out var bitIndexInUlong);
 
             if (bitIndexInUlong == 0)
             {
@@ -131,11 +129,46 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
             else
             {
                 ulong shiftedP1 = data[ulongIndex] >> bitIndexInUlong;
-                ulong shiftedP2 = data.ElementAtOrDefault(ulongIndex + 1) << 64 - bitIndexInUlong;
+                ulong shiftedP2 = data.ElementAtOrDefault(ulongIndex + 1) << (64 - bitIndexInUlong);
 
                 var result = shiftedP1 | shiftedP2;
                 return result;
             }
+        }
+    }
+    /// <summary>
+    /// Sets the 64 bits of <paramref name="value"/> at the specified <paramref name="bitIndex"/>. If that exceeds exceed <c>this.Length</c>, those are ignored.
+    /// </summary>
+    internal void SetUlong(ulong bitIndex, ulong value)
+    {
+        Contract.Requires(bitIndex < this.Length);
+
+        checked
+        {
+            ToInternalAndBitIndex(bitIndex, out var ulongIndex, out var bitIndexInUlong);
+
+            if (bitIndexInUlong == 0)
+            {
+                data[ulongIndex] = value;
+            }
+            else
+            {
+                data[ulongIndex] = data[ulongIndex].Mask(0, bitIndexInUlong) | (value << bitIndexInUlong);
+                if (ulongIndex + 1 != data.Length)
+                {
+                    data[ulongIndex + 1] = data[ulongIndex + 1].Mask(bitIndexInUlong, 64) | (value >> (64 - bitIndexInUlong));
+                }
+            }
+        }
+    }
+    internal void SetUlong(ulong bitIndex, ulong value, ulong bitCount)
+    {
+        Contract.Requires(bitCount < bitCountPerInternalElement);
+        Contract.Requires(bitIndex + bitCount < this.Length);
+
+        for (uint i = 0; i < bitCount; i++)
+        {
+            this[bitIndex + i] = value.HasBit((int)i);
         }
     }
 
@@ -805,16 +838,57 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     public void RemoveAt(params ulong[] indices)
     {
         Contract.Assert<NotImplementedException>(Length <= int.MaxValue);
+        Contract.Assert<NotImplementedException>(indices.Length < bitCountPerInternalElement);
+        Contract.RequiresForAll(indices, index => index < this.Length);
+        Contract.Requires(indices.AreUnique());
+
         if (indices.Length == 0)
             return;
         if (indices.Length > (int)Length)
             throw new ArgumentOutOfRangeException(nameof(indices), "More indices specified than bits");
-        // this is a very inefficient implementation
-        // use constructor to convert to ulong[]
-        int[] indicesInts = indices.Map(u => checked((int)u));
-        var bitArray = new BitArray(this.AsEnumerable().ExceptAt(indicesInts), Length - (ulong)indices.Length);
-        bitArray.CopyTo(data, 0); // overwrite current; will always fit
-        Length -= (ulong)indices.Length;
+
+        ushort bitsToShift = 0;
+        foreach (var (indexToRemove, nextIndexToRemove) in indices.Order().Append(this.Length).Windowed2())
+        {
+            bitsToShift++;
+            if (indexToRemove + 1 != nextIndexToRemove)
+            {
+                this.Downshift(indexToRemove + 1, nextIndexToRemove, bitsToShift);
+            }
+        }
+
+        this.Length -= (ulong)indices.Length;
+    }
+
+    /// <summary>
+    /// Moves the bits from [startIndex..endIndex) <paramref name="count"/> bits down.
+    /// </summary>
+    /// <param name="endIndex">Exclusive.</param>
+    private void Downshift(ulong startIndex, ulong endIndex, int count)
+    {
+        Contract.Requires(0 < startIndex);
+        Contract.Requires(startIndex < endIndex);
+        Contract.Requires(endIndex <= this.Length);
+        Contract.Requires(count >= 0);
+        Contract.Requires(startIndex >= (ulong)count);
+        Contract.Assert<NotImplementedException>(count < bitCountPerInternalElement);
+
+        if (count == 0)
+            return;
+
+        ulong remainingStartIndex = startIndex;
+        if (endIndex > bitCountPerInternalElement)
+        {
+            for (ulong i = startIndex; i < endIndex - bitCountPerInternalElement; i += bitCountPerInternalElement)
+            {
+                this.SetUlong(i - (ulong)count, this.GetULong(i));
+                remainingStartIndex = i + bitCountPerInternalElement;
+            }
+        }
+        ulong remainingEndIndex = endIndex;
+        ulong remainingLength = remainingEndIndex - remainingStartIndex;
+
+        this.SetUlong(remainingStartIndex - (ulong)count, this.GetULong(remainingStartIndex), remainingLength);
     }
     #endregion
 
@@ -945,7 +1019,7 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     [DebuggerHidden]
     public string ToString(ulong length)
     {
-        var result = data.FormatAsBits(length);
+        var result = data.ToBitString(length);
         if (BitArray.ReverseToString)
             result = result.Reverse();
         return result;
@@ -953,7 +1027,7 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     [DebuggerHidden]
     public string ToString(ulong startIndex, ulong length)
     {
-        var result = data.FormatAsBits(startIndex, length);
+        var result = data.ToBitString(startIndex, length);
         if (BitArray.ReverseToString)
             result = result.Reverse();
         return result;

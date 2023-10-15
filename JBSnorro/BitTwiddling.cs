@@ -37,6 +37,15 @@ public static class BitTwiddling
 
         return (flags & (1 << index)) != 0;
     }
+    /// <summary> Gets the bit in the specified byte at the specified index. </summary>
+    /// <param name="flags"> The uint representing individual bits. </param>
+    /// <param name="index"> The index of the bit to get. Index 0 is least significant, 63 is most significant significant. </param>
+    public static bool HasBit(this ulong flags, int index)
+    {
+        Contract.Requires(0 <= index && index < 64);
+
+        return (flags & (1UL << index)) != 0;
+    }
     /// <summary> Gets the bitwise reversed integer of the specified integer. </summary>
     public static int ReverseBitwise(this int i)
     {
@@ -373,21 +382,33 @@ public static class BitTwiddling
     }
     static uint ClearLowBits(uint bits, int numberOfBits)
     {
+        Contract.Requires(0 <= numberOfBits && numberOfBits <= 32);
+        if (numberOfBits == 32)
+            return 0;
         uint mask = uint.MaxValue << numberOfBits;
         return bits & mask;
     }
     static ulong ClearLowBits(ulong bits, int numberOfBits)
     {
+        Contract.Requires(0 <= numberOfBits && numberOfBits <= 64);
+        if (numberOfBits == 64)
+            return 0;
         ulong mask = ulong.MaxValue << numberOfBits;
         return bits & mask;
     }
     static uint ClearHighBits(uint bits, int numberOfBitsToClear)
     {
+        Contract.Requires(0 <= numberOfBitsToClear && numberOfBitsToClear <= 32);
+        if (numberOfBitsToClear == 32)
+            return 0;
         uint mask = uint.MaxValue >> numberOfBitsToClear;
         return bits & mask;
     }
     static ulong ClearHighBits(ulong bits, int numberOfBitsToClear)
     {
+        Contract.Requires(0 <= numberOfBitsToClear && numberOfBitsToClear <= 64);
+        if (numberOfBitsToClear == 64)
+            return 0;
         ulong mask = ulong.MaxValue >> numberOfBitsToClear;
         return bits & mask;
     }
@@ -710,7 +731,7 @@ public static class BitTwiddling
         return GetBits(array, boundary, bitIndex - boundary);
     }
 
-    public static string FormatAsBits(this ulong bits, int digits = 64)
+    public static string ToBitString(this ulong bits, int digits = 64)
     {
         if (digits < 0 || digits > 64) throw new ArgumentOutOfRangeException(nameof(digits));
 
@@ -737,12 +758,12 @@ public static class BitTwiddling
         return builder.ToString();
     }
     [DebuggerHidden]
-    public static string FormatAsBits(this ulong[] bits, ulong? digits = null)
+    public static string ToBitString(this ulong[] bits, ulong? digits = null)
     {
-        return bits.FormatAsBits(digits == null ? null : (int)digits);
+        return bits.ToBitString(digits == null ? null : (int)digits);
     }
     private const char ULONG_SEPARATOR = '+';
-    public static string FormatAsBits(this ulong[] bits, int? digits = null)
+    public static string ToBitString(this ulong[] bits, int? digits = null)
     {
         if (bits == null) throw new ArgumentNullException(nameof(bits));
         if (digits != null && digits < 0) throw new ArgumentOutOfRangeException(nameof(digits));
@@ -783,7 +804,7 @@ public static class BitTwiddling
 
         return builder.ToString();
     }
-    public static string FormatAsBits(this ulong[] bits, ulong startIndex, ulong length)
+    public static string ToBitString(this ulong[] bits, ulong startIndex, ulong length)
     {
         // PERF
         var range = new Range(checked((int)startIndex), checked((int)(startIndex + length)));
