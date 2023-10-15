@@ -78,7 +78,7 @@ public sealed class BitArrayReadOnlySegment : IReadOnlyList<bool>
     {
         return data.IndexOf(item, itemLength, startBitIndex);
     }
-    public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0)
+    public (long BitIndex, int ItemIndex) IndexOfAny(ulong[] items, int? itemLength = null, ulong startIndex = 0)
     {
         return data.IndexOfAny(items, itemLength, start + startIndex, endIndex: start + Length);
     }

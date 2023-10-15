@@ -409,7 +409,6 @@ public class BitArrayIndexOfTests
     public void TestFindMatchOnLastNonAlignedBit()
     {
         const ulong item = 0b0010_0000_0000;
-        var array = new BitArray(new[] { 0UL, item }, 74);
         Contract.Assert(new BitArray(new[] { 0UL, item }, 73).IndexOf(1, itemLength: 1) == -1);
         Contract.Assert(new BitArray(new[] { 0UL, item }, 74).IndexOf(1, itemLength: 1) == 73);
         Contract.Assert(new BitArray(new[] { 0UL, item }, 75).IndexOf(1, itemLength: 1) == 73);
@@ -442,7 +441,7 @@ public class BitArrayIndexOfTests
         Contract.Assert(t1 == (2, 1));
 
 
-        static (long, int) AssertEquivalent(ulong[] data, IReadOnlyList<ulong> items, int itemLength)
+        static (long, int) AssertEquivalent(ulong[] data, ulong[] items, int itemLength)
         {
             var bitArray = new BitArray(data, data.Length * 64);
             var result = bitArray.IndexOfAny(items, itemLength);

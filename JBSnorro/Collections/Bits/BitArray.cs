@@ -4,6 +4,7 @@ using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using System.Collections;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static JBSnorro.Global;
 
@@ -114,6 +115,7 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     /// <summary>
     /// Gets the 64 successive bits at the specified bit index, padded with zeroes if necessary.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ulong GetULong(ulong bitIndex)
     {
         Contract.Requires(bitIndex <= Length);
@@ -139,6 +141,7 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     /// <summary>
     /// Sets the 64 bits of <paramref name="value"/> at the specified <paramref name="bitIndex"/>. If that exceeds exceed <c>this.Length</c>, those are ignored.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void SetUlong(ulong bitIndex, ulong value)
     {
         Contract.Requires(bitIndex < this.Length);
@@ -161,6 +164,8 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
             }
         }
     }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void SetUlong(ulong bitIndex, ulong value, ulong bitCount)
     {
         Contract.Requires(bitCount < bitCountPerInternalElement);
@@ -789,7 +794,7 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
         return other.Length == sourceBitLength && data.BitSequenceEqual(other.data.data, sourceStartBitIndex, other.start, other.Length, sourceBitEnd: sourceStartBitIndex + sourceBitLength, otherBitEnd: other.start + other.Length);
     }
     /// <param name="endIndex">Exclusive.</param>
-    public (long BitIndex, int ItemIndex) IndexOfAny(IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? endIndex = null)
+    public (long BitIndex, int ItemIndex) IndexOfAny(ulong[] items, int? itemLength = null, ulong startIndex = 0, ulong? endIndex = null)
     {
         ulong dataLength = endIndex == null ? Length : endIndex.Value;
         return BitTwiddling.IndexOfBits(data, items, itemLength, startIndex, dataLength);
