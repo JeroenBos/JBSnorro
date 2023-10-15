@@ -494,12 +494,16 @@ public static class BitTwiddling
         }
 
         long bitIndex = (long)startIndex;
-        int elementIndex = (int)(startIndex / N);
+        
         const int noMatch = -1;
         int matchedItemIndex = noMatch;
-        foreach (var ((element, nextElement), isLast) in data.Skip(elementIndex).Append(0UL).Windowed2().WithIsLast())
+
+        int elementIndex = (int)(startIndex / N);
+        for (; elementIndex < data.Length; elementIndex++)
         {
-            while (Fits(bitIndex, elementIndex, itemLength.Value, dataLength, isLast))
+            var element = data[elementIndex];
+            var nextElement = elementIndex + 1 == data.Length ? 0UL : data[elementIndex + 1];
+            while (Fits(bitIndex, elementIndex, itemLength.Value, dataLength, elementIndex + 1 == data.Length))
             {
                 for (int itemIndex = 0; itemIndex < items.Length; itemIndex++)
                 {
@@ -521,7 +525,6 @@ public static class BitTwiddling
                 }
                 bitIndex++;
             }
-            elementIndex++;
         }
         if (matchedItemIndex != noMatch)
             return (bitIndex - 1, matchedItemIndex);
