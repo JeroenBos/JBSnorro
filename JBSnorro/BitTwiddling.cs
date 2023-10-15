@@ -37,6 +37,15 @@ public static class BitTwiddling
 
         return (flags & (1 << index)) != 0;
     }
+    /// <summary> Gets the bit in the specified byte at the specified index. </summary>
+    /// <param name="flags"> The uint representing individual bits. </param>
+    /// <param name="index"> The index of the bit to get. Index 0 is least significant, 63 is most significant significant. </param>
+    public static bool HasBit(this ulong flags, int index)
+    {
+        Contract.Requires(0 <= index && index < 64);
+
+        return (flags & (1UL << index)) != 0;
+    }
     /// <summary> Gets the bitwise reversed integer of the specified integer. </summary>
     public static int ReverseBitwise(this int i)
     {
