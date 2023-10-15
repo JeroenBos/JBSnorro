@@ -200,6 +200,7 @@ public class BitInsertionTests
 
         data.Insert(new BitArray(new bool[] { false })[Range.All], 0);
 
+        using var _ = BitArrayToStringTests.Set_BitArrayReverseToString(false);
         Contract.Assert(data.ToString() == "1+11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111110");
 
         data.Insert(new BitArray(new bool[] { false })[Range.All], 0);
@@ -215,6 +216,7 @@ public class BitInsertionTests
         // Act
         var result = data[0..8];
 
+        using var _ = BitArrayToStringTests.Set_BitArrayReverseToString(false);
         Contract.Assert(result.ToString() == "11110000");
     }
     [TestMethod]
@@ -586,7 +588,7 @@ public class BitArrayShaTests
 public class BitArrayToStringTests
 {
     static readonly object BitArray_ReverseToString_lock = new object();
-    private static Disposable Set_BitArrayReverseToString(bool value)
+    internal static Disposable Set_BitArrayReverseToString(bool value)
     {
         return Disposable.Create(impl);
         System.Collections.IEnumerable impl()
