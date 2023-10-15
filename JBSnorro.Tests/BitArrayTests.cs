@@ -238,7 +238,7 @@ public class BitInsertionTests
 public class BitRemovalTests
 {
     [TestMethod]
-    public void Test_SimpleRemoval()
+    public void Test_SimpleRemoval1()
     {
         var array = new BitArray(new byte[] { 255 });
         array.RemoveAt(3);
@@ -250,6 +250,13 @@ public class BitRemovalTests
         var array = new BitArray(new bool[] { true });
         array.RemoveAt(0);
         Contract.AssertSequenceEqual(array, Array.Empty<bool>());
+    }
+    [TestMethod]
+    public void Test_TwoSimpleRemoval()
+    {
+        var array = new BitArray(new bool[] { true, true, true, false, true });
+        array.RemoveAt(1, 2);
+        Contract.AssertSequenceEqual(array, new bool[] { true, false, true });
     }
     [TestMethod]
     public void Test_SimpleRemovalAtBeginning()
@@ -274,7 +281,15 @@ public class BitRemovalTests
         Contract.AssertSequenceEqual(array, expected);
     }
     [TestMethod]
-    public void Test_RemovalofMultipleInULong()
+    public void Test_RemovalInMultipleULongs()
+    {
+        var array = new BitArray(Enumerable.Range(0, 70).SelectMany(_ => new bool[] { true, false }));
+        array.RemoveAt(40, 120);
+        var expected = Enumerable.Range(0, 70).SelectMany(_ => new bool[] { true, false }).ExceptAt(40, 120);
+        Contract.AssertSequenceEqual(array, expected);
+    }
+    [TestMethod]
+    public void Test_RemovalOfMultipleInULong()
     {
         var array = new BitArray(Enumerable.Range(0, 50).SelectMany(_ => new bool[] { true, false }));
         array.RemoveAt(40, 80, 81); // i.e. longer than bits in a ulong
@@ -282,7 +297,7 @@ public class BitRemovalTests
         Contract.AssertSequenceEqual(array, expected);
     }
     [TestMethod]
-    public void Test_SimpleRemovalofMultiple()
+    public void Test_SimpleRemovalOfMultiple()
     {
         var array = new BitArray(new bool[] { true, false, true, true, false, false, true });
         array.RemoveAt(4, 5);
