@@ -2,6 +2,7 @@
 using JBSnorro.Collections.Bits;
 using JBSnorro.Diagnostics;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using BitArray = JBSnorro.Collections.Bits.BitArray;
 
@@ -468,14 +469,14 @@ public static class BitTwiddling
     }
 
     /// <summary> Gets the bit index in the specified data of the specified item. </summary>
-    public static long IndexOfBits(IEnumerable<ulong> data, ulong item, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null)
+    public static long IndexOfBits(ulong[] data, ulong item, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null)
     {
         return IndexOfBits(data, new[] { item }, itemLength, startIndex, dataLength).BitIndex;
     }
     /// <summary> Gets the first bit index in the specified data of any of the specified equilong items. </summary>
     /// <param name="returnLastConsecutive"> When true, and when there's a match, the successive places are also checked and the last consecutive will be selected as the result.</param>
     /// <param name="dataLength">The exclusive bit index, after which <paramref name="data"/> is not considered caontaining values anymore. This is independent of <paramref name="startIndex"/>.</param>
-    public static (long BitIndex, int ItemIndex) IndexOfBits(IEnumerable<ulong> data, IReadOnlyList<ulong> items, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null, bool returnLastConsecutive = false)
+    public static (long BitIndex, int ItemIndex) IndexOfBits(ulong[] data, ulong[] items, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null, bool returnLastConsecutive = false)
     {
         const int N = 64;
         if (data == null) throw new ArgumentNullException(nameof(data));
@@ -487,20 +488,24 @@ public static class BitTwiddling
         itemLength ??= N;
         dataLength ??= hasCount ? (ulong)(N * count) : null;
 
-        if (items.Count == 0)
+        if (items.Length == 0)
         {
             return (-1, -1);
         }
 
         long bitIndex = (long)startIndex;
-        int elementIndex = (int)(startIndex / N);
+        
         const int noMatch = -1;
         int matchedItemIndex = noMatch;
-        foreach (var ((element, nextElement), isLast) in data.Skip(elementIndex).Append(0UL).Windowed2().WithIsLast())
+
+        int elementIndex = (int)(startIndex / N);
+        for (; elementIndex < data.Length; elementIndex++)
         {
-            while (Fits(bitIndex, elementIndex, itemLength.Value, dataLength, isLast))
+            var element = data[elementIndex];
+            var nextElement = elementIndex + 1 == data.Length ? 0UL : data[elementIndex + 1];
+            while (Fits(bitIndex, elementIndex, itemLength.Value, dataLength, elementIndex + 1 == data.Length))
             {
-                for (int itemIndex = 0; itemIndex < items.Count; itemIndex++)
+                for (int itemIndex = 0; itemIndex < items.Length; itemIndex++)
                 {
                     if (IsMatch(bitIndex, element, nextElement, elementIndex, items[itemIndex], itemLength.Value))
                     {
@@ -509,7 +514,7 @@ public static class BitTwiddling
                         {
                             matchedItemIndex = itemIndex;
                             // only the currently matched item will be considered in getting the last consecutive
-                            if (items.Count != 1)
+                            if (items.Length != 1)
                                 items = new[] { items[itemIndex] };
                         }
                         else
@@ -520,13 +525,13 @@ public static class BitTwiddling
                 }
                 bitIndex++;
             }
-            elementIndex++;
         }
         if (matchedItemIndex != noMatch)
             return (bitIndex - 1, matchedItemIndex);
         return (-1, -1);
 
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool IsMatch(long bitIndex, ulong element, ulong nextElement, int elementIndex, ulong item, int itemLength)
         {
             int start = (int)(bitIndex - N * elementIndex);
@@ -535,6 +540,7 @@ public static class BitTwiddling
             ulong aligned = TakeBits(element, nextElement, start, end: start + itemLength);
             return aligned == item;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool Fits(long bitIndex, int elementIndex, int itemLength, ulong? dataLength, bool isLast)
         {
             // if we should just go to the next data element even though it fits, report that it doesn't fit

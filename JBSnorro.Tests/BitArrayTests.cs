@@ -273,6 +273,14 @@ public class BitRemovalTests
         Contract.AssertSequenceEqual(array, new bool[] { true, false });
     }
     [TestMethod]
+    public void Test_SimpleRemovalAtUlongBoundary()
+    {
+        var array = new BitArray(Enumerable.Range(0, 70).SelectMany(_ => new bool[] { true, false }));
+        array.RemoveAt(64);
+        var expected = Enumerable.Range(0, 70).SelectMany(_ => new bool[] { true, false }).ExceptAt(64);
+        Contract.AssertSequenceEqual(array, expected);
+    }
+    [TestMethod]
     public void Test_RemovalInSecondULong()
     {
         var array = new BitArray(Enumerable.Range(0, 50).SelectMany(_ => new bool[] { true, false }));
@@ -401,7 +409,7 @@ public class BitArrayIndexOfTests
     public void TestFindMatchOnLastNonAlignedBit()
     {
         const ulong item = 0b0010_0000_0000;
-        var array = new BitArray(new[] { 0UL, item }, 74);
+        Contract.Assert(new BitArray(new[] { 0UL, item, 1UL }, 120).IndexOf(1, itemLength: 1) == 73);
         Contract.Assert(new BitArray(new[] { 0UL, item }, 73).IndexOf(1, itemLength: 1) == -1);
         Contract.Assert(new BitArray(new[] { 0UL, item }, 74).IndexOf(1, itemLength: 1) == 73);
         Contract.Assert(new BitArray(new[] { 0UL, item }, 75).IndexOf(1, itemLength: 1) == 73);
@@ -434,7 +442,7 @@ public class BitArrayIndexOfTests
         Contract.Assert(t1 == (2, 1));
 
 
-        static (long, int) AssertEquivalent(ulong[] data, IReadOnlyList<ulong> items, int itemLength)
+        static (long, int) AssertEquivalent(ulong[] data, ulong[] items, int itemLength)
         {
             var bitArray = new BitArray(data, data.Length * 64);
             var result = bitArray.IndexOfAny(items, itemLength);
