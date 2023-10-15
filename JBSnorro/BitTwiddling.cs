@@ -731,7 +731,7 @@ public static class BitTwiddling
         return GetBits(array, boundary, bitIndex - boundary);
     }
 
-    public static string FormatAsBits(this ulong bits, int digits = 64)
+    public static string ToBitString(this ulong bits, int digits = 64)
     {
         if (digits < 0 || digits > 64) throw new ArgumentOutOfRangeException(nameof(digits));
 
@@ -758,12 +758,12 @@ public static class BitTwiddling
         return builder.ToString();
     }
     [DebuggerHidden]
-    public static string FormatAsBits(this ulong[] bits, ulong? digits = null)
+    public static string ToBitString(this ulong[] bits, ulong? digits = null)
     {
-        return bits.FormatAsBits(digits == null ? null : (int)digits);
+        return bits.ToBitString(digits == null ? null : (int)digits);
     }
     private const char ULONG_SEPARATOR = '+';
-    public static string FormatAsBits(this ulong[] bits, int? digits = null)
+    public static string ToBitString(this ulong[] bits, int? digits = null)
     {
         if (bits == null) throw new ArgumentNullException(nameof(bits));
         if (digits != null && digits < 0) throw new ArgumentOutOfRangeException(nameof(digits));
@@ -804,7 +804,7 @@ public static class BitTwiddling
 
         return builder.ToString();
     }
-    public static string FormatAsBits(this ulong[] bits, ulong startIndex, ulong length)
+    public static string ToBitString(this ulong[] bits, ulong startIndex, ulong length)
     {
         // PERF
         var range = new Range(checked((int)startIndex), checked((int)(startIndex + length)));

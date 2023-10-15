@@ -621,7 +621,7 @@ public class BitArrayToStringTests
 
         const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
         string expected = "11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011";
-        Contract.Assert(item.FormatAsBits() == expected);
+        Contract.Assert(item.ToBitString() == expected);
 
         var array = new BitArray(new[] { item }, 64);
         Contract.Assert(array.ToString() == expected);
@@ -633,7 +633,7 @@ public class BitArrayToStringTests
 
         const ulong item = 0b11110000_10101010_01010101_11111111_11110000_00000000_00000000_11110011UL;
         string expected = "10101010_01010101_11111111_11110000_00000000_00000000_11110011";
-        Contract.Assert(item.FormatAsBits(56) == expected);
+        Contract.Assert(item.ToBitString(56) == expected);
 
         var array = new BitArray(new[] { item }, 56);
         Contract.Assert(array.ToString() == expected);
