@@ -136,6 +136,41 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
             }
         }
     }
+    /// <summary>
+    /// Sets the 64 bits of <paramref name="value"/> at the specified <paramref name="bitIndex"/>. If that exceeds exceed <c>this.Length</c>, those are ignored.
+    /// </summary>
+    internal void SetUlong(ulong bitIndex, ulong value)
+    {
+        Contract.Requires(bitIndex < this.Length);
+
+        checked
+        {
+            ToInternalAndBitIndex(bitIndex, out var ulongIndex, out var bitIndexInUlong);
+
+            if (bitIndexInUlong == 0)
+            {
+                data[ulongIndex] = value;
+            }
+            else
+            {
+                data[ulongIndex] = data[ulongIndex].Mask(0, bitIndexInUlong) | (value << bitIndexInUlong);
+                if (ulongIndex + 1 != data.Length)
+                {
+                    data[ulongIndex + 1] = data[ulongIndex + 1].Mask(bitIndexInUlong, 64) | (value >> (64 - bitIndexInUlong));
+                }
+            }
+        }
+    }
+    internal void SetUlong(ulong bitIndex, ulong value, ulong bitCount)
+    {
+        Contract.Requires(bitCount < bitCountPerInternalElement);
+        Contract.Requires(bitIndex + bitCount < this.Length);
+
+        for (uint i = 0; i < bitCount; i++)
+        {
+            this[bitIndex + i] = value.HasBit((int)i);
+        }
+    }
 
     /// <summary> Gets the number of bits in this bit array. </summary>
     public ulong Length { get; private set; }
@@ -803,16 +838,57 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
     public void RemoveAt(params ulong[] indices)
     {
         Contract.Assert<NotImplementedException>(Length <= int.MaxValue);
+        Contract.Assert<NotImplementedException>(indices.Length < bitCountPerInternalElement);
+        Contract.RequiresForAll(indices, index => index < this.Length);
+        Contract.Requires(indices.AreUnique());
+
         if (indices.Length == 0)
             return;
         if (indices.Length > (int)Length)
             throw new ArgumentOutOfRangeException(nameof(indices), "More indices specified than bits");
-        // this is a very inefficient implementation
-        // use constructor to convert to ulong[]
-        int[] indicesInts = indices.Map(u => checked((int)u));
-        var bitArray = new BitArray(this.AsEnumerable().ExceptAt(indicesInts), Length - (ulong)indices.Length);
-        bitArray.CopyTo(data, 0); // overwrite current; will always fit
-        Length -= (ulong)indices.Length;
+
+        ushort bitsToShift = 0;
+        foreach (var (indexToRemove, nextIndexToRemove) in indices.Order().Append(this.Length).Windowed2())
+        {
+            bitsToShift++;
+            if (indexToRemove + 1 != nextIndexToRemove)
+            {
+                this.Downshift(indexToRemove + 1, nextIndexToRemove, bitsToShift);
+            }
+        }
+
+        this.Length -= (ulong)indices.Length;
+    }
+
+    /// <summary>
+    /// Moves the bits from [startIndex..endIndex) <paramref name="count"/> bits down.
+    /// </summary>
+    /// <param name="endIndex">Exclusive.</param>
+    private void Downshift(ulong startIndex, ulong endIndex, int count)
+    {
+        Contract.Requires(0 < startIndex);
+        Contract.Requires(startIndex < endIndex);
+        Contract.Requires(endIndex <= this.Length);
+        Contract.Requires(count >= 0);
+        Contract.Requires(startIndex >= (ulong)count);
+        Contract.Assert<NotImplementedException>(count < bitCountPerInternalElement);
+
+        if (count == 0)
+            return;
+
+        ulong remainingStartIndex = startIndex;
+        if (endIndex > bitCountPerInternalElement)
+        {
+            for (ulong i = startIndex; i < endIndex - bitCountPerInternalElement; i += bitCountPerInternalElement)
+            {
+                this.SetUlong(i - (ulong)count, this.GetULong(i));
+                remainingStartIndex = i + bitCountPerInternalElement;
+            }
+        }
+        ulong remainingEndIndex = endIndex;
+        ulong remainingLength = remainingEndIndex - remainingStartIndex;
+
+        this.SetUlong(remainingStartIndex - (ulong)count, this.GetULong(remainingStartIndex), remainingLength);
     }
     #endregion
 
