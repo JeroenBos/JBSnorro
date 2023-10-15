@@ -120,8 +120,7 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
 
         checked
         {
-            int ulongIndex = (int)(bitIndex / 64);
-            int bitIndexInUlong = (int)(bitIndex % 64);
+            ToInternalAndBitIndex(bitIndex, out var ulongIndex, out var bitIndexInUlong);
 
             if (bitIndexInUlong == 0)
             {
@@ -130,7 +129,7 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
             else
             {
                 ulong shiftedP1 = data[ulongIndex] >> bitIndexInUlong;
-                ulong shiftedP2 = data.ElementAtOrDefault(ulongIndex + 1) << 64 - bitIndexInUlong;
+                ulong shiftedP2 = data.ElementAtOrDefault(ulongIndex + 1) << (64 - bitIndexInUlong);
 
                 var result = shiftedP1 | shiftedP2;
                 return result;
