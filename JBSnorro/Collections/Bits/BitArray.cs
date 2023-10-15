@@ -879,7 +879,7 @@ public sealed class BitArray : IList<bool>, IReadOnlyList<bool>
         ulong remainingStartIndex = startIndex;
         if (endIndex > bitCountPerInternalElement)
         {
-            for (ulong i = startIndex; i < endIndex - bitCountPerInternalElement; i += bitCountPerInternalElement)
+            for (ulong i = startIndex; i <= endIndex - bitCountPerInternalElement; i += bitCountPerInternalElement)
             {
                 this.SetUlong(i - (ulong)count, this.GetULong(i));
                 remainingStartIndex = i + bitCountPerInternalElement;

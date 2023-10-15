@@ -273,6 +273,14 @@ public class BitRemovalTests
         Contract.AssertSequenceEqual(array, new bool[] { true, false });
     }
     [TestMethod]
+    public void Test_SimpleRemovalAtUlongBoundary()
+    {
+        var array = new BitArray(Enumerable.Range(0, 70).SelectMany(_ => new bool[] { true, false }));
+        array.RemoveAt(64);
+        var expected = Enumerable.Range(0, 70).SelectMany(_ => new bool[] { true, false }).ExceptAt(64);
+        Contract.AssertSequenceEqual(array, expected);
+    }
+    [TestMethod]
     public void Test_RemovalInSecondULong()
     {
         var array = new BitArray(Enumerable.Range(0, 50).SelectMany(_ => new bool[] { true, false }));
