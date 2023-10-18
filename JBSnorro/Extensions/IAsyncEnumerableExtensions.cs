@@ -38,6 +38,23 @@ public static class IAsyncEnumerableExtensions
         }
         return result;
     }
+    public static IAsyncEnumerable<TResult> SelectMany<TSource, TResult>(this IAsyncEnumerable<TSource> sequence, Func<TSource, IEnumerable<TResult>> selector, CancellationToken cancellationToken = default)
+    {
+        return sequence.SelectMany((element, i) => selector(element), cancellationToken);
+    }
+    public static async IAsyncEnumerable<TResult> SelectMany<TSource, TResult>(this IAsyncEnumerable<TSource> sequence, Func<TSource, int, IEnumerable<TResult>> selector, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await using var enumerator = sequence.GetAsyncEnumerator(cancellationToken);
+        int i = 0;
+        while (await enumerator.MoveNextAsync())
+        {
+            foreach (var value in selector(enumerator.Current, i))
+            {
+                yield return value;
+            }
+            i++;
+        }
+    }
     /// <summary>
     /// Creates an <see cref="IAsyncEnumerable{T}"/> that yields everytime <paramref name="yield"/> is called.
     /// </summary>
