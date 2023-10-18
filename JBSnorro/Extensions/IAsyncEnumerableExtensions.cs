@@ -111,15 +111,6 @@ public static class IAsyncEnumerableExtensions
     /// <summary>
     /// Wraps the specified value task in a task.
     /// </summary>
-    public static Task AsTask<T>(this in ConfiguredValueTaskAwaitable<T> task)
-    {
-        var tcs = new TaskCompletionSource();
-        task.GetAwaiter().OnCompleted(tcs.SetResult);
-        return tcs.Task;
-    }
-    /// <summary>
-    /// Wraps the specified value task in a task.
-    /// </summary>
     public static Task WrapInTask<T>(this in ConfiguredValueTaskAwaitable<T> task)
     {
         var tcs = new TaskCompletionSource();

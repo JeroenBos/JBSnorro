@@ -76,8 +76,8 @@ public static class FileExtensions
          Reference<bool> done,
          [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        var sr = new StringReaderThatYieldsWholeLines(fs);
+        using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var sr = new StringReaderThatYieldsWholeLines(fs);
 
         fs.Position = readStreamPosition.Value;
         long stringBuilderStartPosition = -1;
