@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Threading.Channels;
 
 namespace JBSnorro.Extensions;
 
@@ -103,6 +104,102 @@ public static class IAsyncEnumerableExtensions
                 {
                     reference.Value = new TaskCompletionSource<bool>();
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Wraps the specified value task in a task.
+    /// </summary>
+    public static Task AsTask<T>(this in ConfiguredValueTaskAwaitable<T> task)
+    {
+        var tcs = new TaskCompletionSource();
+        task.GetAwaiter().OnCompleted(tcs.SetResult);
+        return tcs.Task;
+    }
+
+    /// <summary>
+    /// This will buffer the elements yielded by the source until either the specified capacity has been reached, or until the source is blocked, as defined by fetching the next element taking longer than <paramref name="blocked_ms"/>.
+    /// </summary>
+    /// <param name="capacity">The maximum number of elements to be returned by the list. </param>
+    /// <param name="blocked_ms">The number of milliseconds to wait for the next element before yielded the current buffer.</param>
+    /// <returns>Any yielded <c>List&lt;T&gt;</c> will be reused.</returns>
+    /// <see href="https://stackoverflow.com/a/74201074/308451"/>
+    public static async IAsyncEnumerable<List<T>> Buffer<T>(this IAsyncEnumerable<T> source, int capacity, int blocked_ms = 10, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        // a None in the channel significies a waiting time longer than 
+        var channel = Channel.CreateBounded<Option<T>>(new BoundedChannelOptions(capacity * 2)
+        {
+            SingleWriter = true,
+            SingleReader = true,
+        });
+        using CancellationTokenSource completionCts = new();
+
+        Task producer = Task.Run(async () =>
+        {
+            try
+            {
+                var enumerator = source.WithCancellation(completionCts.Token).ConfigureAwait(false).GetAsyncEnumerator();
+                while (true)
+                {
+                    var moveNextTask = enumerator.MoveNextAsync();
+                    if (!moveNextTask.GetAwaiter().IsCompleted)
+                    {
+                        var moveNextTaskWrapper = moveNextTask.AsTask();
+                        await Task.WhenAny(moveNextTaskWrapper, Task.Delay(blocked_ms));
+                        if (!moveNextTask.GetAwaiter().IsCompleted)
+                        {
+                            await channel.Writer.WriteAsync(Option<T>.None).ConfigureAwait(false);
+                        }
+                        await moveNextTaskWrapper;
+                    }
+                    bool hasNext = await moveNextTask;
+                    if (!hasNext)
+                    {
+                        break;
+                    }
+                    await channel.Writer.WriteAsync(enumerator.Current).ConfigureAwait(false);
+                }
+            }
+            catch (ChannelClosedException) { }
+            finally { channel.Writer.TryComplete(); }
+        });
+
+        var buffer = new List<T>(capacity);
+        try
+        {
+            await foreach (Option<T> item in channel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (item.HasValue)
+                {
+                    buffer.Add(item.Value);
+                    if (buffer.Count == capacity)
+                    {
+                        yield return buffer;
+                        buffer.Clear();
+                    }
+                }
+                else
+                {
+                    if (buffer.Count != 0)
+                    {
+                        yield return buffer;
+                        buffer.Clear();
+                    }
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            await producer.ConfigureAwait(false); // Propagate possible source error
+        }
+        finally
+        {
+            // Prevent fire-and-forget in case the enumeration is abandoned
+            if (!producer.IsCompleted)
+            {
+                completionCts.Cancel();
+                channel.Writer.TryComplete();
+                await Task.WhenAny(producer).ConfigureAwait(false);
             }
         }
     }
