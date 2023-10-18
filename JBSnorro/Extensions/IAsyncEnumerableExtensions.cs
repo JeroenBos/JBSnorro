@@ -117,6 +117,15 @@ public static class IAsyncEnumerableExtensions
         task.GetAwaiter().OnCompleted(tcs.SetResult);
         return tcs.Task;
     }
+    /// <summary>
+    /// Wraps the specified value task in a task.
+    /// </summary>
+    public static Task WrapInTask<T>(this in ConfiguredValueTaskAwaitable<T> task)
+    {
+        var tcs = new TaskCompletionSource();
+        task.GetAwaiter().OnCompleted(tcs.SetResult);
+        return tcs.Task;
+    }
 
     /// <summary>
     /// This will buffer the elements yielded by the source until either the specified capacity has been reached, or until the source is blocked, as defined by fetching the next element taking longer than <paramref name="blocked_ms"/>.
@@ -146,7 +155,7 @@ public static class IAsyncEnumerableExtensions
                     var moveNextTask = enumerator.MoveNextAsync();
                     if (!moveNextTask.GetAwaiter().IsCompleted)
                     {
-                        var moveNextTaskWrapper = moveNextTask.AsTask();
+                        var moveNextTaskWrapper = moveNextTask.WrapInTask();
                         await Task.WhenAny(moveNextTaskWrapper, Task.Delay(blocked_ms));
                         if (!moveNextTask.GetAwaiter().IsCompleted)
                         {
