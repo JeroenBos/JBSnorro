@@ -381,6 +381,7 @@ public static class BitTwiddling
             return strictlyPositive ? divisor : 0;
         return remainder;
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static uint ClearLowBits(uint bits, int numberOfBits)
     {
         Contract.Requires(0 <= numberOfBits && numberOfBits <= 32);
@@ -389,6 +390,7 @@ public static class BitTwiddling
         uint mask = uint.MaxValue << numberOfBits;
         return bits & mask;
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static ulong ClearLowBits(ulong bits, int numberOfBits)
     {
         Contract.Requires(0 <= numberOfBits && numberOfBits <= 64);
@@ -397,6 +399,7 @@ public static class BitTwiddling
         ulong mask = ulong.MaxValue << numberOfBits;
         return bits & mask;
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static uint ClearHighBits(uint bits, int numberOfBitsToClear)
     {
         Contract.Requires(0 <= numberOfBitsToClear && numberOfBitsToClear <= 32);
@@ -405,6 +408,7 @@ public static class BitTwiddling
         uint mask = uint.MaxValue >> numberOfBitsToClear;
         return bits & mask;
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static ulong ClearHighBits(ulong bits, int numberOfBitsToClear)
     {
         Contract.Requires(0 <= numberOfBitsToClear && numberOfBitsToClear <= 64);
@@ -417,6 +421,7 @@ public static class BitTwiddling
     /// Creates a ulong with bits set to one at indices [from, until).
     /// </summary>
     /// <param name="until">exclusive.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static ulong CreateULongMask(int from, int until)
     {
         if (from < 0 || from > 64) throw new ArgumentOutOfRangeException(nameof(from));
@@ -424,6 +429,7 @@ public static class BitTwiddling
 
         return ClearHighBits(ClearLowBits(ulong.MaxValue, from), 64 - until);
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static uint CreateUIntMask(int from, int until)
     {
         if (from < 0 || from > 32) throw new ArgumentOutOfRangeException(nameof(from));
@@ -434,6 +440,7 @@ public static class BitTwiddling
     /// <summary>
     /// Sets the bits from [0, until) and [from, 64] to zero.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ulong Mask(this ulong value, int until, int from)
     {
         var mask = CreateULongMask(until, from);
@@ -443,6 +450,7 @@ public static class BitTwiddling
     /// <summary>
     /// Sets the bits from [0, until) and [from, 32] to zero.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint Mask(this uint value, int until, int from)
     {
         var mask = CreateUIntMask(until, from);
@@ -479,6 +487,7 @@ public static class BitTwiddling
     public static (long BitIndex, int ItemIndex) IndexOfBits(ulong[] data, ulong[] items, int? itemLength = null, ulong startIndex = 0, ulong? dataLength = null, bool returnLastConsecutive = false)
     {
         const int N = 64;
+        const int noMatch = -1;
         if (data == null) throw new ArgumentNullException(nameof(data));
         if (items == null) throw new ArgumentNullException(nameof(items));
         if (itemLength != null && (itemLength < 0 || itemLength > N)) throw new ArgumentOutOfRangeException(nameof(itemLength));
@@ -490,16 +499,12 @@ public static class BitTwiddling
 
         if (items.Length == 0)
         {
-            return (-1, -1);
+            return (noMatch, noMatch);
         }
 
         long bitIndex = (long)startIndex;
-        
-        const int noMatch = -1;
         int matchedItemIndex = noMatch;
-
-        int elementIndex = (int)(startIndex / N);
-        for (; elementIndex < data.Length; elementIndex++)
+        for (int elementIndex = (int)(startIndex / N); elementIndex < data.Length; elementIndex++)
         {
             var element = data[elementIndex];
             var nextElement = elementIndex + 1 == data.Length ? 0UL : data[elementIndex + 1];
@@ -528,7 +533,7 @@ public static class BitTwiddling
         }
         if (matchedItemIndex != noMatch)
             return (bitIndex - 1, matchedItemIndex);
-        return (-1, -1);
+        return (noMatch, noMatch);
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -555,6 +560,7 @@ public static class BitTwiddling
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ulong TakeBits(ulong first, ulong second, int start, int end)
     {
         const int N = 64;
@@ -581,6 +587,7 @@ public static class BitTwiddling
         ulong result = firstPart | secondPart;
         return result;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static ulong TakeBits(ulong bits, int start, int end, int destIndex)
         {
             Contract.Assert(0 <= start);
