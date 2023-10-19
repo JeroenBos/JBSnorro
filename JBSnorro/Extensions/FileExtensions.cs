@@ -24,10 +24,7 @@ public static class FileExtensions
 
         IAsyncEnumerable<object?> everyFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
         string? error = null;
-        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path))
-        {
-            NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName
-        };
+        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path));
         watcher.Changed += (sender, e) => yield();
         watcher.Error += (sender, e) => { error = "error"; dispose(); };
         watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
