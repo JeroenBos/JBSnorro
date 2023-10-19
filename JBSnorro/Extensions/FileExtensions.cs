@@ -24,26 +24,48 @@ public static class FileExtensions
 
         IAsyncEnumerable<object?> everyFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
         string? error = null;
-        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path)) { EnableRaisingEvents = true };
+        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path));
         watcher.Changed += (sender, e) => yield();
         watcher.Error += (sender, e) => { error = "error"; dispose(); };
         watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
         watcher.Disposed += (sender, e) => { error = "disposed"; dispose(); };
         watcher.Renamed += (sender, e) => { error = "renamed"; dispose(); };
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        // HACK: I have absolutely no clue, but if I set EnableRaisingEvents to true in a task, it seems to work; otherwise it doesn't. I'm suspecting a deadlock somewhere but I can't find it.
+        Task.Run(async () => { await Task.Delay(1); watcher.EnableRaisingEvents = true; }, cancellationToken);
+#pragma warning restore CS4014
 
         done ??= new Reference<bool>();
         var streamPosition = new Reference<long>();
 
-        await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken))
+        await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
             yield return line;
 
         await foreach (var _ in everyFileChange)
-            await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken))
+            await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
                 yield return line;
 
         if (error != null)
             throw new Exception(error);
+    }
+
+    /// <summary>
+    /// Continuously reads all lines of a file and yields are lines written to it by other processes.
+    /// </summary>
+    /// <param name="path">The path of the file to read.</param>
+    /// <param name="done">A boolean indicating whether we can stop reading all lines.</param>
+    /// <param name="cancellationToken">A cancellation token for regular throw-on-canceled use.</param>
+    public static IAsyncEnumerable<IReadOnlyCollection<string>> ReadAllLinesChunkedContinuously(
+        string path,
+        Reference<bool>? done = null,
+        int maxChunkSize = 100,
+        int blocked_ms = 10,
+        CancellationToken cancellationToken = default)
+    {
+        Diagnostics.Contract.Requires(maxChunkSize > 0);
+
+        return ReadAllLinesContinuously(path, done, cancellationToken).Buffer(maxChunkSize, blocked_ms, cancellationToken);
     }
     /// <summary>
     /// Continuously reads all lines of a file and yields are lines written to it within this process (or so it appears to work).
@@ -134,5 +156,4 @@ public static class FileExtensions
             }
         }
     }
-
 }

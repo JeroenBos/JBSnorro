@@ -2696,6 +2696,12 @@ public static class EnumerableExtensions
     {
         return new List<T> { element };
     }
+    /// <summary> Creates a new array with the specified element as its single element. </summary>
+    [DebuggerHidden]
+    public static T[] ToSingletonArray<T>(this T element)
+    {
+        return new [] { element };
+    }
     [DebuggerHidden]
     public static ReadOnlyCollection<T> ToSingletonReadOnlyList<T>(this T element)
     {

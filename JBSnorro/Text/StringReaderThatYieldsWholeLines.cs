@@ -26,18 +26,18 @@ public class StringReaderThatYieldsWholeLines : StreamReader
     /// </summary>
     public bool LastCharacterWasNewLine { get; private set; }
 
-    int _charPos { get => (int)_charPosField.GetValue(this)!; set => _charPosField.SetValue(this, value); }
-    int _charLen => (int)_charLenField.GetValue(this)!;
-    char[] _charBuffer => (char[])_charBufferField.GetValue(this)!;
-    void ThrowIfDisposed()
+    private int _charPos { get => (int)_charPosField.GetValue(this)!; set => _charPosField.SetValue(this, value); }
+    private int _charLen => (int)_charLenField.GetValue(this)!;
+    private char[] _charBuffer => (char[])_charBufferField.GetValue(this)!;
+    private void ThrowIfDisposed()
     {
         ThrowIfDisposedMethodInfo.Invoke(this, Array.Empty<object>());
     }
-    void CheckAsyncTaskInProgress()
+    private void CheckAsyncTaskInProgress()
     {
         CheckAsyncTaskInProgressMethodInfo.Invoke(this, Array.Empty<object>());
     }
-    int ReadBuffer()
+    private int ReadBuffer()
     {
         return (int)ReadBufferMethodInfo.Invoke(this, Array.Empty<object>())!;
     }

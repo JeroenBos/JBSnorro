@@ -94,6 +94,14 @@ public class EnvironmentExtensions
             return Environment.ExpandEnvironmentVariables(retrievedValue);
         }
     }
+    public static void WriteLine(string s)
+    {
+        Write($"{s}\n");
+    }
+    public static void Write(string s)
+    {
+        File.AppendAllText(Environment.ExpandEnvironmentVariables(Environment.GetEnvironmentVariable("DEBUG_OUT")!), s);
+    }
 }
 
 
