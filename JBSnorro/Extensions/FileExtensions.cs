@@ -25,7 +25,7 @@ public static class FileExtensions
         IAsyncEnumerable<object?> everyFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
         string? error = null;
         var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path))
-        { 
+        {
             EnableRaisingEvents = true,
             NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName
         };
@@ -35,15 +35,28 @@ public static class FileExtensions
         watcher.Disposed += (sender, e) => { error = "disposed"; dispose(); };
         watcher.Renamed += (sender, e) => { error = "renamed"; dispose(); };
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        Task.Run(async () =>
+        {
+            // HACK: I have absolutely no clue, but if I include this `Task.Run`, this method seems to work, otherwise it doesn't
+            // It probably has something to do with threads, but I don't see it.
+            while (true)
+            {
+                if (!watcher.EnableRaisingEvents)
+                {
+                }
+                await Task.Delay(10000);
+            }
+        }, cancellationToken);
 
         done ??= new Reference<bool>();
         var streamPosition = new Reference<long>();
 
-        await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken))
+        await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
             yield return line;
 
         await foreach (var _ in everyFileChange)
-            await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken))
+            await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
                 yield return line;
 
         if (error != null)
@@ -156,5 +169,4 @@ public static class FileExtensions
             }
         }
     }
-
 }
