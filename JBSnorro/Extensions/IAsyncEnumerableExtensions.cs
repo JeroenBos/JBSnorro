@@ -175,23 +175,30 @@ public static class IAsyncEnumerableExtensions
         {
             await foreach (Option<T> item in channel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (item.HasValue)
                 {
                     buffer.Add(item.Value);
                     if (buffer.Count == capacity)
                     {
-                        yield return buffer;
-                        buffer.Clear();
+                        goto Yield;
                     }
+                }
+                if (channel.Reader.Count == 0 && buffer.Count != 0)
+                {
+                    goto Yield;
                 }
                 else
                 {
-                    if (buffer.Count != 0)
-                    {
-                        yield return buffer;
-                        buffer.Clear();
-                    }
+                    // in this case the producer had to wait for blocked_ms, but it isn't the bottleneck; the consumer of this buffer is the bottleneck
+                    // so keep filling the buffer with already produced items
+                    continue;
                 }
+
+            Yield:
+                yield return buffer;
+                buffer.Clear();
                 cancellationToken.ThrowIfCancellationRequested();
             }
             await producer.ConfigureAwait(false); // Propagate possible source error
