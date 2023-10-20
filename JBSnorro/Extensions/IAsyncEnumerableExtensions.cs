@@ -1,4 +1,5 @@
 ﻿using JBSnorro.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
@@ -123,23 +124,37 @@ public static class IAsyncEnumerableExtensions
     /// This will buffer the elements yielded by the source until either the specified capacity has been reached, or until the source is blocked, as defined by fetching the next element taking longer than <paramref name="blocked_ms"/>.
     /// </summary>
     /// <param name="capacity">The maximum number of elements to be returned by the list.</param>
-    /// <param name="blocked_ms">The number of milliseconds to wait for the next element before yielded the current buffer.</param>
+    /// <param name="blocked_ms">The number of milliseconds to wait for an item element before yielding the current buffer (if non-empty).</param>
+    /// <param name="yield_every_ms">The maximum number of milliseconds in between yields of the buffer (if non-empty).</param>
     /// <returns>Any yielded <c>List&lt;T&gt;</c> will be reused.</returns>
     /// <see href="https://stackoverflow.com/a/74201074/308451"/>
-    public static async IAsyncEnumerable<List<T>> Buffer<T>(this IAsyncEnumerable<T> source, int capacity, int blocked_ms = 10, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public static async IAsyncEnumerable<List<T>> Buffer<T>(this IAsyncEnumerable<T> source, int capacity, int blocked_ms = 10, int yield_every_ms = 100, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Contract.Requires(source is not null);
         Contract.Requires(capacity > 0);
         Contract.Requires(blocked_ms >= 0);
 
-        // a None in the channel significies a waiting time longer than 
-        var channel = Channel.CreateBounded<Option<T>>(new BoundedChannelOptions(capacity * 2)
+        var maxNones = capacity + (blocked_ms == 0 ? 1 : (int)Math.Ceiling(yield_every_ms / (double)blocked_ms));
+        // a None in the channel significies a waiting time longer than `blocked_ms`
+        var channel = Channel.CreateBounded<Option<T>>(new BoundedChannelOptions(capacity + maxNones)
         {
             SingleWriter = true,
             SingleReader = true,
         });
         using CancellationTokenSource completionCts = new();
-
+        var stopwatch = Stopwatch.StartNew();
+        int get_ms_until_next_None()
+        {
+            long untilYield = yield_every_ms - stopwatch.ElapsedMilliseconds;
+            if (untilYield < -blocked_ms)
+            {
+                return int.MaxValue;
+            }
+            else
+            {
+                return (int)Math.Max(0, Math.Min(blocked_ms, untilYield));
+            }
+        }
         Task producer = Task.Run(async () =>
         {
             try
@@ -151,10 +166,18 @@ public static class IAsyncEnumerableExtensions
                     if (!moveNextTask.GetAwaiter().IsCompleted)
                     {
                         var moveNextTaskWrapper = moveNextTask.WrapInTask();
-                        await Task.WhenAny(moveNextTaskWrapper, Task.Delay(blocked_ms));
-                        if (!moveNextTask.GetAwaiter().IsCompleted)
+                        while (true)
                         {
-                            await channel.Writer.WriteAsync(Option<T>.None).ConfigureAwait(false);
+                            int ms_until_next_None = get_ms_until_next_None();
+                            await Task.WhenAny(moveNextTaskWrapper, Task.Delay(ms_until_next_None));
+                            if (!moveNextTask.GetAwaiter().IsCompleted)
+                            {
+                                await channel.Writer.WriteAsync(Option<T>.None).ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
                         await moveNextTaskWrapper;
                     }
@@ -185,7 +208,7 @@ public static class IAsyncEnumerableExtensions
                         goto Yield;
                     }
                 }
-                if (channel.Reader.Count == 0 && buffer.Count != 0)
+                if (buffer.Count != 0 && (channel.Reader.Count == 0 || stopwatch.ElapsedMilliseconds >= yield_every_ms))
                 {
                     goto Yield;
                 }
@@ -199,6 +222,7 @@ public static class IAsyncEnumerableExtensions
             Yield:
                 yield return buffer;
                 buffer.Clear();
+                stopwatch.Reset();
                 cancellationToken.ThrowIfCancellationRequested();
             }
             await producer.ConfigureAwait(false); // Propagate possible source error
