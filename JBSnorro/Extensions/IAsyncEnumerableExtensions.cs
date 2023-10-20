@@ -1,4 +1,5 @@
 ﻿using JBSnorro.Diagnostics;
+using JBSnorro.Threading;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
@@ -142,7 +143,7 @@ public static class IAsyncEnumerableExtensions
             SingleReader = true,
         });
         using CancellationTokenSource completionCts = new();
-        var stopwatch = Stopwatch.StartNew();
+        var stopwatch = ThreadsafeStopwatch.StartNew();
         int get_ms_until_next_None()
         {
             long untilYield = yield_every_ms - stopwatch.ElapsedMilliseconds;
