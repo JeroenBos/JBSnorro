@@ -55,17 +55,22 @@ public static class FileExtensions
     /// </summary>
     /// <param name="path">The path of the file to read.</param>
     /// <param name="done">A boolean indicating whether we can stop reading all lines.</param>
+    /// <param name="maxChunkSize">The maximum number of elements to be returned by the list.</param>
+    /// <param name="blocked_ms">The number of milliseconds to wait for an item element before yielding the current buffer (if non-empty).</param>
+    /// <param name="yield_every_ms">The maximum number of milliseconds in between yields of the buffer (if non-empty).</param>
+    /// <returns>Any yielded <c>List&lt;T&gt;</c> will be reused.</returns>
     /// <param name="cancellationToken">A cancellation token for regular throw-on-canceled use.</param>
     public static IAsyncEnumerable<IReadOnlyCollection<string>> ReadAllLinesChunkedContinuously(
         string path,
         Reference<bool>? done = null,
         int maxChunkSize = 100,
         int blocked_ms = 10,
+        int yield_every_ms = 100,
         CancellationToken cancellationToken = default)
     {
         Diagnostics.Contract.Requires(maxChunkSize > 0);
 
-        return ReadAllLinesContinuously(path, done, cancellationToken).Buffer(maxChunkSize, blocked_ms, cancellationToken);
+        return ReadAllLinesContinuously(path, done, cancellationToken).Buffer(maxChunkSize, blocked_ms, yield_every_ms, cancellationToken);
     }
     /// <summary>
     /// Continuously reads all lines of a file and yields are lines written to it within this process (or so it appears to work).
