@@ -25,7 +25,7 @@ public static class FileExtensions
         IAsyncEnumerable<object?> everyFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
         string? error = null;
         var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path));
-        watcher.Changed += (sender, e) => yield();
+        watcher.Changed += (sender, e) => { Console.WriteLine("yielding ping"); yield(); Console.WriteLine("yielding pong"); };
         watcher.Error += (sender, e) => { error = "error"; dispose(); };
         watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
         watcher.Disposed += (sender, e) => { error = "disposed"; dispose(); };
@@ -42,9 +42,17 @@ public static class FileExtensions
         await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
             yield return line;
 
+        Console.WriteLine("Going to await everyFileChange");
         await foreach (var _ in everyFileChange)
+        {
+            Console.WriteLine("in foreach from yield()");
             await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
+            {
+                Console.WriteLine("in inner foreach from yield()");
                 yield return line;
+            }
+        }
+        Console.WriteLine("EXITED");
 
         if (error != null)
             throw new Exception(error);
@@ -91,65 +99,18 @@ public static class FileExtensions
         fs.Position = readStreamPosition.Value;
         long stringBuilderStartPosition = -1;
         StringBuilder? stringBuilder = null;
-        while (true)
+        try
         {
-            long streamPositionBeforeCurrentRead = sr.BaseStream.Position;
-            string? line;
-            try
+            while (true)
             {
-                line = await sr.ReadLineAsync(cancellationToken);
-            }
-            catch (TaskCanceledException)
-            {
-                if (done.Value == true)
-                    break;
-                else
-                    throw;
-            }
-            finally
-            {
-                readStreamPosition.Value = sr.BaseStream.Position;
-            }
-            if (!string.IsNullOrEmpty(line))
-            {
-                if (sr.LastCharacterWasNewLine)
-                {
-                    if (stringBuilder == null)
-                    {
-                        yield return line;
-                    }
-                    else
-                    {
-                        stringBuilder.Append(line);
-                        yield return stringBuilder.ToString();
-                        stringBuilder = null;
-                        stringBuilderStartPosition = -1;
-                    }
-                }
-                else
-                {
-                    stringBuilder ??= new StringBuilder();
-                    stringBuilderStartPosition = streamPositionBeforeCurrentRead;
-                    stringBuilder.Append(line);
-                }
-            }
-            else if (line == null)
-            {
-                if (stringBuilder != null)
-                {
-                    readStreamPosition.Value = stringBuilderStartPosition;
-                }
-                yield break;
-            }
-            else if (done.Value == true)
-            {
-                break;
-            }
-            else
-            {
+                Console.WriteLine("looping");
+                long streamPositionBeforeCurrentRead = sr.BaseStream.Position;
+                string? line;
                 try
                 {
-                    await Task.Delay(10, cancellationToken);
+                    Console.WriteLine("before sr.ReadLineAsync");
+                    line = await sr.ReadLineAsync(cancellationToken);
+                    Console.WriteLine("after sr.ReadLineAsync");
                 }
                 catch (TaskCanceledException)
                 {
@@ -158,7 +119,68 @@ public static class FileExtensions
                     else
                         throw;
                 }
+                finally
+                {
+                    readStreamPosition.Value = sr.BaseStream.Position;
+                }
+                if (!string.IsNullOrEmpty(line))
+                {
+                    if (sr.LastCharacterWasNewLine)
+                    {
+                        if (stringBuilder == null)
+                        {
+                            Console.WriteLine("Yielding line a");
+                            yield return line;
+                            Console.WriteLine("Yielded line a");
+                        }
+                        else
+                        {
+                            stringBuilder.Append(line);
+                            Console.WriteLine("Yielding line b");
+                            yield return stringBuilder.ToString();
+                            Console.WriteLine("Yielded line b");
+                            stringBuilder = null;
+                            stringBuilderStartPosition = -1;
+                        }
+                    }
+                    else
+                    {
+                        stringBuilder ??= new StringBuilder();
+                        stringBuilderStartPosition = streamPositionBeforeCurrentRead;
+                        stringBuilder.Append(line);
+                    }
+                }
+                else if (line == null)
+                {
+                    if (stringBuilder != null)
+                    {
+                        readStreamPosition.Value = stringBuilderStartPosition;
+                    }
+                    yield break;
+                }
+                else if (done.Value == true)
+                {
+                    break;
+                }
+                else
+                {
+                    try
+                    {
+                        await Task.Delay(10, cancellationToken);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        if (done.Value == true)
+                            break;
+                        else
+                            throw;
+                    }
+                }
             }
+        }
+        finally
+        {
+            Console.WriteLine("looping exit");
         }
     }
 }
