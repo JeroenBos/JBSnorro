@@ -1,6 +1,7 @@
 ﻿using JBSnorro.Diagnostics;
 using JBSnorro.Threading;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
@@ -65,7 +66,7 @@ public static class IAsyncEnumerableExtensions
     /// <param name="yield">A function to be called that triggers the returned <see cref="IAsyncEnumerable{T}"/> to yield. </param>
     /// <param name="duration"> A length of time for which the async enumerable will run. </param>
     /// <remarks>I'm sure RX extensions has something like this, but whatever. </remarks>
-    public static IAsyncEnumerable<object?> Create(out Action yield, TimeSpan duration)
+    public static Func<IAsyncEnumerable<object?>> Create(out Action yield, TimeSpan duration)
     {
         var result = Create(out yield, out var dispose);
         Task.Delay(duration).ContinueWith(t => dispose());
@@ -77,15 +78,15 @@ public static class IAsyncEnumerableExtensions
     /// <param name="yield">A function to be called that triggers the returned <see cref="IAsyncEnumerable{T}"/> to yield. </param>
     /// <param name="dispose"> A function that terminates this loop. </param>
     /// <remarks>I'm sure RX extensions has something like this, but whatever. </remarks>
-    public static IAsyncEnumerable<object?> Create(out Action yield, out Action dispose)
+    public static Func<IAsyncEnumerable<object?>> Create(out Action yield, out Action dispose)
     {
         object _lock = new object();
         var reference = new Reference<TaskCompletionSource<bool>>();
         reference.Value = new TaskCompletionSource<bool>();
-
+        bool missedYield = false; // handles calls to Yield while the loop was in `yield return null`
         yield = () => Yield(true);
         dispose = () => Yield(false);
-        return Loop();
+        return Loop;
 
         void Yield(bool result)
         {
@@ -95,6 +96,11 @@ public static class IAsyncEnumerableExtensions
                 {
                     reference.Value.SetResult(result);
                 }
+                else
+                {
+                    missedYield = true;
+                    if (!result) throw new NotImplementedException();
+                }
             }
         }
 
@@ -103,9 +109,17 @@ public static class IAsyncEnumerableExtensions
             while (await reference.Value.Task)
             {
                 yield return null;
+
+                bool hadMissedYield = false;
                 lock (_lock)
                 {
                     reference.Value = new TaskCompletionSource<bool>();
+                    hadMissedYield = missedYield;
+                    missedYield = false;
+                }
+                if (hadMissedYield)
+                {
+                    yield return null;
                 }
             }
         }

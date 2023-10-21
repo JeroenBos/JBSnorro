@@ -1,7 +1,9 @@
 ﻿using JBSnorro;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
+using JBSnorro.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Diagnostics;
 using TaskExtensions = JBSnorro.Extensions.TaskExtensions;
 
 namespace Tests.JBSnorro.Extensions;
@@ -9,7 +11,7 @@ namespace Tests.JBSnorro.Extensions;
 [TestClass]
 public class FileExtensionsTests
 {
-    const int step_ms = 200;
+    const int step_ms = 500;
     const int timeout_ms = 10 * step_ms + 5000 /* because in CI it's rather slow */;
     [TestMethod, Timeout(timeout_ms)]
     public async Task TestReadAllLinesContinuously()
@@ -26,6 +28,7 @@ public class FileExtensionsTests
 
         async Task writer(CancellationToken cancellationToken)
         {
+            await Task.Delay(1 * step_ms);
             File.WriteAllLines(path, new string[] { "line 1" });
             await Task.Delay(2 * step_ms);
             File.AppendAllText(path, "partial line 2. ");
@@ -45,22 +48,26 @@ public class FileExtensionsTests
 
 
         // Assert
-        await Task.Delay(1 * step_ms);
-        Contract.AssertSequenceEqual(readLines, new string[] {
+        await Task.Delay(2 * step_ms);
+        Assert.AreEqual(1, readLines.Count);
+        Assert.IsTrue(readLines.SequenceEqual(new string[] {
             "line 1",
-        });
+        }));
 
         await Task.Delay(3 * step_ms);
-        Contract.AssertSequenceEqual(readLines, new string[] {
+        Assert.AreEqual(1, readLines.Count);
+        Assert.IsTrue(readLines.SequenceEqual(new string[] {
             "line 1",
-        });
+        }));
 
         await Task.Delay(5 * step_ms);
-        Contract.AssertSequenceEqual(readLines, new string[] {
+        Assert.AreEqual(2, readLines.Count);
+        Assert.IsTrue(readLines.SequenceEqual(new string[] {
             "line 1",
             "partial line 2. end of line 2",
-        });
+        }));
 
         isDone.Value = true;
+
     }
 }

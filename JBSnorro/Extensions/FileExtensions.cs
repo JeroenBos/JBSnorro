@@ -1,4 +1,5 @@
 ﻿using JBSnorro.Text;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -22,19 +23,17 @@ public static class FileExtensions
         if (!File.Exists(path)) throw new ArgumentException("File doesn't exist", nameof(path));
 
 
-        IAsyncEnumerable<object?> everyFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
+        var onEveryFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
         string? error = null;
-        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path));
+        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path))
+        {
+            EnableRaisingEvents = true,
+        };
         watcher.Changed += (sender, e) => yield();
         watcher.Error += (sender, e) => { error = "error"; dispose(); };
         watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
         watcher.Disposed += (sender, e) => { error = "disposed"; dispose(); };
         watcher.Renamed += (sender, e) => { error = "renamed"; dispose(); };
-
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        // HACK: I have absolutely no clue, but if I set EnableRaisingEvents to true in a task, it seems to work; otherwise it doesn't. I'm suspecting a deadlock somewhere but I can't find it.
-        Task.Run(async () => { await Task.Delay(1); watcher.EnableRaisingEvents = true; }, cancellationToken);
-#pragma warning restore CS4014
 
         done ??= new Reference<bool>();
         var streamPosition = new Reference<long>();
@@ -42,9 +41,13 @@ public static class FileExtensions
         await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
             yield return line;
 
-        await foreach (var _ in everyFileChange)
+        await foreach (var _ in onEveryFileChange())
+        {
             await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
+            {
                 yield return line;
+            }
+        }
 
         if (error != null)
             throw new Exception(error);
