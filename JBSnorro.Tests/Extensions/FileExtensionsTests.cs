@@ -55,22 +55,22 @@ public class FileExtensionsTests
             // Assert
             await Task.Delay(1 * step_ms);
             FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Assertion 1");
-            Contract.AssertSequenceEqual(readLines, new string[] {
-            "line 1",
-        });
+            Assert.IsTrue(readLines.SequenceEqual(new string[] {
+                "line 1",
+            }));
 
             await Task.Delay(3 * step_ms);
             FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Assertion 2");
-            Contract.AssertSequenceEqual(readLines, new string[] {
-            "line 1",
-        });
+            Assert.IsTrue(readLines.SequenceEqual(new string[] {
+                "line 1",
+            }));
 
             await Task.Delay(5 * step_ms);
             FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Assertion 3");
-            Contract.AssertSequenceEqual(readLines, new string[] {
-            "line 1",
-            "partial line 2. end of line 2",
-        });
+            Assert.IsTrue(readLines.SequenceEqual(new string[] {
+                "line 1",
+                "partial line 2. end of line 2",
+            }));
 
             isDone.Value = true;
         }
