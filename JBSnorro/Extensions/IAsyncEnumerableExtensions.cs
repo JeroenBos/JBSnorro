@@ -90,10 +90,8 @@ public static class IAsyncEnumerableExtensions
 
         void Yield(bool result)
         {
-            FileExtensions.WriteLine("Obtaining Yield lock");
             lock (_lock)
             {
-                FileExtensions.WriteLine("Obtained Yield lock");
                 if (!reference!.Value!.Task.IsCompleted)
                 {
                     reference.Value.SetResult(result);
@@ -102,11 +100,8 @@ public static class IAsyncEnumerableExtensions
                 {
                     missedYield = true;
                     if (!result) throw new NotImplementedException();
-                    FileExtensions.WriteLine("Yield missed!");
                 }
             }
-            FileExtensions.WriteLine("Released Yield lock");
-
         }
 
         async IAsyncEnumerable<object?> Loop()

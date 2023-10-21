@@ -7,46 +7,13 @@ namespace JBSnorro.Extensions;
 
 public static class FileExtensions
 {
-    static readonly Stopwatch Stopwatch = Stopwatch.StartNew();
-    static readonly ThreadLocal<List<(long, string)>> written = new ThreadLocal<List<(long, string)>>(() => new List<(long, string)>(), true);
-    public static void WriteLine(string s)
-    {
-        Write(s + "\n");
-    }
-    public static void Write(string s)
-    {
-        written.Value!.Add((Stopwatch.ElapsedTicks, s));
-    }
-    public static List<string> GetWritings()
-    {
-        var writings = written.Values.SelectMany(value => value).OrderBy(_ => _.Item1).Select(_ => _.Item2).ToList();
-        return writings;
-    }
-    public static void ClearWritings()
-    {
-        foreach (var list in written.Values)
-        {
-            list.Clear();
-        }
-    }
-    public static IAsyncEnumerable<string> ReadAllLinesContinuously(string path, Reference<bool>? done = null, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            return _ReadAllLinesContinuously(path, done, cancellationToken);
-        }
-        finally
-        {
-            WriteLine("looping exit");
-        }
-    }
     /// <summary>
     /// Continuously reads all lines of a file and yields are lines written to it by other processes.
     /// </summary>
     /// <param name="path">The path of the file to read.</param>
     /// <param name="done">A boolean indicating whether we can stop reading all lines.</param>
     /// <param name="cancellationToken">A cancellation token for regular throw-on-canceled use.</param>
-    public static async IAsyncEnumerable<string> _ReadAllLinesContinuously(
+    public static async IAsyncEnumerable<string> ReadAllLinesContinuously(
         string path,
         Reference<bool>? done = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -62,7 +29,7 @@ public static class FileExtensions
         {
             EnableRaisingEvents = true,
         };
-        watcher.Changed += (sender, e) => { WriteLine("yielding ping"); yield(); WriteLine("yielding pong"); };
+        watcher.Changed += (sender, e) => yield();
         watcher.Error += (sender, e) => { error = "error"; dispose(); };
         watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
         watcher.Disposed += (sender, e) => { error = "disposed"; dispose(); };
@@ -72,25 +39,15 @@ public static class FileExtensions
         var streamPosition = new Reference<long>();
 
         await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
-        {
-            WriteLine("yielding a ping");
             yield return line;
-            WriteLine("yielding a pong");
 
-        }
-
-        WriteLine("Going to await everyFileChange");
         await foreach (var _ in onEveryFileChange())
         {
-            WriteLine("in foreach from yield()");
             await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
             {
-                WriteLine("in inner foreach from yield()");
                 yield return line;
-                WriteLine("in inner foreach from yield() pong");
             }
         }
-        WriteLine("EXITED");
 
         if (error != null)
             throw new Exception(error);
@@ -118,20 +75,6 @@ public static class FileExtensions
 
         return ReadAllLinesContinuously(path, done, cancellationToken).Buffer(maxChunkSize, blocked_ms, yield_every_ms, cancellationToken);
     }
-    private static async IAsyncEnumerable<string> ReadAllLinesContinuouslyInProcess(string path, Reference<long> readStreamPosition, Reference<bool> done, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await foreach (var item in _ReadAllLinesContinuouslyInProcess(path, readStreamPosition, done, cancellationToken))
-            {
-                yield return item;
-            }
-        }
-        finally
-        {
-            WriteLine("Finished ReadAllLinesContinuouslyInProcess");
-        }
-    }
     /// <summary>
     /// Continuously reads all lines of a file and yields are lines written to it within this process (or so it appears to work).
     /// Other processes are allowe to still write to it, but won't be reflected.
@@ -139,11 +82,11 @@ public static class FileExtensions
     /// <param name="path">The path of the file to read.</param>
     /// <param name="done">A boolean indicating whether we can stop reading all lines.</param>
     /// <param name="cancellationToken">A cancellation token for regular throw-on-canceled use.</param>
-    private static async IAsyncEnumerable<string> _ReadAllLinesContinuouslyInProcess(
-        string path,
+    private static async IAsyncEnumerable<string> ReadAllLinesContinuouslyInProcess(
+         string path,
          Reference<long> readStreamPosition,
-        Reference<bool> done,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+         Reference<bool> done,
+         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var sr = new StringReaderThatYieldsWholeLines(fs);
@@ -153,14 +96,11 @@ public static class FileExtensions
         StringBuilder? stringBuilder = null;
         while (true)
         {
-            WriteLine("looping");
             long streamPositionBeforeCurrentRead = sr.BaseStream.Position;
             string? line;
             try
             {
-                WriteLine("before sr.ReadLineAsync");
                 line = await sr.ReadLineAsync(cancellationToken);
-                WriteLine($"after sr.ReadLineAsync: {(line is null ? "null" : $"'{line}'")}");
             }
             catch (TaskCanceledException)
             {
@@ -179,16 +119,12 @@ public static class FileExtensions
                 {
                     if (stringBuilder == null)
                     {
-                        WriteLine("Yielding line a");
                         yield return line;
-                        WriteLine("Yielded line a");
                     }
                     else
                     {
                         stringBuilder.Append(line);
-                        WriteLine("Yielding line b");
                         yield return stringBuilder.ToString();
-                        WriteLine("Yielded line b");
                         stringBuilder = null;
                         stringBuilderStartPosition = -1;
                     }
