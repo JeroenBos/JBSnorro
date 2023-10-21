@@ -1,6 +1,7 @@
 ﻿using JBSnorro.Diagnostics;
 using JBSnorro.Threading;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
@@ -82,7 +83,7 @@ public static class IAsyncEnumerableExtensions
         object _lock = new object();
         var reference = new Reference<TaskCompletionSource<bool>>();
         reference.Value = new TaskCompletionSource<bool>();
-
+        bool missedYield = false; // handles calls to Yield while the loop was in `yield return null`
         yield = () => Yield(true);
         dispose = () => Yield(false);
         return Loop;
@@ -99,6 +100,8 @@ public static class IAsyncEnumerableExtensions
                 }
                 else
                 {
+                    missedYield = true;
+                    if (!result) throw new NotImplementedException();
                     FileExtensions.WriteLine("Yield missed!");
                 }
             }
@@ -108,17 +111,21 @@ public static class IAsyncEnumerableExtensions
 
         async IAsyncEnumerable<object?> Loop()
         {
-            FileExtensions.WriteLine("Waiting for yield()");
             while (await reference.Value.Task)
             {
-                FileExtensions.WriteLine("Create.yielding");
                 yield return null;
-                FileExtensions.WriteLine("Next create.yielding");
+
+                bool hadMissedYield = false;
                 lock (_lock)
                 {
                     reference.Value = new TaskCompletionSource<bool>();
+                    hadMissedYield = missedYield;
+                    missedYield = false;
                 }
-                FileExtensions.WriteLine("Waiting for yield()");
+                if (hadMissedYield)
+                {
+                    yield return null;
+                }
             }
         }
     }
