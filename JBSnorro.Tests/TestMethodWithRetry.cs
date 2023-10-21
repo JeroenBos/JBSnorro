@@ -28,5 +28,4 @@ public class TestMethodWithRetryAttribute : TestMethodAttribute
         }
         return result!;
     }
-
 }
