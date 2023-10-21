@@ -89,36 +89,36 @@ public static class IAsyncEnumerableExtensions
 
         void Yield(bool result)
         {
-            Console.WriteLine("Obtaining Yield lock");
+            FileExtensions.WriteLine("Obtaining Yield lock");
             lock (_lock)
             {
-                Console.WriteLine("Obtained Yield lock");
+                FileExtensions.WriteLine("Obtained Yield lock");
                 if (!reference!.Value!.Task.IsCompleted)
                 {
                     reference.Value.SetResult(result);
                 }
                 else
                 {
-                    Console.WriteLine("Yield missed!");
+                    FileExtensions.WriteLine("Yield missed!");
                 }
             }
-            Console.WriteLine("Released Yield lock");
+            FileExtensions.WriteLine("Released Yield lock");
 
         }
 
         async IAsyncEnumerable<object?> Loop()
         {
-            Console.WriteLine("Waiting for yield()");
+            FileExtensions.WriteLine("Waiting for yield()");
             while (await reference.Value.Task)
             {
-                Console.WriteLine("Create.yielding");
+                FileExtensions.WriteLine("Create.yielding");
                 yield return null;
-                Console.WriteLine("Next create.yielding");
+                FileExtensions.WriteLine("Next create.yielding");
                 lock (_lock)
                 {
                     reference.Value = new TaskCompletionSource<bool>();
                 }
-                Console.WriteLine("Waiting for yield()");
+                FileExtensions.WriteLine("Waiting for yield()");
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using JBSnorro.Text;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -6,6 +7,28 @@ namespace JBSnorro.Extensions;
 
 public static class FileExtensions
 {
+    static readonly Stopwatch Stopwatch = Stopwatch.StartNew();
+    static readonly ThreadLocal<List<(long, string)>> written = new ThreadLocal<List<(long, string)>>(() => new List<(long, string)>(), true);
+    public static void WriteLine(string s)
+    {
+        Write(s + "\n");
+    }
+    public static void Write(string s)
+    {
+        written.Value!.Add((Stopwatch.ElapsedTicks, s));
+    }
+    public static List<string> GetWritings()
+    {
+        var writings = written.Values.SelectMany(value => value).OrderBy(_ => _.Item1).Select(_ => _.Item2).ToList();
+        return writings;
+    }
+    public static void ClearWritings()
+    {
+        foreach (var list in written.Values)
+        {
+            list.Clear();
+        }
+    }
     /// <summary>
     /// Continuously reads all lines of a file and yields are lines written to it by other processes.
     /// </summary>
@@ -28,7 +51,7 @@ public static class FileExtensions
         {
             EnableRaisingEvents = true,
         };
-        watcher.Changed += (sender, e) => { Console.WriteLine("yielding ping"); yield(); Console.WriteLine("yielding pong"); };
+        watcher.Changed += (sender, e) => { WriteLine("yielding ping"); yield(); WriteLine("yielding pong"); };
         watcher.Error += (sender, e) => { error = "error"; dispose(); };
         watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
         watcher.Disposed += (sender, e) => { error = "disposed"; dispose(); };
@@ -41,17 +64,17 @@ public static class FileExtensions
         await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
             yield return line;
 
-        Console.WriteLine("Going to await everyFileChange");
+        WriteLine("Going to await everyFileChange");
         await foreach (var _ in everyFileChange)
         {
-            Console.WriteLine("in foreach from yield()");
+            WriteLine("in foreach from yield()");
             await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
             {
-                Console.WriteLine("in inner foreach from yield()");
+                WriteLine("in inner foreach from yield()");
                 yield return line;
             }
         }
-        Console.WriteLine("EXITED");
+        WriteLine("EXITED");
 
         if (error != null)
             throw new Exception(error);
@@ -102,14 +125,14 @@ public static class FileExtensions
         {
             while (true)
             {
-                Console.WriteLine("looping");
+                WriteLine("looping");
                 long streamPositionBeforeCurrentRead = sr.BaseStream.Position;
                 string? line;
                 try
                 {
-                    Console.WriteLine("before sr.ReadLineAsync");
+                    WriteLine("before sr.ReadLineAsync");
                     line = await sr.ReadLineAsync(cancellationToken);
-                    Console.WriteLine("after sr.ReadLineAsync");
+                    WriteLine("after sr.ReadLineAsync");
                 }
                 catch (TaskCanceledException)
                 {
@@ -128,16 +151,16 @@ public static class FileExtensions
                     {
                         if (stringBuilder == null)
                         {
-                            Console.WriteLine("Yielding line a");
+                            WriteLine("Yielding line a");
                             yield return line;
-                            Console.WriteLine("Yielded line a");
+                            WriteLine("Yielded line a");
                         }
                         else
                         {
                             stringBuilder.Append(line);
-                            Console.WriteLine("Yielding line b");
+                            WriteLine("Yielding line b");
                             yield return stringBuilder.ToString();
-                            Console.WriteLine("Yielded line b");
+                            WriteLine("Yielded line b");
                             stringBuilder = null;
                             stringBuilderStartPosition = -1;
                         }
@@ -179,7 +202,7 @@ public static class FileExtensions
         }
         finally
         {
-            Console.WriteLine("looping exit");
+            WriteLine("looping exit");
         }
     }
 }
