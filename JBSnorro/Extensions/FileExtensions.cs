@@ -74,7 +74,12 @@ public static class FileExtensions
         var streamPosition = new Reference<long>();
 
         await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
+        {
+            WriteLine("yielding a ping");
             yield return line;
+            WriteLine("yielding a pong");
+
+        }
 
         WriteLine("Going to await everyFileChange");
         await foreach (var _ in everyFileChange)
@@ -84,6 +89,7 @@ public static class FileExtensions
             {
                 WriteLine("in inner foreach from yield()");
                 yield return line;
+                WriteLine("in inner foreach from yield() pong");
             }
         }
         WriteLine("EXITED");
@@ -114,6 +120,20 @@ public static class FileExtensions
 
         return ReadAllLinesContinuously(path, done, cancellationToken).Buffer(maxChunkSize, blocked_ms, yield_every_ms, cancellationToken);
     }
+    private static async IAsyncEnumerable<string> ReadAllLinesContinuouslyInProcess(string path, Reference<long> readStreamPosition, Reference<bool> done, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await foreach (var item in _ReadAllLinesContinuouslyInProcess(path, readStreamPosition, done, cancellationToken))
+            {
+                yield return item;
+            }
+        }
+        finally
+        {
+            WriteLine("Finished ReadAllLinesContinuouslyInProcess");
+        }
+    }
     /// <summary>
     /// Continuously reads all lines of a file and yields are lines written to it within this process (or so it appears to work).
     /// Other processes are allowe to still write to it, but won't be reflected.
@@ -121,11 +141,11 @@ public static class FileExtensions
     /// <param name="path">The path of the file to read.</param>
     /// <param name="done">A boolean indicating whether we can stop reading all lines.</param>
     /// <param name="cancellationToken">A cancellation token for regular throw-on-canceled use.</param>
-    private static async IAsyncEnumerable<string> ReadAllLinesContinuouslyInProcess(
-         string path,
+    private static async IAsyncEnumerable<string> _ReadAllLinesContinuouslyInProcess(
+        string path,
          Reference<long> readStreamPosition,
-         Reference<bool> done,
-         [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        Reference<bool> done,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var sr = new StringReaderThatYieldsWholeLines(fs);
@@ -142,7 +162,7 @@ public static class FileExtensions
             {
                 WriteLine("before sr.ReadLineAsync");
                 line = await sr.ReadLineAsync(cancellationToken);
-                WriteLine("after sr.ReadLineAsync");
+                WriteLine($"after sr.ReadLineAsync: {(line is null ? "null" : $"'{line}'")}");
             }
             catch (TaskCanceledException)
             {
