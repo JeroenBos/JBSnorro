@@ -28,7 +28,7 @@ public static class FileExtensions
 
         var onEveryFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
         string? error = null;
-        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path));
+        using var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path));
         watcher.Changed += (sender, e) => yield();
         watcher.Error += (sender, e) => { error = "error"; dispose(); };
         watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
