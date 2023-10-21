@@ -24,17 +24,16 @@ public static class FileExtensions
 
         IAsyncEnumerable<object?> everyFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
         string? error = null;
-        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path));
+        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path))
+        {
+            EnableRaisingEvents = true,
+        };
         watcher.Changed += (sender, e) => { Console.WriteLine("yielding ping"); yield(); Console.WriteLine("yielding pong"); };
         watcher.Error += (sender, e) => { error = "error"; dispose(); };
         watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
         watcher.Disposed += (sender, e) => { error = "disposed"; dispose(); };
         watcher.Renamed += (sender, e) => { error = "renamed"; dispose(); };
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        // HACK: I have absolutely no clue, but if I set EnableRaisingEvents to true in a task, it seems to work; otherwise it doesn't. I'm suspecting a deadlock somewhere but I can't find it.
-        Task.Run(async () => { await Task.Delay(1); watcher.EnableRaisingEvents = true; }, cancellationToken);
-#pragma warning restore CS4014
 
         done ??= new Reference<bool>();
         var streamPosition = new Reference<long>();
