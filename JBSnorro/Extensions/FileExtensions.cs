@@ -56,7 +56,7 @@ public static class FileExtensions
         if (!File.Exists(path)) throw new ArgumentException("File doesn't exist", nameof(path));
 
 
-        IAsyncEnumerable<object?> everyFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
+        var onEveryFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
         string? error = null;
         var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path))
         {
@@ -80,7 +80,7 @@ public static class FileExtensions
         }
 
         WriteLine("Going to await everyFileChange");
-        await foreach (var _ in everyFileChange)
+        await foreach (var _ in onEveryFileChange())
         {
             WriteLine("in foreach from yield()");
             await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))

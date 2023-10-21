@@ -78,7 +78,7 @@ public class IAsyncEnumerableCreateTests
     {
         var test = Task.Delay(100);
 
-        await foreach (var _ in IAsyncEnumerableExtensions.Create(out Action yield, TimeSpan.FromMilliseconds(300)))
+        await foreach (var _ in IAsyncEnumerableExtensions.Create(out Action yield, TimeSpan.FromMilliseconds(300))())
         {
             throw new UnreachableException();
         }
@@ -97,7 +97,7 @@ public class IAsyncEnumerableCreateTests
         });
 
         int i = 0;
-        await foreach (var _ in enumerable)
+        await foreach (var _ in enumerable())
         {
             i++;
         }
@@ -123,7 +123,7 @@ public class IAsyncEnumerableCreateTests
         int i = 0;
         var act = Task.Run(async () =>
         {
-            await foreach (var _ in enumerable)
+            await foreach (var _ in enumerable())
             {
                 i++;
             }

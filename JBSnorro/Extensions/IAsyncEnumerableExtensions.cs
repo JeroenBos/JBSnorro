@@ -65,7 +65,7 @@ public static class IAsyncEnumerableExtensions
     /// <param name="yield">A function to be called that triggers the returned <see cref="IAsyncEnumerable{T}"/> to yield. </param>
     /// <param name="duration"> A length of time for which the async enumerable will run. </param>
     /// <remarks>I'm sure RX extensions has something like this, but whatever. </remarks>
-    public static IAsyncEnumerable<object?> Create(out Action yield, TimeSpan duration)
+    public static Func<IAsyncEnumerable<object?>> Create(out Action yield, TimeSpan duration)
     {
         var result = Create(out yield, out var dispose);
         Task.Delay(duration).ContinueWith(t => dispose());
@@ -77,7 +77,7 @@ public static class IAsyncEnumerableExtensions
     /// <param name="yield">A function to be called that triggers the returned <see cref="IAsyncEnumerable{T}"/> to yield. </param>
     /// <param name="dispose"> A function that terminates this loop. </param>
     /// <remarks>I'm sure RX extensions has something like this, but whatever. </remarks>
-    public static IAsyncEnumerable<object?> Create(out Action yield, out Action dispose)
+    public static Func<IAsyncEnumerable<object?>> Create(out Action yield, out Action dispose)
     {
         object _lock = new object();
         var reference = new Reference<TaskCompletionSource<bool>>();
@@ -85,7 +85,7 @@ public static class IAsyncEnumerableExtensions
 
         yield = () => Yield(true);
         dispose = () => Yield(false);
-        return Loop();
+        return Loop;
 
         void Yield(bool result)
         {
