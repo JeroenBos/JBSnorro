@@ -58,14 +58,17 @@ public class FileExtensionsTests
         async Task writer(CancellationToken cancellationToken)
         {
             await Task.Delay(1 * step_ms);
+            FileExtensions.WriteLine("Writing line 1");
             File.WriteAllLines(path, new string[] { "line 1" });
-            FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Written line 1");
+            FileExtensions.WriteLine("Written line 1");
             await Task.Delay(2 * step_ms);
+            FileExtensions.WriteLine("Writing partial line 2");
             File.AppendAllText(path, "partial line 2. ");
-            FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Written partial line 2");
+            FileExtensions.WriteLine("Written partial line 2");
             await Task.Delay(4 * step_ms);
+            FileExtensions.WriteLine("Writing line 2 continue'd");
             File.AppendAllLines(path, new string[] { "end of line 2" });
-            FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Written line 2");
+            FileExtensions.WriteLine("Written line 2");
         }
 
 
