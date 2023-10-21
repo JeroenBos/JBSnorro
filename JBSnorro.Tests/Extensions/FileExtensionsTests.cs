@@ -83,18 +83,21 @@ public class FileExtensionsTests
         // Assert
         await Task.Delay(2 * step_ms);
         FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Assertion 1");
+        Assert.AreEqual(1, readLines.Count);
         Assert.IsTrue(readLines.SequenceEqual(new string[] {
             "line 1",
         }));
 
         await Task.Delay(3 * step_ms);
         FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Assertion 2");
+        Assert.AreEqual(1, readLines.Count);
         Assert.IsTrue(readLines.SequenceEqual(new string[] {
             "line 1",
         }));
 
         await Task.Delay(5 * step_ms);
         FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Assertion 3");
+        Assert.AreEqual(2, readLines.Count);
         Assert.IsTrue(readLines.SequenceEqual(new string[] {
             "line 1",
             "partial line 2. end of line 2",
