@@ -11,6 +11,24 @@ public class FileExtensionsTests
 {
     const int step_ms = 500;
     const int timeout_ms = 10 * step_ms + 5000 /* because in CI it's rather slow */;
+    [TestMethod]
+    public async Task TestReadAllLinesContinuouslyAThousandTimes()
+    {
+        var start = DateTime.Now;
+        while (DateTime.Now <= start + TimeSpan.FromMinutes(6))
+        {
+            Console.Write(".");
+            try
+            {
+                await TestReadAllLinesContinuously();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+        }
+    }
     [TestMethod, Timeout(timeout_ms)]
     public async Task TestReadAllLinesContinuously()
     {
