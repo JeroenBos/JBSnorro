@@ -1,9 +1,7 @@
 ﻿using JBSnorro;
 using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
-using JBSnorro.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics;
 using TaskExtensions = JBSnorro.Extensions.TaskExtensions;
 
 namespace Tests.JBSnorro.Extensions;
@@ -40,7 +38,7 @@ public class FileExtensionsTests
         // Act
         async Task reader(CancellationToken cancellationToken)
         {
-            await foreach (var line in FileExtensions.ReadAllLinesContinuously(path, isDone, cancellationToken))
+            await foreach (var line in FileExtensions.ReadAllLinesContinuously(path, enableDelayed: false, isDone, cancellationToken))
             {
                 readLines.Add(line);
             }

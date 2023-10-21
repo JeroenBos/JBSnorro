@@ -1,5 +1,4 @@
 ﻿using JBSnorro.Text;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -12,9 +11,13 @@ public static class FileExtensions
     /// </summary>
     /// <param name="path">The path of the file to read.</param>
     /// <param name="done">A boolean indicating whether we can stop reading all lines.</param>
+    /// <param name="enableDelayed">A boolean indicating whether the watcher should be enabled with a delay.</param>
+    /// There is this horrible behavior in the consuming application that the watcher.Changed event handler does not trigger unless
+    /// I enable the watcher with a delay. I have no clue what's going on.
     /// <param name="cancellationToken">A cancellation token for regular throw-on-canceled use.</param>
     public static async IAsyncEnumerable<string> ReadAllLinesContinuously(
         string path,
+        bool enableDelayed = false,
         Reference<bool>? done = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -25,15 +28,13 @@ public static class FileExtensions
 
         var onEveryFileChange = IAsyncEnumerableExtensions.Create(out var yield, out var dispose);
         string? error = null;
-        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path))
-        {
-            EnableRaisingEvents = true,
-        };
+        var watcher = new FileSystemWatcher(Path.GetDirectoryName(path)!, Path.GetFileName(path));
         watcher.Changed += (sender, e) => yield();
         watcher.Error += (sender, e) => { error = "error"; dispose(); };
         watcher.Deleted += (sender, e) => { error = "deleted"; dispose(); };
         watcher.Disposed += (sender, e) => { error = "disposed"; dispose(); };
         watcher.Renamed += (sender, e) => { error = "renamed"; dispose(); };
+        watcher.SetEnabledRaisingEvents(enableDelayed, cancellationToken);
 
         done ??= new Reference<bool>();
         var streamPosition = new Reference<long>();
@@ -42,12 +43,8 @@ public static class FileExtensions
             yield return line;
 
         await foreach (var _ in onEveryFileChange())
-        {
             await foreach (var line in ReadAllLinesContinuouslyInProcess(path, streamPosition, done, cancellationToken).ConfigureAwait(false))
-            {
                 yield return line;
-            }
-        }
 
         if (error != null)
             throw new Exception(error);
@@ -65,6 +62,7 @@ public static class FileExtensions
     /// <param name="cancellationToken">A cancellation token for regular throw-on-canceled use.</param>
     public static IAsyncEnumerable<IReadOnlyCollection<string>> ReadAllLinesChunkedContinuously(
         string path,
+        bool enabledWatcherDelayed = false,
         Reference<bool>? done = null,
         int maxChunkSize = 100,
         int blocked_ms = 10,
@@ -73,7 +71,7 @@ public static class FileExtensions
     {
         Diagnostics.Contract.Requires(maxChunkSize > 0);
 
-        return ReadAllLinesContinuously(path, done, cancellationToken).Buffer(maxChunkSize, blocked_ms, yield_every_ms, cancellationToken);
+        return ReadAllLinesContinuously(path, enabledWatcherDelayed, done, cancellationToken).Buffer(maxChunkSize, blocked_ms, yield_every_ms, cancellationToken);
     }
     /// <summary>
     /// Continuously reads all lines of a file and yields are lines written to it within this process (or so it appears to work).
@@ -163,5 +161,23 @@ public static class FileExtensions
                 }
             }
         }
+    }
+
+    private static void SetEnabledRaisingEvents(this FileSystemWatcher watcher, bool delayed, CancellationToken cancellationToken)
+    {
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        if (delayed)
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(1);
+                watcher.EnableRaisingEvents = true;
+            }, cancellationToken);
+        }
+        else
+        {
+            watcher.EnableRaisingEvents = true;
+        }
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
     }
 }
