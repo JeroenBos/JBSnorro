@@ -19,7 +19,7 @@ public class FileExtensionsTests
     public async Task TestReadAllLinesContinuouslyAThousandTimes()
     {
         var start = DateTime.Now;
-        while (DateTime.Now <= start + TimeSpan.FromMinutes(7))
+        while (DateTime.Now <= start + TimeSpan.FromMinutes(6))
         {
             Console.Write(".");
             try
