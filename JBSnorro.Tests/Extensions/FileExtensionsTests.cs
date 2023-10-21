@@ -56,9 +56,10 @@ public class FileExtensionsTests
 
         async Task writer(CancellationToken cancellationToken)
         {
+            await Task.Delay(1 * step_ms);
             File.WriteAllLines(path, new string[] { "line 1" });
             FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Written line 1");
-            await Task.Delay(3 * step_ms);
+            await Task.Delay(2 * step_ms);
             File.AppendAllText(path, "partial line 2. ");
             FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Written partial line 2");
             await Task.Delay(4 * step_ms);
@@ -70,7 +71,6 @@ public class FileExtensionsTests
         // Act
         async Task reader(CancellationToken cancellationToken)
         {
-            await Task.Delay(1 * step_ms);
             await foreach (var line in FileExtensions.ReadAllLinesContinuously(path, isDone, cancellationToken))
             {
                 FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} read line");
@@ -80,7 +80,7 @@ public class FileExtensionsTests
 
 
         // Assert
-        await Task.Delay(1 * step_ms);
+        await Task.Delay(2 * step_ms);
         FileExtensions.WriteLine($"{stopwatch.ElapsedMilliseconds} Assertion 1");
         Assert.IsTrue(readLines.SequenceEqual(new string[] {
             "line 1",
