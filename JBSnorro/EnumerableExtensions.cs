@@ -2171,7 +2171,7 @@ public static class EnumerableExtensions
     /// <param name="list"> The collection to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
     [DebuggerHidden]
-    public static ReadOnlyCollection<TResult> Map<T, TResult>(this ReadOnlyCollection<T> list, Func<T, TResult> resultSelector)
+    public static TResult[] Map<T, TResult>(this ReadOnlyCollection<T> list, Func<T, TResult> resultSelector)
     {
         Contract.Requires(list != null);
         Contract.Requires(resultSelector != null);
@@ -2180,7 +2180,7 @@ public static class EnumerableExtensions
     }
     /// <summary> Maps the specified collection to another by identity conversions of the elements. </summary>
     [DebuggerHidden]
-    public static ReadOnlyCollection<TResult> Map<T, TResult>(this ReadOnlyCollection<T> list)
+    public static TResult[] Map<T, TResult>(this ReadOnlyCollection<T> list)
     {
         return list.Map((T t) => (TResult)(object)t!);
     }
@@ -2190,13 +2190,15 @@ public static class EnumerableExtensions
     /// <param name="list"> The collection to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
     [DebuggerHidden]
-    public static ReadOnlyCollection<TResult> Map<T, TResult>(this IReadOnlyList<T> list, Func<T, TResult> resultSelector)
+    public static TResult[] Map<T, TResult>(this IReadOnlyList<T> list, Func<T, TResult> resultSelector)
     {
         var result = new TResult[list.Count];
         int i = 0;
         foreach (T t in list)
+        {
             result[i++] = resultSelector(t);
-        return new ReadOnlyCollection<TResult>(result);
+        }
+        return result;
     }
     /// <summary> Maps a readonly collection into another of the same size using a specified mapping function. </summary>
     /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
@@ -2204,7 +2206,7 @@ public static class EnumerableExtensions
     /// <param name="list"> The collection to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
     [DebuggerHidden]
-    public static ReadOnlyCollection<TResult> Map<T, TResult>(this IReadOnlyList<T> list, Func<T, int, TResult> resultSelector)
+    public static TResult[] Map<T, TResult>(this IReadOnlyList<T> list, Func<T, int, TResult> resultSelector)
     {
         var result = new TResult[list.Count];
         int i = 0;
@@ -2213,7 +2215,7 @@ public static class EnumerableExtensions
             result[i] = resultSelector(t, i);
             i++;
         }
-        return new ReadOnlyCollection<TResult>(result);
+        return result;
     }
 
     /// <summary> Returns whether the sequence contains the specified items in order of their occurrence. 
