@@ -3,12 +3,13 @@ using System.Text.Json.Serialization;
 
 namespace JBSnorro.Text.Json;
 
-public class JsonConverterBy2<T, TRepresentation> : JsonConverter<T>
+// The equivalent for Newtonsoft is in JBNA
+public class JsonConverterBy<T, TRepresentation> : JsonConverter<T>
 {
     private Func<TRepresentation?, T?> deserialize;
     private Func<T?, TRepresentation?> serialize;
 
-    public JsonConverterBy2(Func<TRepresentation?, T?> deserialize, Func<T?, TRepresentation?> serialize)
+    public JsonConverterBy(Func<TRepresentation?, T?> deserialize, Func<T?, TRepresentation?> serialize)
     {
         this.deserialize = deserialize;
         this.serialize = serialize;

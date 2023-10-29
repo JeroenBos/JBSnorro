@@ -300,7 +300,7 @@ public static class RandomExtensions
         return collection[random.Next(collection.Count)];
     }
 
-    public static JsonConverter<Random> JsonConverter { get; } = new JsonConverterBy2<Random, RandomState>(RandomState.ToRandom, RandomState.GetState!);
+    public static JsonConverter<Random> JsonConverter { get; } = new JsonConverterBy<Random, RandomState>(RandomState.ToRandom, RandomState.GetState!);
     public static RandomState ToState(this Random random)
     {
         return RandomState.GetState(random);
@@ -449,7 +449,7 @@ public static class RandomExtensions
     /// </summary>
     public class SerializableRandomGenerator : IEnumerable<Random>
     {
-        public static JsonConverter<SerializableRandomGenerator> JsonConverter { get; } = new JsonConverterBy2<SerializableRandomGenerator, (int Seed, int Index)>(tuple => new SerializableRandomGenerator(tuple.Seed, tuple.Index), obj => (obj!.Seed, obj.CurrentIndex));
+        public static JsonConverter<SerializableRandomGenerator> JsonConverter { get; } = new JsonConverterBy<SerializableRandomGenerator, (int Seed, int Index)>(tuple => new SerializableRandomGenerator(tuple.Seed, tuple.Index), obj => (obj!.Seed, obj.CurrentIndex));
 
         public int Seed { get; }
         public int CurrentIndex { get; private set; }
