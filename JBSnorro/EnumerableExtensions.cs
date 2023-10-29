@@ -2885,6 +2885,21 @@ public static class EnumerableExtensions
     {
         list.RemoveAt(i.GetOffset(list.Count));
     }
+    /// <summary>
+    /// Removes the first element that matches the specified predicate, and returns 
+    /// </summary>
+    public static T? RemoveFirst<T>(this IList<T> list, Func<T, bool> predicate) where T : notnull
+    {
+        Contract.Requires(list is not null);
+        Contract.Requires(predicate is not null);
+
+        int index = list.IndexOf(predicate);
+        if (index == -1)
+            return default;
+        var result = list[index];
+        list.RemoveAt(index);
+        return result;
+    }
 
     [DebuggerHidden]
     public static ReadOnlyCollection<T> Subset<T>(this IReadOnlyList<T> t, int start, int end)
