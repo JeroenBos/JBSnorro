@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,14 +35,60 @@ public static class FunctionExtensions
 /// <param name="Value">The position of this quantity in this dimension. </param>
 /// <param name="Length">The length of the dimension. Must be nonnegative.</param>
 /// <param name="Start">The start of the dimension. </param>
-public record struct OneDimensionalDiscreteQuantity(int Value, int Length, int Start = 0);
+public struct OneDimensionalDiscreteQuantity
+{
+    public int Value { get; }
+    public int Start { get; }
+    public int Length { get; }
+    public OneDimensionalDiscreteQuantity(int value, int length, int start = 0)
+    {
+        Contract.Requires(0 <= length);
+        Contract.Requires(start <= value);
+        Contract.Requires(value <= start + length);
+
+        this.Value = value;
+        this.Start = start;
+        this.Length = length;
+    }
+
+    public void Deconstruct(out int value, out int length, out int start)
+    {
+        value = Value;
+        length = Length;
+        start = Start;
+    }
+}
 /// <summary>
 /// Represents a dimensional quantity in one continuous dimension. The start of the dimension is closed and the end open (although not very relevant practically for continuous quantities).
 /// </summary>
 /// <param name="Value">The position of this quantity in this dimension. </param>
 /// <param name="Length">The length of the dimension. Must be nonnegative. Can be infinite. </param>
 /// <param name="Start">The start of the dimension. </param>
-public record struct OneDimensionalContinuousQuantity(float Value, float Length, float Start = 0);
+public struct OneDimensionalContinuousQuantity
+{
+    public float Value { get; }
+    public float Start { get; }
+    public float Length { get; }
+    public OneDimensionalContinuousQuantity(float value, float length, float start = 0)
+    {
+        Contract.Requires(float.IsFinite(value));
+        Contract.Requires(float.IsFinite(length));
+        Contract.Requires(float.IsFinite(start));
+        Contract.Requires(0 <= length);
+        Contract.Requires(start <= value);
+        Contract.Requires(value <= start + length);
+
+        this.Value = value;
+        this.Start = start;
+        this.Length = length;
+    }
+    public void Deconstruct(out float value, out float length, out float start)
+    {
+        value = Value;
+        length = Length;
+        start = Start;
+    }
+}
 
 public interface IDimensionfulContinuousFunction<TResult>
 {
