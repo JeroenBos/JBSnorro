@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace JBSnorro.Text.Json;
 
+// The equivalent for Newtonsoft is in JBNA
 public class JsonConverterBy<T, TRepresentation> : JsonConverter<T>
 {
     private Func<TRepresentation?, T?> deserialize;
