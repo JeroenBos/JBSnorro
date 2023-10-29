@@ -256,7 +256,7 @@ namespace JBSnorro
 
             return new SortedEnumerable<T[]>(allOrderedCombinations(sortedEnumerables.Map(enumerable => new SortedReadOnlyList<T>(enumerable.ToList(), enumerable.Comparer)), comparer), comparer);
         }
-        private static IEnumerable<T[]> allOrderedCombinations<T>(this ReadOnlyCollection<SortedReadOnlyList<T>> sortedEnumerables, Func<IReadOnlyList<T>, IReadOnlyList<T>, int> comparer)
+        private static IEnumerable<T[]> allOrderedCombinations<T>(this SortedReadOnlyList<T>[] sortedEnumerables, Func<IReadOnlyList<T>, IReadOnlyList<T>, int> comparer)
         {
             Contract.Requires(sortedEnumerables != null);
 
