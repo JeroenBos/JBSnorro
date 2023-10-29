@@ -2886,9 +2886,9 @@ public static class EnumerableExtensions
         list.RemoveAt(i.GetOffset(list.Count));
     }
     /// <summary>
-    /// Removes the first element that matches the specified predicate, and returns it.
+    /// Removes the first element that matches the specified predicate, and returns 
     /// </summary>
-    public static T? Pop<T>(this IList<T> list, Func<T, bool> predicate) where T : notnull
+    public static T? RemoveFirst<T>(this IList<T> list, Func<T, bool> predicate) where T : notnull
     {
         Contract.Requires(list is not null);
         Contract.Requires(predicate is not null);
