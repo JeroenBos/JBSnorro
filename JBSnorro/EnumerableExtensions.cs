@@ -2963,7 +2963,16 @@ public static class EnumerableExtensions
             if (!set.Contains(i))
                 yield return i;
     }
-
+    /// <summary>
+    /// Adds all the specified items to the specified hashset.
+    /// </summary>
+    public static void AddRange<T>(this HashSet<T> set, IEnumerable<T> items)
+    {
+        foreach (var item in items)
+        {
+            set.Add(item);
+        }
+    }
     /// <summary> Returns the specified sequence if all elements match a condition; or null otherwise.  </summary>
     /// <param name="source"> A sequence to apply a predicate to. </param>
     /// <param name="predicate"> A function to test each source element for a condition. </param>
