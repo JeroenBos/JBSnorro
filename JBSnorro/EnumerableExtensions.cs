@@ -260,7 +260,33 @@ public static class EnumerableExtensions
 
         return Enumerate();
     }
+    /// <summary>
+    /// Zips a tuple of two sequences into a sequence of tuples.sdjk49-+9-
+    /// </summary>
+    /// <param name="tuple">The sequences must be of equal length.</param>
+    public static IEnumerable<(T, U)> Zip<T, U>(this (IEnumerable<T>, IEnumerable<U>) tuple)
+    {
+        Contract.Requires(tuple.Item1 is not null);
+        Contract.Requires(tuple.Item2 is not null);
+        if (tuple.Item1.TryGetNonEnumeratedCount(out var count1) && tuple.Item2.TryGetNonEnumeratedCount(out var count2))
+            Contract.Requires(count1 == count2);
 
+        using var enumerator1 = tuple.Item1.GetEnumerator();
+        using var enumerator2 = tuple.Item2.GetEnumerator();
+
+        while (enumerator1.MoveNext())
+        {
+            if (!enumerator2.MoveNext())
+            {
+                throw new InvalidOperationException("Unequal length");
+            }
+            yield return (enumerator1.Current, enumerator2.Current);
+        }
+        if (!enumerator1.MoveNext())
+        {
+            throw new InvalidOperationException("Unequal length");
+        }
+    }
     /// <summary> Applies a specified function the first element of two sequences, and subsequently a function to the remaining corresponding elements of two sequences, producing a sequence of the results.
     /// This entails that the resulting sequence is commensurate with the smallest specified sequence. </summary>
     /// <param name="firstSource"> The first sequence to merge. </param>
@@ -2702,7 +2728,7 @@ public static class EnumerableExtensions
     [DebuggerHidden]
     public static T[] ToSingletonArray<T>(this T element)
     {
-        return new [] { element };
+        return new[] { element };
     }
     [DebuggerHidden]
     public static ReadOnlyCollection<T> ToSingletonReadOnlyList<T>(this T element)
