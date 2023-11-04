@@ -86,7 +86,7 @@ public static class TempFileCleanup
         }
         else
         {
-            path = Path.Join(Path.GetTempPath(), Guid.NewGuid().ToString(), extension);
+            path = Path.Join(Path.GetTempPath(), Guid.NewGuid().ToString() + "." + extension);
             using (var writer = File.Create(path))
             {
                 // just touching the file
