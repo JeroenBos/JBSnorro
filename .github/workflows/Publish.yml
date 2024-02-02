@@ -40,7 +40,7 @@ jobs:
               echo "Up-to-date"
           else
               echo "changed=true" >> $GITHUB_OUTPUT
-              echo "NEW_VERSION=$current_version" >> $GITHUB_ENV
+              echo "new-version=$current_version" >> $GITHUB_OUTPUT
               echo "Publishing"
           fi
 
@@ -80,6 +80,9 @@ jobs:
       - name: Publish
         if: steps.version-check.outputs.changed == 'true' && github.ref == 'refs/heads/main'
         run: |
-          dotnet nuget push "./${{ matrix.project }}/bin/Release/${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg" \
-            --api-key '${{ secrets.NUGET_API_KEY }}'                                                                         \
+          dotnet nuget push "./${project}/bin/Release/${project}.${new-version}.symbols.nupkg" \
+            --api-key '${{ secrets.NUGET_API_KEY }}'                                           \
             --source 'https://api.nuget.org/v3/index.json'
+        env:
+          project: ${{ matrix.project }}
+          new-version: ${{ steps.version-check.outputs.new-version }}
