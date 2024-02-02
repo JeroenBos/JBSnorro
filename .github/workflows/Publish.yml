@@ -29,6 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Detect if version changed
+        id: version-check
         run: |
           current_version=$(bash .github/get_current_version.sh '${{ env.CSPROJ_PATH }}' | xargs)
           echo "current_version: \"$current_version\""
@@ -38,27 +39,27 @@ jobs:
           if [[ "$current_version" == "$published_version" ]]; then
               echo "Up-to-date"
           else
-              echo "PUBLISH=true" >> $GITHUB_ENV
-              echo "NEW_VERSION=$current_version" >> $GITHUB_ENV
+              echo "changed=true" >> $GITHUB_OUTPUT
+              echo "new-version=$current_version" >> $GITHUB_OUTPUT
               echo "Publishing"
           fi
 
 
       - name: Setup .NET Core
-        if: env.PUBLISH == 'true'
+        if: steps.version-check.outputs.changed == 'true'
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Create local Package Source
-        if: env.PUBLISH == 'true'
+        if: steps.version-check.outputs.changed == 'true'
         run: |
           TempPackageSource="$(mktemp -d)"
           echo "TempPackageSource=$TempPackageSource" | tee $GITHUB_ENV
           dotnet nuget add source "$TempPackageSource" --name 'TempPackageSource'
           dotnet nuget enable source 'TempPackageSource'
       - name: Publish to local Package Source (such that `dotnet build` can resolve latest package versions)
-        if: env.PUBLISH == 'true'
+        if: steps.version-check.outputs.changed == 'true'
         run: |
           dotnet build                         \
                  --configuration Release       \
@@ -66,19 +67,22 @@ jobs:
                  JBSnorro/JBSnorro.csproj
 
       - name: Build
-        if: env.PUBLISH == 'true'
+        if: steps.version-check.outputs.changed == 'true'
         run: dotnet build --configuration Release
 
       - name: Wait for CI
-        if: env.PUBLISH == 'true'
+        if: steps.version-check.outputs.changed == 'true'
         uses: deepinsight-io/action-wait-on-workflow@v2.1.1
         with:
           workflowName: ${{ matrix.workflowName }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish
-        if: env.PUBLISH == 'true' && github.ref == 'refs/heads/main'
+        if: steps.version-check.outputs.changed == 'true' && github.ref == 'refs/heads/main'
         run: |
-          dotnet nuget push "./${{ matrix.project }}/bin/Release/${{ matrix.project }}.${{ env.NEW_VERSION }}.symbols.nupkg" \
-            --api-key '${{ secrets.NUGET_API_KEY }}'                                                                         \
+          dotnet nuget push "./${project}/bin/Release/${project}.${new_version}.symbols.nupkg" \
+            --api-key '${{ secrets.NUGET_API_KEY }}'                                           \
             --source 'https://api.nuget.org/v3/index.json'
+        env:
+          project: ${{ matrix.project }}
+          new_version: ${{ steps.version-check.outputs.new-version }}
