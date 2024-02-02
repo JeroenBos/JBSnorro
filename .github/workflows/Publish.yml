@@ -80,9 +80,9 @@ jobs:
       - name: Publish
         if: steps.version-check.outputs.changed == 'true' && github.ref == 'refs/heads/main'
         run: |
-          dotnet nuget push "./${project}/bin/Release/${project}.${new-version}.symbols.nupkg" \
+          dotnet nuget push "./${project}/bin/Release/${project}.${new_version}.symbols.nupkg" \
             --api-key '${{ secrets.NUGET_API_KEY }}'                                           \
             --source 'https://api.nuget.org/v3/index.json'
         env:
           project: ${{ matrix.project }}
-          new-version: ${{ steps.version-check.outputs.new-version }}
+          new_version: ${{ steps.version-check.outputs.new-version }}
