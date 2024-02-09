@@ -339,7 +339,10 @@ public static class RandomExtensions
         private static readonly FieldInfo inextInfo;
         private static readonly FieldInfo inextpInfo;
 
-        private const int seedStateLength = 56;
+        /// <summary>
+        /// This number of 32-bit integers is drawn by <see cref="Draw(Random)"/>.
+        /// </summary>
+        public const int SeedStateLength = 56;
         public int[] seedState { get; set; }
         public int inext { get; set; }
         public int inextp { get; set; }
@@ -413,7 +416,32 @@ public static class RandomExtensions
         /// </summary>
         public static RandomState Draw(Random random)
         {
-            var seedState = random.NextArray(seedStateLength, int.MinValue, int.MaxValue);
+            return Create(random.NextArray(SeedStateLength, int.MinValue, int.MaxValue));
+        }
+        /// <summary>
+        /// Draws a new random state from the specified bits of entropy.
+        /// </summary>
+        public static RandomState Draw(int[] entropy)
+        {
+            return entropy switch
+            {
+                null => throw new ArgumentNullException(nameof(entropy)),
+                [] => throw new ArgumentOutOfRangeException(nameof(entropy), "Empty array now allowed"),
+                [int seed] => Draw(new Random(seed)),
+                { Length: >= SeedStateLength } => Create(entropy[..SeedStateLength].ToArray()),
+                _ => create(entropy)
+            };
+
+            static RandomState create(int[] entropy)
+            {
+                var seedState = new int[SeedStateLength];
+                entropy.CopyTo(seedState, 0);
+                return Create(seedState);
+            }
+        }
+        private static RandomState Create(int[] seedState)
+        {
+            if (seedState.Length != SeedStateLength) throw new ArgumentException(nameof(seedState), "Must have length 56");
 
             // these numbers are internal numbers from the algorithm and seem to be always yield viable generators
             // see https://github.com/dotnet/runtime/blob/d60f44a940ebfedf6faac5499512e3bdd9167c95/src/libraries/System.Private.CoreLib/src/System/Random.Net5CompatImpl.cs#L241
