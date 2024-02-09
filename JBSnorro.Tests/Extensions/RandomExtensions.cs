@@ -1,4 +1,5 @@
-﻿using JBSnorro.Diagnostics;
+﻿using JBSnorro;
+using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
@@ -89,5 +90,20 @@ public class TestRandomGeneratorDrawer
 
             Contract.AssertSequenceEqual(actual, expected);
         }
+    }
+
+    // 1, (1, 56], and (56, ∞) have different implementation, hence the values
+    [DataTestMethod]
+    [DataRow(1)]
+    [DataRow(50)]
+    [DataRow(100)]
+    public void Can_create_random_from_1_int_of_entropy(int entropyIntCount)
+    {
+        var entropy = new Random(Seed: 1000).NextArray(100, 0, int.MaxValue).Take(entropyIntCount).ToArray();
+        var random = RandomExtensions.RandomState.Draw(entropy).ToRandom();
+
+        var variability = random.NextArray(100, 0, int.MaxValue).Unique().Count();
+
+        Assert.IsTrue(variability > 97);
     }
 }
