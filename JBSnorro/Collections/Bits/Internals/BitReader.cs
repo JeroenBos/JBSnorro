@@ -5,39 +5,17 @@ using DebuggerDisplayAttribute = System.Diagnostics.DebuggerDisplayAttribute;
 namespace JBSnorro.Collections.Bits.Internals;
 
 [DebuggerDisplay("{ToDebuggerDisplay()}")]
-internal abstract class BitReader : IBitReader
+internal class BitReader : IBitReader
 {
-    private WeakReference<BitReader>? _alongTagger { get; init; }
     protected readonly BitArray data;
     /// <summary>
     /// The index where this reader actually starts. Cannot be sought beyond.
     /// Treat this BitReader as if the stream really starts at <see cref="startOffset"/>.
     /// </summary>
     protected readonly ulong startOffset;
-    private ulong _current;
     /// <summary> In bits, relative to the start of <see cref="data"/>. </summary>
-    protected ulong current
-    {
-        get
-        {
-            return _current;
-        }
-        set
-        {
-            unchecked
-            {
-                var delta = value - current;
-                if (delta != 0)
-                {
-                    this.current = value;
-                    if (this._alongTagger?.TryGetTarget(out var alongTagger) ?? false)
-                    {
-                        alongTagger.current += delta;
-                    }
-                }
-            }
-        }
-    }
+    /// <remarks> It's only internal for <see cref="BitReaderWithAlongTagger"/></remarks>
+    protected internal virtual ulong current { get; set; }
     /// <summary> 
     /// Gets the length of the stream this <see cref="IBitReader"/> can read, in bits.
     /// </summary>
@@ -65,7 +43,15 @@ internal abstract class BitReader : IBitReader
     {
         get
         {
-            return new SomeBitReader(this.data, this.Position, this.Length) { _alongTagger = new WeakReference<BitReader>(this) };
+            if (bitCount > this.RemainingLength) throw new ArgumentOutOfRangeException(nameof(bitCount));
+            if (tagAlong)
+            {
+                return new BitReaderWithAlongTagger(this.data, this.Position, bitCount, this);
+            }
+            else
+            {
+                return new BitReader(this.data, this.Position, bitCount);
+            }
         }
     }
 
@@ -185,7 +171,10 @@ internal abstract class BitReader : IBitReader
 
         data.CopyTo(dest, destBitIndex);
     }
-    public abstract IBitReader Clone();
+    public virtual IBitReader Clone()
+    {
+        return new BitReader(this.data, this.startOffset, this.Length) { current = this.current };
+    }
 
 
     protected virtual string ToDebuggerDisplay()
@@ -198,7 +187,7 @@ internal abstract class BitReader : IBitReader
     /// </summary>
     internal static ulong ReadUInt64(BitArray data, ulong startIndex, int dataLength)
     {
-        return new SomeBitReader(data, startIndex).ReadUInt64(dataLength);
+        return new BitReader(data, startIndex).ReadUInt64(dataLength);
     }
 }
 

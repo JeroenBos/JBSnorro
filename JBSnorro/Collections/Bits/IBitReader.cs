@@ -14,12 +14,12 @@ public interface IBitReader
     /// I.e. <see cref="BitArray.ToBitReader()"/> and <see cref="BitArrayReadOnlySegment.ToBitReader(ulong)"/> defer to this.
     /// 
     /// </summary>
-    public static IBitReaderFactory Factory = (data, startBitIndex) => new SomeBitReader(data, startBitIndex);
+    public static IBitReaderFactory Factory = (data, startBitIndex) => new BitReader(data, startBitIndex);
     public static IBitReader Create(BitArray data) => Factory.Invoke(data, 0);
     public static IBitReader Create(BitArray data, ulong startBitIndex) => Factory(data, startBitIndex);
     public static IBitReader Create(BitArray data, ulong startBitIndex, ulong length)
     {
-        return new SomeBitReader(data, startBitIndex, length);
+        return new BitReader(data, startBitIndex, length);
     }
 
 
