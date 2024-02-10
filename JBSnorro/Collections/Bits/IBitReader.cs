@@ -16,12 +16,10 @@ public interface IBitReader
     /// </summary>
     public static IBitReaderFactory Factory = (data, startBitIndex) => new SomeBitReader(data, startBitIndex);
     public static IBitReader Create(BitArray data) => Factory.Invoke(data, 0);
-
     public static IBitReader Create(BitArray data, ulong startBitIndex) => Factory(data, startBitIndex);
     public static IBitReader Create(BitArray data, ulong startBitIndex, ulong length)
     {
-        var trucatedBitArray = data.With(length: startBitIndex + length);
-        return Factory(trucatedBitArray, startBitIndex);
+        return new SomeBitReader(data, startBitIndex, length);
     }
 
 
