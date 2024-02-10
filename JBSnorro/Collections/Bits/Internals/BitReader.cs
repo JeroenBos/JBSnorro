@@ -39,7 +39,7 @@ internal class BitReader : IBitReader
         get => current - startOffset;
     }
     /// <inheritdoc cref="IBitReader.this[ulong]"/>
-    public IBitReader this[ulong bitCount, bool tagAlong = true]
+    public IBitReader this[ulong bitCount, bool tagAlong = false]
     {
         get
         {
