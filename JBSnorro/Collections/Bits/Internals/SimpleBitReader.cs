@@ -33,15 +33,6 @@ internal class SimpleBitReader : BitReader
         Max = max;
     }
 
-    public override IBitReader this[Range range]
-    {
-        get
-        {
-            var (offset, length) = range.GetOffsetAndLength(checked((int)Length));
-            return new SimpleBitReader(data, Min, Max, startOffset + (ulong)offset, (ulong)length);
-        }
-    }
-
     public override SimpleBitReader Clone()
     {
         // base.current is dealt with through startOffset

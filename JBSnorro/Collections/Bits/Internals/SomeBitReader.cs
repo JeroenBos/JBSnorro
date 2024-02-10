@@ -27,12 +27,4 @@ internal class SomeBitReader : BitReader
         // this.current is dealt with through startOffset
         return new SomeBitReader(data, startOffset, Length);
     }
-    public override IBitReader this[Range range]
-    {
-        get
-        {
-            var (offset, length) = range.GetOffsetAndLength(checked((int)Length));
-            return new SomeBitReader(data, startOffset + (ulong)offset, (ulong)length);
-        }
-    }
 }

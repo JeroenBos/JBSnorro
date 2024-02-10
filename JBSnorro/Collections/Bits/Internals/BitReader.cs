@@ -37,8 +37,6 @@ internal abstract class BitReader : IBitReader
     {
         get => current - startOffset;
     }
-    /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
-    public abstract IBitReader this[Range range] { get; }
 
     /// <summary>
     /// Gets the remainder of the bits in a segment.

@@ -43,8 +43,6 @@ public interface IBitReader
     long IndexOf(ulong item, int itemLength) => IndexOf(item, itemLength, Position);
 
     IBitReader Clone();
-    /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
-    IBitReader this[Range range] { get; }
 
 
     public bool ReadBit()
