@@ -44,7 +44,8 @@ public interface IBitReader
     /// <summary>
     /// Gets an <see cref="IBitReader"/> reading the next <paramref name="bitCount"/> bits of this reader.</summary>
     /// <param name="bitCount">The next number of bits the resulting <see cref="IBitReader"/> will have access to.</param>
-    IBitReader this[ulong bitCount] { get; }
+    /// <param name="tagAlong">Whether the current bitreader should keep updating its position when the resulting <see cref="IBitReader"/> moves its position.</param>
+    IBitReader this[ulong bitCount, bool tagAlong = true] { get; }
 
 
     public bool ReadBit()

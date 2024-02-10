@@ -118,9 +118,9 @@ public interface IFloatingPointBitReader : IBitReader
 
     #region IBitReader Members
     protected IBitReader Reader { get; }
-    IBitReader IBitReader.this[ulong bitCount]
+    IBitReader IBitReader.this[ulong bitCount, bool tagAlong]
     {
-        get => Reader[bitCount];
+        get => Reader[bitCount, tagAlong];
     }
     ulong IBitReader.Length
     {
