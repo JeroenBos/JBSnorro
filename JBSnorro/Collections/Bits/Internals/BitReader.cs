@@ -37,6 +37,14 @@ internal abstract class BitReader : IBitReader
     {
         get => current - startOffset;
     }
+    /// <inheritdoc cref="IBitReader.this[ulong]"/>
+    public IBitReader this[ulong bitCount]
+    {
+        get
+        {
+            return new SomeBitReader(this.data, this.Position, this.Length);
+        }
+    }
 
     /// <summary>
     /// Gets the remainder of the bits in a segment.

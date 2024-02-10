@@ -41,6 +41,10 @@ public interface IBitReader
     long IndexOf(ulong item, int itemLength) => IndexOf(item, itemLength, Position);
 
     IBitReader Clone();
+    /// <summary>
+    /// Gets an <see cref="IBitReader"/> reading the next <paramref name="bitCount"/> bits of this reader.</summary>
+    /// <param name="bitCount">The next number of bits the resulting <see cref="IBitReader"/> will have access to.</param>
+    IBitReader this[ulong bitCount] { get; }
 
 
     public bool ReadBit()
