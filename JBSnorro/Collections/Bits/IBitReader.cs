@@ -14,14 +14,12 @@ public interface IBitReader
     /// I.e. <see cref="BitArray.ToBitReader()"/> and <see cref="BitArrayReadOnlySegment.ToBitReader(ulong)"/> defer to this.
     /// 
     /// </summary>
-    public static IBitReaderFactory Factory = (data, startBitIndex) => new SomeBitReader(data, startBitIndex);
+    public static IBitReaderFactory Factory = (data, startBitIndex) => new BitReader(data, startBitIndex);
     public static IBitReader Create(BitArray data) => Factory.Invoke(data, 0);
-
     public static IBitReader Create(BitArray data, ulong startBitIndex) => Factory(data, startBitIndex);
     public static IBitReader Create(BitArray data, ulong startBitIndex, ulong length)
     {
-        var trucatedBitArray = data.With(length: startBitIndex + length);
-        return Factory(trucatedBitArray, startBitIndex);
+        return new BitReader(data, startBitIndex, length);
     }
 
 
@@ -43,8 +41,11 @@ public interface IBitReader
     long IndexOf(ulong item, int itemLength) => IndexOf(item, itemLength, Position);
 
     IBitReader Clone();
-    /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
-    IBitReader this[Range range] { get; }
+    /// <summary>
+    /// Gets an <see cref="IBitReader"/> reading the next <paramref name="bitCount"/> bits of this reader.</summary>
+    /// <param name="bitCount">The next number of bits the resulting <see cref="IBitReader"/> will have access to.</param>
+    /// <param name="tagAlong">Whether the current bitreader should keep updating its position when the resulting <see cref="IBitReader"/> moves its position.</param>
+    IBitReader this[ulong bitCount, bool tagAlong = true] { get; }
 
 
     public bool ReadBit()

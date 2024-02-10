@@ -2021,7 +2021,7 @@ public static class EnumerableExtensions
         return true;
     }
     /// <summary> Maps an array into another array of the same size using a specified mapping function. </summary>
-    /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+    /// <typeparam name="T"> The type of the elements to map into the <typeparamref name="TResult"/>. </typeparam>
     /// <typeparam name="TResult"> The type of the elements in the resulting array.</typeparam>
     /// <param name="array"> The array to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
@@ -2042,14 +2042,14 @@ public static class EnumerableExtensions
     /// <summary>
     /// Casts the entire array from <typeparamref name="T"/> to <typeparamref name="TResult"/>.
     /// </summary>
-    /// <param name="array">The source array.</param>
+    /// <param name="array">The source array to convert.</param>
     public static TResult[] CastAll<T, TResult>(this T[] array) where TResult : class
     {
         return Array.ConvertAll<T, TResult>(array, element => (TResult)(object)element!);
     }
 
-    /// <summary> Maps an array into another array of the same size using a specified mapping function depending also on the elements index. </summary>
-    /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+    /// <summary> Maps an array into another array of the same size using a specified mapping function depending also on the element's index. </summary>
+    /// <typeparam name="T"> The type of the elements to map into <typeparamref name="TResult"/>. </typeparam>
     /// <typeparam name="TResult"> The type of the elements in the resulting array.</typeparam>
     /// <param name="array"> The array to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
@@ -2067,7 +2067,7 @@ public static class EnumerableExtensions
         return result;
     }
     /// <summary> Maps a list into another list of the same size using a specified mapping function. </summary>
-    /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+    /// <typeparam name="T"> The type of the elements to map into <typeparamref name="TResult"/>. </typeparam>
     /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
     /// <param name="list"> The list to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
@@ -2075,8 +2075,8 @@ public static class EnumerableExtensions
     {
         return ((IList<T>)list).Map(resultSelector);
     }
-    /// <summary> Maps an list into another list of the same size using a specified mapping function depending also on the elements index. </summary>
-    /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+    /// <summary> Maps an list into another list of the same size using a specified mapping function depending also on the element's index. </summary>
+    /// <typeparam name="T"> The type of the elements to map into <typeparamref name="TResult"/>. </typeparam>
     /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
     /// <param name="list"> The list to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
@@ -2086,7 +2086,7 @@ public static class EnumerableExtensions
     }
 
     /// <summary> Maps a list into another list of the same size using a specified mapping function. </summary>
-    /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+    /// <typeparam name="T"> The type of the elements to map into <typeparamref name="TResult"/>. </typeparam>
     /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
     /// <param name="list"> The list to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
@@ -2103,8 +2103,8 @@ public static class EnumerableExtensions
         Contract.Ensures(result.Count == list.Count);
         return result;
     }
-    /// <summary> Maps an list into another list of the same size using a specified mapping function depending also on the elements index. </summary>
-    /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+    /// <summary> Maps an list into another list of the same size using a specified mapping function depending also on the element's index. </summary>
+    /// <typeparam name="T"> The type of the elements to map into <typeparamref name="TResult"/>. </typeparam>
     /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
     /// <param name="list"> The list to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
@@ -2192,7 +2192,7 @@ public static class EnumerableExtensions
         return list.MapLazily(element => (TResult)(object)element!);
     }
     /// <summary> Maps a readonly collection into another of the same size using a specified mapping function. </summary>
-    /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+    /// <typeparam name="T"> The type of the elements to map into <typeparamref name="TResult"/>. </typeparam>
     /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
     /// <param name="list"> The collection to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
@@ -2211,7 +2211,7 @@ public static class EnumerableExtensions
         return list.Map((T t) => (TResult)(object)t!);
     }
     /// <summary> Maps a readonly collection into another of the same size using a specified mapping function. </summary>
-    /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+    /// <typeparam name="T"> The type of the elements to map into <typeparamref name="TResult"/>. </typeparam>
     /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
     /// <param name="list"> The collection to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>
@@ -2227,7 +2227,7 @@ public static class EnumerableExtensions
         return result;
     }
     /// <summary> Maps a readonly collection into another of the same size using a specified mapping function. </summary>
-    /// <typeparam name="T"> The type of the elements to map into the type <code>TResult</code>. </typeparam>
+    /// <typeparam name="T"> The type of the elements to map into <typeparamref name="TResult"/>. </typeparam>
     /// <typeparam name="TResult"> The type of the elements in the resulting collection.</typeparam>
     /// <param name="list"> The collection to map. </param>
     /// <param name="resultSelector"> The function that maps a given element into a resulting element. </param>

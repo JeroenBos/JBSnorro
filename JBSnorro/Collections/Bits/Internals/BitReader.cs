@@ -5,7 +5,7 @@ using DebuggerDisplayAttribute = System.Diagnostics.DebuggerDisplayAttribute;
 namespace JBSnorro.Collections.Bits.Internals;
 
 [DebuggerDisplay("{ToDebuggerDisplay()}")]
-internal abstract class BitReader : IBitReader
+internal class BitReader : IBitReader
 {
     protected readonly BitArray data;
     /// <summary>
@@ -14,7 +14,8 @@ internal abstract class BitReader : IBitReader
     /// </summary>
     protected readonly ulong startOffset;
     /// <summary> In bits, relative to the start of <see cref="data"/>. </summary>
-    protected ulong current;
+    /// <remarks> It's only internal for <see cref="BitReaderWithAlongTagger"/></remarks>
+    protected internal virtual ulong current { get; set; }
     /// <summary> 
     /// Gets the length of the stream this <see cref="IBitReader"/> can read, in bits.
     /// </summary>
@@ -37,8 +38,22 @@ internal abstract class BitReader : IBitReader
     {
         get => current - startOffset;
     }
-    /// <param name="range">Relative to the complete bit array, not relative to the remaining part.</param>
-    public abstract IBitReader this[Range range] { get; }
+    /// <inheritdoc cref="IBitReader.this[ulong]"/>
+    public IBitReader this[ulong bitCount, bool tagAlong = false]
+    {
+        get
+        {
+            if (bitCount > this.RemainingLength) throw new ArgumentOutOfRangeException(nameof(bitCount));
+            if (tagAlong)
+            {
+                return new BitReaderWithAlongTagger(this.data, this.Position, bitCount, this);
+            }
+            else
+            {
+                return new BitReader(this.data, this.Position, bitCount);
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the remainder of the bits in a segment.
@@ -156,7 +171,10 @@ internal abstract class BitReader : IBitReader
 
         data.CopyTo(dest, destBitIndex);
     }
-    public abstract IBitReader Clone();
+    public virtual IBitReader Clone()
+    {
+        return new BitReader(this.data, this.startOffset, this.Length) { current = this.current };
+    }
 
 
     protected virtual string ToDebuggerDisplay()
@@ -169,7 +187,7 @@ internal abstract class BitReader : IBitReader
     /// </summary>
     internal static ulong ReadUInt64(BitArray data, ulong startIndex, int dataLength)
     {
-        return new SomeBitReader(data, startIndex).ReadUInt64(dataLength);
+        return new BitReader(data, startIndex).ReadUInt64(dataLength);
     }
 }
 
