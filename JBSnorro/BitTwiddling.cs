@@ -2,6 +2,7 @@
 using JBSnorro.Collections.Bits;
 using JBSnorro.Diagnostics;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using BitArray = JBSnorro.Collections.Bits.BitArray;
@@ -152,6 +153,32 @@ public static class BitTwiddling
         {
             return ((ulong)d + 1).RoundUpToNearestMultipleOf(multiple);
         }
+    }
+    /// <summary>Returns the integer (ceiling) log of the specified value, base 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <see href="https://github.com/dotnet/runtime/blob/35562ee5ac02c68d42d5b77fb0af09123d79c3ba/src/libraries/System.Private.CoreLib/src/System/Numerics/BitOperations.cs#L403"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Log2Ceiling(this uint value)
+    {
+        int result = BitOperations.Log2(value);
+        if (BitOperations.PopCount(value) != 1)
+        {
+            result++;
+        }
+        return result;
+    }
+    /// <summary>Returns the integer (ceiling) log of the specified value, base 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <see href="https://github.com/dotnet/runtime/blob/35562ee5ac02c68d42d5b77fb0af09123d79c3ba/src/libraries/System.Private.CoreLib/src/System/Numerics/BitOperations.cs#L434"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Log2Ceiling(ulong value)
+    {
+        int result = BitOperations.Log2(value);
+        if (BitOperations.PopCount(value) != 1)
+        {
+            result++;
+        }
+        return result;
     }
     /// <summary>
     /// Returns the distance to the nearest multiple of <paramref name="multiple"/> strictly greater than <paramref name="i"/>.
