@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
+using JBSnorro.Diagnostics;
 using JBSnorro.Text.Json;
 
 namespace JBSnorro.Extensions;
@@ -153,6 +154,21 @@ public static class RandomExtensions
         for (int i = 0; i < length; i++)
         {
             result[i] = random.Next(minValue, maxValue);
+        }
+        return result;
+    }
+    /// <summary>
+    /// Returns a <code>ulong[]</code> of completely random bits.
+    /// </summary>
+    public static ulong[] NextUInt64Array(this Random random, int length)
+    {
+        Contract.Requires(random is not null);
+        Contract.Requires(length >= 0);
+
+        var result = new ulong[length];
+        for (int i = 0; i < length; i++)
+        {
+            result[i] = random.NextUInt64();
         }
         return result;
     }
