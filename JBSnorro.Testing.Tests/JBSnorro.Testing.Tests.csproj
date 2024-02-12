@@ -16,7 +16,7 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="JBSnorro" Version="0.0.23" Condition="'$(Configuration)'!='Debug'" />
+		<PackageReference Include="JBSnorro" Version="0.0.24" Condition="'$(Configuration)'!='Debug'" />
 		<ProjectReference Include="..\JBSnorro\JBSnorro.csproj" Condition="'$(Configuration)'=='Debug'" />
 		<ProjectReference Include="..\JBSnorro.Testing\JBSnorro.Testing.csproj" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
