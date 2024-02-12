@@ -60,7 +60,7 @@ public static class BitTwiddling
         uint result = 0;
         for (int bi = N - 1; i != 0; bi--)
         {
-            result |= (i & 1) >> bi;
+            result |= (i & 1) << bi;
             i >>= 1;
         }
         return result;
