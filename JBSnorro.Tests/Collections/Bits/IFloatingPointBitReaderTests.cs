@@ -4,7 +4,7 @@ using JBSnorro.Collections.Bits;
 using JBSnorro.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
-using JBSnorro.Collections.Bits.Internals;
+using JBSnorro.Extensions;
 
 namespace Tests.JBSnorro.Collections.Bits;
 
@@ -139,7 +139,7 @@ public abstract class IFloatingPointBitReaderTests
 
 
 [TestClass]
-public class BinaryReaderTests
+public class BitReaderTests
 {
     [DebuggerHidden]
     private static IBitReader Create(ulong[] data, ulong length, ulong startBitIndex = 0)
@@ -250,6 +250,22 @@ public class BinaryReaderTests
         var result = reader.ReadUInt64(10);
 
         Assert(result == 0b1111100000);
+    }
+    [TestMethod]
+    public void Test_distribution_of_ReadUInt32()
+    {
+        const int ulongCount = 300;
+        var reader = new BitArray(new Random(3).NextUInt64Array(ulongCount), ulongCount * 64).ToBitReader();
+
+        var values = new List<uint>();
+        while (reader.RemainingLength > 8)
+        {
+            values.Add(reader.ReadUInt32(8));
+        }
+
+        var uniqueCounts = values.ToCountDictionary();
+        Assert(uniqueCounts.Count == 256);
+        Assert(uniqueCounts.Values.Max() / (double)uniqueCounts.Values.Min() < 5);
     }
 
 }

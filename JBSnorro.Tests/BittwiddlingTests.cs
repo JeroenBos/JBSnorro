@@ -18,4 +18,9 @@ public class BittwiddlingTests
         Contract.Assert(v.Xor(0) == 3);
         Contract.Assert(v.Xor(1) == 0);
     }
+    [TestMethod]
+    public void Test_reverse_bits()
+    {
+        Assert.AreEqual(0b10100000_00000000_00000000_00000000, BitTwiddling.ReverseBitwise(0b101U));
+    }
 }
