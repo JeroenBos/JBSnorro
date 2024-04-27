@@ -22,6 +22,7 @@ public static class IFloatingPointBitReaderExtensions
     {
         if (reader == null) throw new ArgumentNullException(nameof(reader));
         if (bitCount < IFloatingPointBitReader.MIN_BIT_COUNT) throw new ArgumentOutOfRangeException(nameof(bitCount));
+        if ((ulong)bitCount > reader.RemainingLength) throw new ArgumentOutOfRangeException(nameof(bitCount));
         if (!Enum.IsDefined(floatingPointEncoding)) throw new ArgumentOutOfRangeException(nameof(floatingPointEncoding));
 
         switch (floatingPointEncoding)

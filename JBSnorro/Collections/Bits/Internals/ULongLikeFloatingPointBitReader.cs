@@ -8,6 +8,8 @@ internal class ULongLikeFloatingPointBitReader : IFloatingPointBitReader
     {
         if (bitCount < IFloatingPointBitReader.MIN_BIT_COUNT || bitCount > 64)
             throw new ArgumentOutOfRangeException(nameof(bitCount));
+        if ((ulong)bitCount > reader.RemainingLength)
+            throw new ArgumentOutOfRangeException(nameof(bitCount));
 
         ulong value = reader.ReadUInt64(bitCount);
         if (value == 0)
