@@ -5,7 +5,7 @@ namespace JBSnorro.Collections;
 /// <summary>
 /// Represents a list where each item on the list is checked for a predicate, so —assuming it doesn't mutate and violate the predicate— all items on this list satisfy the predicate.
 /// </summary>
-public class PredicatedList<T> : IList<T>
+public class PredicatedList<T> : IList<T>, IReadOnlyList<T>
 {
     private readonly List<T> data;
     private readonly Func<T, bool> predicate;
