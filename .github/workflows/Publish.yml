@@ -38,8 +38,17 @@ jobs:
         run: |
           current_version=$(bash .github/get_current_version.sh "${CSPROJ_PATH}" | xargs)
           echo "current_version: \"$current_version\""
+          if ! [[ "$current_version" =~ ^[0-9]+.[0-9]+.[0-9]+$ ]]; then
+            echo "Error: An invalid current version was found"
+            exit 1
+          fi
+
           published_version=$(bash .github/get_published_version.sh "$PROJECT" | xargs)
           echo "published_version: \"$published_version\""
+          if ! [[ "$published_version" =~ ^[0-9]+.[0-9]+.[0-9]+$ ]]; then
+            echo "Error: An invalid published version was found"
+            exit 1
+          fi
 
           if [[ "$current_version" == "$published_version" ]]; then
               echo "Up-to-date"
