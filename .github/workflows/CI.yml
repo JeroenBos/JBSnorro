@@ -8,10 +8,6 @@ on:
       - 'JBSnorro.Testing/**'
       - 'JBSnorro.Testing.Tests/**'
   pull_request:
-    paths-ignore:
-      - '**.md'
-      - 'JBSnorro.Testing/**'
-      - 'JBSnorro.Testing.Tests/**'
 
 env:
   DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
