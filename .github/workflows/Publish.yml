@@ -17,11 +17,6 @@ defaults:
   run:
     shell: bash
 jobs:
-  debug-nuget-setup:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: JeroenBos/setup-nuget@v1
-      - run: nuget restore JBSnorro.sln
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -37,7 +32,7 @@ jobs:
       
     steps:
       - uses: actions/checkout@v4
-      - uses: NuGet/setup-nuget@v2.0.0
+      - uses: JeroenBos/setup-nuget@v1
       - name: Detect if version changed
         id: version-check
         run: |
