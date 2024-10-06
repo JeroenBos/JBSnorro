@@ -9,12 +9,18 @@ if [[ "$#" -ne 1 ]]; then
     exit 1;
 fi
 
-version=$(dotnet nuget list "packageid:$1"  \
-        | sed "s/$1//"                      \
-        | xargs                             \
-        | sed -e 's/^[[:space:]]*//'        \
-        | tr -d '\n'                        \
-        | tr -d '\r'                        )
+output="$(nuget list "packageid:$1")"
+if [[ $? -ne 0 ]]; then
+    echo $output
+    exit 1
+fi
+
+version="$(echo "$output"                    \
+         | sed "s/$1//"                      \
+         | xargs                             \
+         | sed -e 's/^[[:space:]]*//'        \
+         | tr -d '\n'                        \
+         | tr -d '\r'                        )"
 # sed strips package name. xargs trims. sed -e trims leading spaces because xargs doesn't trim leading spaces 🤷‍, tr trims newlines
 
 if [[ "$version" == "No packages found." ]]; then
@@ -22,7 +28,7 @@ if [[ "$version" == "No packages found." ]]; then
     exit 1
 fi
 
-if [ -z $(echo "$version" | grep -Pe '[0-9\.]+') ]; then  # -Pe is Perl-regex format
+if [ -z "$(echo "$version" | grep -Pe '[0-9\.]+')" ]; then  # -Pe is Perl-regex format
     echo "fatal: Invalid version found: $version";
     exit 1;
 fi
