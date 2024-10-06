@@ -4,18 +4,18 @@ on:
   push:
     branches: [ main ]
     paths-ignore:
-    - '**.md'
-    - 'JBSnorro.Testing/**'
-    - 'JBSnorro.Testing.Tests/**'
+      - '**.md'
+      - 'JBSnorro.Testing/**'
+      - 'JBSnorro.Testing.Tests/**'
   pull_request:
     paths-ignore:
-    - '**.md'
-    - 'JBSnorro.Testing/**'
-    - 'JBSnorro.Testing.Tests/**'
+      - '**.md'
+      - 'JBSnorro.Testing/**'
+      - 'JBSnorro.Testing.Tests/**'
 
 env:
-    DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
-    DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 defaults:
   run:
@@ -25,37 +25,37 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
-          configuration: Debug
-        - os: ubuntu-latest
-          configuration: Release
-        - os: windows-latest
-          configuration: Debug
+          - os: ubuntu-latest
+            configuration: Debug
+          - os: ubuntu-latest
+            configuration: Release
+          - os: windows-latest
+            configuration: Debug
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Create dummy runsettings file
       # in CI env vars are passed in directly, so the runsettings file can be empty
       run: echo '<RunSettings></RunSettings>' > test.runsettings
-         
-    - name: Create NODE_PATH env var
-      run: echo "NODE_PATH=$(which node)$([[ '${{ matrix.os }}' == 'windows-latest' ]] && echo -n '.exe')" >> $GITHUB_ENV 
 
-    - name: Create SSH_FILE env var 
+    - name: Create NODE_PATH env var
+      run: echo "NODE_PATH=$(which node)$([[ '${{ matrix.os }}' == 'windows-latest' ]] && echo -n '.exe')" >> $GITHUB_ENV
+
+    - name: Create SSH_FILE env var
       run: echo "SSH_FILE=$HOME/.ssh/playground" >> $GITHUB_ENV
 
     - name: Prepare ssh access
       run: |
           mkdir "$(dirname "$SSH_FILE")"
           echo "${{ secrets.JEROENBOS_TESTSERVICEUSER_SSH_KEY }}" > "$SSH_FILE"
-          
+
           # Give access to ssh key (Linux)
           if [[ '${{ matrix.os }}' == 'ubuntu-latest' ]]; then
               sudo chmod 600 "$SSH_FILE"
@@ -83,4 +83,3 @@ jobs:
     - name: Unit test + integration tests
       if: ${{ steps.should-test-gh.outputs.all_changed_and_modified_files }}
       run: dotnet test JBSnorro.Tests/JBSnorro.Tests.csproj --configuration ${{ matrix.configuration }}
-
