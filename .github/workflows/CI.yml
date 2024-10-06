@@ -10,7 +10,7 @@ on:
   pull_request:
 
 env:
-  DOTNET_VERSION: 7.0.102  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
+  DOTNET_VERSION: 7.0.410  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 defaults:
