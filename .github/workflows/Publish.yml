@@ -5,14 +5,14 @@ on:
     branches: [main]
     paths-ignore:
       - "**.md"
-  pull_request:  # do a dry-run in PRs
+  pull_request: # do a dry-run in PRs
     paths:
       - ".github/workflows/Publish.yml"
       - ".github/get_published_version.sh"
       - ".github/get_current_version.sh"
 
 env:
-  LANG: 'C.UTF-8'  # necessary for grep on Windows
+  LANG: 'C.UTF-8'  # necessary for grep on Windows    
 defaults:
   run:
     shell: bash
@@ -23,10 +23,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - project: JBSnorro
-            workflowName: CI
-          - project: JBSnorro.Testing
-            workflowName: CI (JBSnorro.Testing)
+        - project: JBSnorro
+          workflowName: CI
+        - project: JBSnorro.Testing
+          workflowName: CI (JBSnorro.Testing)
     env:
       CSPROJ_PATH: '${{ matrix.project }}/${{ matrix.project }}.csproj'
       
