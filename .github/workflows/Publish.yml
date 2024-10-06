@@ -17,6 +17,12 @@ defaults:
   run:
     shell: bash
 jobs:
+  debug-nuget-setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: nuget/setup-nuget@v2
+
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
