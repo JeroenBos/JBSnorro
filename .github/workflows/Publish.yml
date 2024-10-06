@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - uses: nuget/setup-nuget@v2
-
+      - run: nuget restore JBSnorro.sln
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
