@@ -32,7 +32,7 @@ jobs:
       
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt update && sudo apt install -y nuget
+      - uses: NuGet/setup-nuget@v2.0.0
       - name: Detect if version changed
         id: version-check
         run: |
