@@ -20,20 +20,7 @@ jobs:
   debug-nuget-setup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - name: install mono (required for running nuget.exe)
-        run: |
-          sudo apt install ca-certificates gnupg
-          sudo gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-          echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-          sudo apt update
-          sudo apt install mono-xsp4
-      - run: |
-          echo "$PATH"
-          wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-          echo "'$PWD/nuget.exe' \$@ &" > /usr/local/bin/nuget
-          chmod +rx nuget.exe
-          chmod +x /usr/local/bin/nuget
+      - uses: JeroenBos/setup-nuget@v1
       - run: nuget restore JBSnorro.sln
   publish:
     runs-on: ubuntu-latest
