@@ -21,7 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - uses: nuget/setup-nuget@v2
+      - run: |
+          echo "$PATH"
+          wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+          echo "'$PWD/nuget.exe' \$@ &" > /usr/local/bin/nuget
+          chmod +x /usr/local/bin/nuget
       - run: nuget restore JBSnorro.sln
   publish:
     runs-on: ubuntu-latest
