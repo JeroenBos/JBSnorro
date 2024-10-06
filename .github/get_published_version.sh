@@ -9,19 +9,16 @@ if [[ "$#" -ne 1 ]]; then
     exit 1;
 fi
 
-output="$(nuget list "packageid:$1")"
+output="$(nuget search "packageid:$1" -Verbosity quiet -Source nuget.org)"
 if [[ $? -ne 0 ]]; then
     echo $output
     exit 1
 fi
 
-version="$(echo "$output"                    \
-         | sed "s/$1//"                      \
-         | xargs                             \
-         | sed -e 's/^[[:space:]]*//'        \
-         | tr -d '\n'                        \
-         | tr -d '\r'                        )"
-# sed strips package name. xargs trims. sed -e trims leading spaces because xargs doesn't trim leading spaces 🤷‍, tr trims newlines
+version="$(echo "$output"               \
+         | grep '>'                     \
+         | cut -d '|' -f2               \
+         | tr -d '[:space:]'            )"
 
 if [[ "$version" == "No packages found." ]]; then
     echo "fatal: No version of '$1' found"
