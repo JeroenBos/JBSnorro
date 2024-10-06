@@ -35,9 +35,9 @@ jobs:
       - name: Detect if version changed
         id: version-check
         run: |
-          current_version=$(bash .github/get_current_version.sh '${{ env.CSPROJ_PATH }}' | xargs)
+          current_version=$(bash .github/get_current_version.sh "${CSPROJ_PATH}" | xargs)
           echo "current_version: \"$current_version\""
-          published_version=$(bash .github/get_published_version.sh '${{ matrix.project }}' | xargs)
+          published_version=$(bash .github/get_published_version.sh "$PROJECT" | xargs)
           echo "published_version: \"$published_version\""
 
           if [[ "$current_version" == "$published_version" ]]; then
@@ -47,6 +47,8 @@ jobs:
               echo "new-version=$current_version" >> $GITHUB_OUTPUT
               echo "Publishing"
           fi
+        env:
+          PROJECT: ${{ matrix.project }}
 
 
       - name: Setup .NET Core
