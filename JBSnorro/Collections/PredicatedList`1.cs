@@ -13,17 +13,17 @@ public class PredicatedList<T> : IList<T>, IReadOnlyList<T>
 
     [DebuggerHidden]
     public PredicatedList(Func<T, bool> predicate)
-        : this([DebuggerHidden] (item) => predicate(item) ? "" : null)
+        : this([DebuggerHidden] (item) => predicate(item) ? null : "")
     {
     }
     [DebuggerHidden]
     public PredicatedList(Func<T, bool> predicate, int capacity)
-        : this([DebuggerHidden] (item) => predicate(item) ? "" : null, capacity)
+        : this([DebuggerHidden] (item) => predicate(item) ? null : "", capacity)
     {
     }
     [DebuggerHidden]
     public PredicatedList(Func<T, bool> predicate, IEnumerable<T> initialCollection)
-        : this([DebuggerHidden] (item) => predicate(item) ? "" : null, initialCollection)
+        : this([DebuggerHidden] (item) => predicate(item) ? null : "", initialCollection)
     { }
 
     [DebuggerHidden]
