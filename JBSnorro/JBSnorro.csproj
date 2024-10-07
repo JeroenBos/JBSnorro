@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Version>0.0.26</Version>
+		<Version>0.0.27</Version>
 		<Authors>JeroenBos</Authors>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<RepositoryUrl>https://github.com/JeroenBos/JBSnorro</RepositoryUrl>
