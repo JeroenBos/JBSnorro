@@ -22,9 +22,9 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           configuration: Debug
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           configuration: Release
         - os: windows-latest
           configuration: Debug

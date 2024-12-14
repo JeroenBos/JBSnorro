@@ -25,9 +25,9 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           configuration: Debug
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           configuration: Release
         - os: windows-latest
           configuration: Debug
@@ -57,7 +57,7 @@ jobs:
           echo "${{ secrets.JEROENBOS_TESTSERVICEUSER_SSH_KEY }}" > "$SSH_FILE"
           
           # Give access to ssh key (Linux)
-          if [[ '${{ matrix.os }}' == 'ubuntu-latest' ]]; then
+          if [[ '${{ matrix.os }}' == 'ubuntu-22.04' ]]; then
               sudo chmod 600 "$SSH_FILE"
           fi
 
