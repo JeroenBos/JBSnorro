@@ -10,7 +10,7 @@ on:
     - '**.md'
 
 env:
-  DOTNET_VERSION: 7.0.410  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
+  DOTNET_VERSION: 8.0.303  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 defaults:
@@ -57,5 +57,5 @@ jobs:
     - name: build tests
       run: dotnet build JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --configuration ${{ matrix.configuration }}
     - name: test
-      run: dotnet test  JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --configuration ${{ matrix.configuration }} --framework net7.0
+      run: dotnet test  JBSnorro.Testing.Tests/JBSnorro.Testing.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0
       timeout-minutes: 10
