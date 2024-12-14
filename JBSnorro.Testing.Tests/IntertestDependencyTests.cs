@@ -77,7 +77,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
             return """
               <Project Sdk="Microsoft.NET.Sdk.Razor">
                   <PropertyGroup>
-                      <TargetFramework>net7.0</TargetFramework>
+                      <TargetFramework>net8.0</TargetFramework>
                       <Nullable>enable</Nullable>
                       <IsPackable>false</IsPackable>
                       <IsTestProject>true</IsTestProject>
@@ -104,7 +104,7 @@ public class IntertestXunitDependencyIntegrationTests : IntertestDependencyInteg
               """
 #else
               """
-                      <PackageReference Include="JBSnorro.Testing" Version="0.0.4" />
+                      <PackageReference Include="JBSnorro.Testing" Version="0.0.5" />
               """
 #endif
             + """

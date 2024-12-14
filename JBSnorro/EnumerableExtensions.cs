@@ -321,11 +321,6 @@ public static class EnumerableExtensions
         }
         return Enumerate();
     }
-    /// <summary> Creates and populates a dictionary with the specified pairs, and with the default equality comparer. </summary>
-    public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> initialCollection) where TKey : notnull
-    {
-        return initialCollection.ToDictionary(equalityComparer: EqualityComparer<TKey>.Default);
-    }
     /// <summary> Creates and populates a dictionary with the specified pairs, and with the specified equality comparer. </summary>
     public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> initialCollection, IEqualityComparer<TKey>? equalityComparer) where TKey : notnull
     {

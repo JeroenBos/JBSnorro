@@ -4,7 +4,7 @@
       <Property Name="Solution" />
       <Rule Match="Any">
         <Rule Match="All">
-          <Property Name="Project" Value="JBSnorro.Tests (net7.0)" />
+          <Property Name="Project" Value="JBSnorro.Tests (net8.0)" />
           <Rule Match="Any">
             <Rule Match="All">
               <Property Name="Namespace" Value="Tests" />

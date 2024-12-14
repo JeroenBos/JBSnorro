@@ -14,7 +14,7 @@ on:
     - 'JBSnorro.Testing.Tests/**'
 
 env:
-    DOTNET_VERSION: 7.0.410  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/7.0/releases.json
+    DOTNET_VERSION: 8.0.303  # select a 'sdk'.'version' from https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/8.0/releases.json
     DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 defaults:
@@ -25,9 +25,9 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           configuration: Debug
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           configuration: Release
         - os: windows-latest
           configuration: Debug
@@ -57,7 +57,7 @@ jobs:
           echo "${{ secrets.JEROENBOS_TESTSERVICEUSER_SSH_KEY }}" > "$SSH_FILE"
           
           # Give access to ssh key (Linux)
-          if [[ '${{ matrix.os }}' == 'ubuntu-latest' ]]; then
+          if [[ '${{ matrix.os }}' == 'ubuntu-22.04' ]]; then
               sudo chmod 600 "$SSH_FILE"
           fi
 
