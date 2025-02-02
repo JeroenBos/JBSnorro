@@ -2000,7 +2000,7 @@ public static class EnumerableExtensions
         }
         return result;
     }
-        /// <summary> Creates a three-dimensional array initialized with the same initial value. </summary>
+    /// <summary> Creates a three-dimensional array initialized with a generated initial value at each entry. </summary>
     [DebuggerHidden]
     public static T[,,] Initialize3DArray<T>(int size0, int size1, int size2, Func<T> getInitialValue)
     {
