@@ -1935,6 +1935,54 @@ public static class EnumerableExtensions
 
         return true;
     }
+
+    /// <summary> Gets all unique elements in the specified two-dimensional array. </summary>
+    [DebuggerHidden]
+    public static HashSet<T?> Unique<T>(this T?[,] array)
+    {
+        Contract.Requires(array is not null);
+
+        var result = new HashSet<T?>();
+        for (int i = array.GetLowerBound(0); i <= array.GetUpperBound(0); i++)
+        {
+            for (int j = array.GetLowerBound(1); j <= array.GetUpperBound(1); j++)
+            {
+                result.Add(array[i, j]);
+            }
+        }
+        return result;
+    }
+    /// <summary> Gets whether the specified predicate holds for all elements in the two-dimensional array. </summary>
+    [DebuggerHidden]
+    public static bool All<T>(this T[,] array, Func<T, bool> predicate)
+    {
+        Contract.Requires(array is not null);
+        Contract.Requires(predicate is not null);
+
+        for (int i = array.GetLowerBound(0); i <= array.GetUpperBound(0); i++)
+        {
+            for (int j = array.GetLowerBound(1); j <= array.GetUpperBound(1); j++)
+            {
+                if (!predicate(array[i, j]))
+                    return false;
+            }
+        }
+        return true;
+    }
+    /// <summary> Creates a two-dimensional array initialized with the same initial value. </summary>
+    [DebuggerHidden]
+    public static T[,] Initialize2DArray<T>(int size0, int size1, T initialValue)
+    {
+        var result = new T[size0, size1];
+        for (int y = 0; y < size1; y++)
+        {
+            for (int x = 0; x < size0; x++)
+            {
+                result[x, y] = initialValue;
+            }
+        }
+        return result;
+    }
     [DebuggerHidden]
     public static bool AreUnique<T>(this IEnumerable<T> sequence, Func<T?, T?, bool> equalityComparer)
     {
@@ -3022,7 +3070,15 @@ public static class EnumerableExtensions
             yield return result.Value;
         }
     }
-
+    public static IEnumerable<T> Fold<T>(this IEnumerable<T> sequence, Func<T, T, T> apply, T initial)
+    {
+        T current = initial;
+        foreach (T element in sequence)
+        {
+            current = apply(current, element);
+            yield return current;
+        }
+    }
     public static IEnumerable<TState> Scan<TState, T>(this IEnumerable<T> sequence, TState initialState, Func<T, TState, TState> apply)
     {
         var state = initialState;
