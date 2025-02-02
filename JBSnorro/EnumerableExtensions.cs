@@ -1983,6 +1983,23 @@ public static class EnumerableExtensions
         }
         return result;
     }
+    /// <summary> Creates a three-dimensional array initialized with the same initial value. </summary>
+    [DebuggerHidden]
+    public static T[,,] Initialize3DArray<T>(int size0, int size1, int size2, T initialValue)
+    {
+        var result = new T[size0, size1, size2];
+        for (int z = 0; z < size2; z++)
+        {
+            for (int y = 0; y < size1; y++)
+            {
+                for (int x = 0; x < size0; x++)
+                {
+                    result[x, y, z] = initialValue;
+                }
+            }
+        }
+        return result;
+    }
     [DebuggerHidden]
     public static bool AreUnique<T>(this IEnumerable<T> sequence, Func<T?, T?, bool> equalityComparer)
     {
