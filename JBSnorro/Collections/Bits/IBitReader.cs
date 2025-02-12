@@ -179,4 +179,29 @@ public interface IBitReader
         @this.Seek(startBitIndex);
         return @this.IndexOf(item, itemLength);
     }
+
+    /// <summary>
+    /// Reads an internal state for a random generator from a number of bits.
+    /// (An internal state has more number of states than a seed, which only has <see cref="int.MaxValue"/>.
+    /// </summary>
+    public Random ReadRandomGenerator(int bitCount)
+    {
+        const int SeedStateBitLength = 32 * Extensions.RandomExtensions.RandomState.SeedStateLength;
+        if (bitCount < 5) throw new ArgumentOutOfRangeException(nameof(bitCount));
+        if (bitCount > SeedStateBitLength) throw new ArgumentOutOfRangeException(nameof(bitCount), $"No more than {SeedStateBitLength} bits are ever drawn");
+
+        if (bitCount <= 32)
+        {
+            return new Random(Seed: bitCount);
+        }
+
+        //int[] seeds = new int[bitCount.RoundUpToNearestMultipleOf(32) / 32];
+        var seeds = new List<int>();
+        for (int remainingBitCount = bitCount; remainingBitCount > 0; remainingBitCount -= 32)
+        {
+            seeds.Add((int)this.ReadUInt32(Math.Min(remainingBitCount, 32)));
+        }
+
+        return Extensions.RandomExtensions.RandomState.Draw(seeds.ToArray()).ToRandom();
+    }
 }
