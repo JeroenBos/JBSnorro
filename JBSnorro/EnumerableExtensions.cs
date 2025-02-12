@@ -1983,6 +1983,60 @@ public static class EnumerableExtensions
         }
         return result;
     }
+    /// <summary>
+    /// Gets a range of values selected from a 2D array at the origin.
+    /// </summary>
+    public static IEnumerable<T> Range2D<T>(int count0, int count1, Func<int, int, T> selector)
+    {
+        return Range2D(0, count0, 0, count1, selector);
+    }
+    /// <summary>
+    /// Gets a range of values selected from a 2D array at a specified location (<paramref name="start0"/>, <paramref name="start1"/>).
+    /// </summary>
+    public static IEnumerable<T> Range2D<T>(int start0, int end0, int start1, int end1, Func<int, int, T> selector)
+    {
+        for (int i = start0; i <= end0; i++)
+        {
+            for (int j = start1; j <= end1; j++)
+            {
+                yield return selector(i, j);
+            }
+        }
+    }
+    /// <summary> Creates a three-dimensional array initialized with the same initial value. </summary>
+    [DebuggerHidden]
+    public static T[,,] Initialize3DArray<T>(int size0, int size1, int size2, T initialValue)
+    {
+        var result = new T[size0, size1, size2];
+        for (int z = 0; z < size2; z++)
+        {
+            for (int y = 0; y < size1; y++)
+            {
+                for (int x = 0; x < size0; x++)
+                {
+                    result[x, y, z] = initialValue;
+                }
+            }
+        }
+        return result;
+    }
+    /// <summary> Creates a three-dimensional array initialized with a generated initial value at each entry. </summary>
+    [DebuggerHidden]
+    public static T[,,] Initialize3DArray<T>(int size0, int size1, int size2, Func<int, int, int, T> getInitialValue)
+    {
+        var result = new T[size0, size1, size2];
+        for (int z = 0; z < size2; z++)
+        {
+            for (int y = 0; y < size1; y++)
+            {
+                for (int x = 0; x < size0; x++)
+                {
+                    result[x, y, z] = getInitialValue(x, y, z);
+                }
+            }
+        }
+        return result;
+    }
     [DebuggerHidden]
     public static bool AreUnique<T>(this IEnumerable<T> sequence, Func<T?, T?, bool> equalityComparer)
     {

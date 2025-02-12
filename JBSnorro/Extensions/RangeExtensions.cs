@@ -89,4 +89,33 @@ public static class RangeExtensions
     {
         return range.GetOffsetAndLength(length).Length;
     }
+
+    /// <summary> 
+    /// Select a value for each integer in the specified range.
+    /// </summary>
+    /// <param name="range">The range to map to values. Indices from end are not allowed.</param>
+    /// <exception cref="T:System.ArgumentException">An index in <paramref name="range"/> is from the end.</exception>
+    /// <returns>An enumerable yielding the selected values, computed on-demand. </returns>
+    public static IEnumerable<T> Select<T>(this Range range, Func<int, T> selector)
+    {
+        if (range.Start.IsFromEnd) throw new ArgumentException("range.Start.IsFromEnd", nameof(range));
+        if (range.End.IsFromEnd) throw new ArgumentException("range.End.IsFromEnd", nameof(range));
+        if (selector is null) throw new ArgumentNullException(nameof(selector));
+
+        return Enumerable.Range(range.Start.Value, range.End.Value - range.Start.Value).Select(selector);
+    }
+    /// <summary> 
+    /// Select a value for each integer in the specified range.
+    /// </summary>
+    /// <param name="range">The range to map to values. Indices from end are not allowed.</param>
+    /// <exception cref="T:System.ArgumentException">An index in <paramref name="range"/> is from the end.</exception>
+    /// <returns>An array of the selected values, computed eagerly. </returns>
+    public static T[] Map<T>(this Range range, Func<int, T> selector)
+    {
+        if (range.Start.IsFromEnd) throw new ArgumentException("range.Start.IsFromEnd", nameof(range));
+        if (range.End.IsFromEnd) throw new ArgumentException("range.End.IsFromEnd", nameof(range));
+        if (selector is null) throw new ArgumentNullException(nameof(selector));
+
+        return Enumerable.Range(range.Start.Value, range.End.Value - range.Start.Value).Select(selector).ToArray(range.End.Value - range.Start.Value);
+    }
 }
