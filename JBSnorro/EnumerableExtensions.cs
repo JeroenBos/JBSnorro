@@ -2002,7 +2002,7 @@ public static class EnumerableExtensions
     }
     /// <summary> Creates a three-dimensional array initialized with a generated initial value at each entry. </summary>
     [DebuggerHidden]
-    public static T[,,] Initialize3DArray<T>(int size0, int size1, int size2, Func<T> getInitialValue)
+    public static T[,,] Initialize3DArray<T>(int size0, int size1, int size2, Func<int, int, int, T> getInitialValue)
     {
         var result = new T[size0, size1, size2];
         for (int z = 0; z < size2; z++)
@@ -2011,7 +2011,7 @@ public static class EnumerableExtensions
             {
                 for (int x = 0; x < size0; x++)
                 {
-                    result[x, y, z] = getInitialValue();
+                    result[x, y, z] = getInitialValue(x, y, z);
                 }
             }
         }
