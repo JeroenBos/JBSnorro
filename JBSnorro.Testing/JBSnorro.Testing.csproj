@@ -32,7 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="JBSnorro" Version="0.0.28"   Condition="'$(Configuration)'!='Debug'" />
+		<PackageReference Include="JBSnorro" Version="0.0.29" Condition="'$(Configuration)'!='Debug'" />
 		<ProjectReference Include="..\JBSnorro\JBSnorro.csproj" Condition="'$(Configuration)'=='Debug'" />
 	</ItemGroup>
 
