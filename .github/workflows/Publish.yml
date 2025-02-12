@@ -32,7 +32,9 @@ jobs:
       
     steps:
       - uses: actions/checkout@v4
-      - uses: JeroenBos/setup-nuget@v1
+      - uses: JeroenBos/setup-nuget@v1.1
+        with:
+          gh-pat: ${{ secrets.GH_PACKAGE_ACCESS_TOKEN }}
       - name: Detect if version changed
         id: version-check
         run: |
