@@ -33,8 +33,13 @@ internal class BitReaderWithAlongTagger : BitReader
         }
     }
 
-    public override IBitReader Clone()
+    public override IBitReader Clone(LongIndex start, LongIndex end)
     {
-        return this[this.RemainingLength, false];
+        // clone means to decouple from the current one. And the current one is coupled to the base one, so we must decouple from that one as well
+        // so then we can just clone that one:
+        return alongTagger.Clone(
+            start: new LongIndex(this.startOffset + start.GetOffset(this.Length)),
+            end: new LongIndex(this.startOffset + end.GetOffset(this.Length))
+        );
     }
 }

@@ -42,7 +42,7 @@ internal class ULongLikeFloatingPointBitReader : IFloatingPointBitReader
     {
         // can't be bothered to do this theoretically. Just pick the correct extremum of the extrema
         var sequences = new[]
-{
+    {
             Enumerable.Range(0, bitCount).Select(i => i == bitCount - 1),
             Enumerable.Range(0, bitCount).Select(_ => true),
             Enumerable.Range(0, bitCount).Select(i => i == bitCount - 1 || i == bitCount - 2),
@@ -67,9 +67,9 @@ internal class ULongLikeFloatingPointBitReader : IFloatingPointBitReader
     {
         return ULongLikeFloatingPointBitReader.ReadDouble(this.Reader, bitCount);
     }
-    IBitReader IBitReader.Clone()
+    IBitReader IBitReader.Clone(LongIndex start, LongIndex end)
     {
-        return new ULongLikeFloatingPointBitReader(Reader.Clone());
+        return new ULongLikeFloatingPointBitReader(Reader.Clone(start, end));
     }
     static IFloatingPointBitReaderEncoding IFloatingPointBitReader.Encoding => IFloatingPointBitReaderEncoding.ULongLike;
 }

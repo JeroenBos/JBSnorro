@@ -15,9 +15,9 @@ internal class FloatingPointBitReader : IFloatingPointBitReader
     {
         return readDouble(Reader, bitCount);
     }
-    IBitReader IBitReader.Clone()
+    IBitReader IBitReader.Clone(LongIndex start, LongIndex end)
     {
-        return new FloatingPointBitReader(Reader.Clone(), readDouble);
+        return new FloatingPointBitReader(Reader.Clone(start, end), readDouble);
     }
 
     static IFloatingPointBitReaderEncoding IFloatingPointBitReader.Encoding => IFloatingPointBitReaderEncoding.Default;

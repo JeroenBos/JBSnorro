@@ -38,20 +38,12 @@ internal class BitReader : IBitReader
     {
         get => current - startOffset;
     }
-    /// <inheritdoc cref="IBitReader.this[ulong]"/>
-    public IBitReader this[ulong bitCount, bool tagAlong = false]
+    /// <inheritdoc cref="IBitReader.this[LongIndex, LongIndex]"/>
+    public virtual IBitReader this[LongIndex start, LongIndex end]
     {
         get
         {
-            if (bitCount > this.RemainingLength) throw new ArgumentOutOfRangeException(nameof(bitCount));
-            if (tagAlong)
-            {
-                return new BitReaderWithAlongTagger(this.data, this.Position, bitCount, this);
-            }
-            else
-            {
-                return new BitReader(this.data, this.Position, bitCount);
-            }
+            return new BitReaderWithAlongTagger(this.data, this.Position + start.GetOffset(this.Length), end.GetOffset(this.Length) - start.GetOffset(this.Length), this);
         }
     }
 
@@ -171,9 +163,14 @@ internal class BitReader : IBitReader
 
         data.CopyTo(dest, destBitIndex);
     }
-    public virtual IBitReader Clone()
+    public virtual IBitReader Clone(LongIndex start, LongIndex end)
     {
-        return new BitReader(this.data, this.startOffset, this.Length) { current = this.current };
+        ulong startIndex = this.startOffset + start.GetOffset(this.Length);
+        ulong endIndex = this.startOffset + end.GetOffset(this.Length);
+        return new BitReader(this.data, startIndex, endIndex - startIndex)
+        {
+            current = Math.Min(Math.Max(this.current, startIndex), endIndex)
+        };
     }
 
 

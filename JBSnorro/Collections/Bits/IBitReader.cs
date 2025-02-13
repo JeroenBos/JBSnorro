@@ -40,12 +40,17 @@ public interface IBitReader
     void Seek(ulong bitIndex);
     long IndexOf(ulong item, int itemLength) => IndexOf(item, itemLength, Position);
 
-    IBitReader Clone();
     /// <summary>
-    /// Gets an <see cref="IBitReader"/> reading the next <paramref name="bitCount"/> bits of this reader.</summary>
-    /// <param name="bitCount">The next number of bits the resulting <see cref="IBitReader"/> will have access to.</param>
-    /// <param name="tagAlong">Whether the current bitreader should keep updating its position when the resulting <see cref="IBitReader"/> moves its position.</param>
-    IBitReader this[ulong bitCount, bool tagAlong = true] { get; }
+    /// Creates a clone of this <see cref="IBitReader"/>. Moving the position of the returned <see cref="IBitReader"/> should not affect the current position.
+    /// </summary>
+    IBitReader Clone() => Clone(LongIndex.FromStart(0), LongIndex.FromEnd(0));
+    /// <summary>
+    /// Clones a segment of this <see cref="IBitReader"/>. Moving the position of the returned <see cref="IBitReader"/> should not affect the current position.
+    /// </summary>
+    IBitReader Clone(LongIndex start, LongIndex end);
+    /// <summary>
+    /// Gets an <see cref="IBitReader"/> reading the next <paramref name="bitCount"/> bits of this reader while the current reader's position tags along.</summary>
+    IBitReader this[LongIndex start, LongIndex end] { get; }
 
 
     public bool ReadBit()
