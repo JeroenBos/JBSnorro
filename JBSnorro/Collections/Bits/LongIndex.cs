@@ -26,13 +26,10 @@ public readonly struct LongIndex
     {
         Contract.Requires<ArgumentOutOfRangeException>(value <= long.MaxValue);
 
-        unchecked
-        {
-            if (isFromEnd)
-                this.value = (long)~value;
-            else
-                this.value = (long)value;
-        }
+        if (isFromEnd)
+            this.value = (long)~value;
+        else
+            this.value = (long)value;
     }
     public LongIndex(Index index) : this((ulong)index.Value, index.IsFromEnd)
     {
