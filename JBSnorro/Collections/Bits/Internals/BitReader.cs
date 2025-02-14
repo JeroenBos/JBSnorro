@@ -43,7 +43,11 @@ internal class BitReader : IBitReader
     {
         get
         {
-            return new BitReaderWithAlongTagger(this.data, this.Position + start.GetOffset(this.Length), end.GetOffset(this.Length) - start.GetOffset(this.Length), this);
+            var startIndex = /* this.Position  +  → no: indexing is w.r.t. start, not w.r.t. current position*/ start.GetOffset(this.Length);
+            var endIndex = end.GetOffset(this.Length) - startIndex;
+            if (this.End < endIndex) throw new ArgumentOutOfRangeException(nameof(end));
+            if (startIndex > endIndex) throw new ArgumentException("start > end");
+            return new BitReaderWithAlongTagger(this.data, startIndex, endIndex, this);
         }
     }
 
@@ -165,8 +169,17 @@ internal class BitReader : IBitReader
     }
     public virtual IBitReader Clone(LongIndex start, LongIndex end)
     {
-        ulong startIndex = this.startOffset + start.GetOffset(this.Length);
         ulong endIndex = this.startOffset + end.GetOffset(this.Length);
+        if (endIndex > this.End)
+        {
+            throw new ArgumentOutOfRangeException(nameof(end));
+        }
+        ulong startIndex = this.startOffset + start.GetOffset(this.Length);
+        if (startIndex > endIndex)
+        {
+            throw new ArgumentException("start > end");
+        }
+
         return new BitReader(this.data, startIndex, endIndex - startIndex)
         {
             current = Math.Min(Math.Max(this.current, startIndex), endIndex)

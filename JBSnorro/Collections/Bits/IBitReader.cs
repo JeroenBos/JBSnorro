@@ -49,7 +49,16 @@ public interface IBitReader
     /// </summary>
     IBitReader Clone(LongIndex start, LongIndex end);
     /// <summary>
+    /// Gets an in-lock-step bitreader starting at the current position for the specified number of bits.
+    /// </summary>
+    public virtual IBitReader this[ulong bitCount] 
+    {
+        get => this[(LongIndex)this.Position, (LongIndex)(this.Position + bitCount)];
+    }
+    /// <summary>
     /// Gets an <see cref="IBitReader"/> reading the next <paramref name="bitCount"/> bits of this reader while the current reader's position tags along.</summary>
+    /// <param name="start"> The index with respect to the start of this bitreader (not from the current position) of the start of subsection of the reader to return. </param>
+    /// <param name="end"> The index with respect to the start of this bitreader (not from the current position) of the end of subsection of the reader to return. </param>
     IBitReader this[LongIndex start, LongIndex end] { get; }
 
 

@@ -1,4 +1,6 @@
-﻿namespace JBSnorro.Collections.Bits.Internals;
+﻿using System.Diagnostics;
+
+namespace JBSnorro.Collections.Bits.Internals;
 
 /// <summary>
 /// A bit reader that reads floating point numbers assuming they're particularly encoded.
@@ -7,10 +9,12 @@ internal class BitReaderWithAlongTagger : BitReader
 {
     private readonly BitReader alongTagger;
 
+    [DebuggerHidden]
     public BitReaderWithAlongTagger(BitArray data, ulong position, ulong length, BitReader alongTagger)
         : base(data, position, length)
     {
         this.alongTagger = alongTagger;
+        this.current = position;
     }
 
     protected internal override ulong current
@@ -26,8 +30,11 @@ internal class BitReaderWithAlongTagger : BitReader
                 var delta = value - current;
                 if (delta != 0)
                 {
-                    this.current = value;
-                    alongTagger.current += delta;
+                    base.current = value;
+                    if (alongTagger is not null)
+                    {
+                        alongTagger.current += delta;
+                    }
                 }
             }
         }

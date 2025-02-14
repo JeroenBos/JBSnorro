@@ -102,7 +102,7 @@ public readonly struct LongIndex
     {
         return new LongIndex(index);
     }
-    public static explicit operator LongIndex(long index)
+    public static implicit operator LongIndex(long index)
     {
         Contract.Requires(index >= 0);
         return new LongIndex((ulong)index);

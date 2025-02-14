@@ -135,6 +135,71 @@ public abstract class IFloatingPointBitReaderTests
             Contract.Assert(temp != null, $"Not sufficiently dense at {cursor}");
         }
     }
+
+    [TestMethod]
+    public virtual void Cloning_and_reading_the_clone_doesn_not_affect_the_original()
+    {
+        var reader = IBitReader.Create(new BitArray(length: 100));
+        reader.Seek(10);
+
+        var clone = reader.Clone();
+        clone.ReadUInt32();
+
+        Contract.Assert(reader.Position == 10);
+        Contract.Assert(clone.Position == 10 + 32);
+    }
+
+    [TestMethod]
+    public virtual void Cloning_and_reading_on_a_subsection_does_affect_the_original()
+    {
+        IBitReader reader = IBitReader.Create(new BitArray(length: 100));
+        reader.Seek(10);
+
+        var derivative = reader[80];
+        derivative.ReadUInt32();
+
+        Contract.Assert(reader.Position == 10 + 32);
+        Contract.Assert(derivative.Position == 32);  // the "start" of this derivative is at 10 in the original, and so no extra 10 here
+    }
+
+
+    [TestMethod]
+    public virtual void Cannot_clone_out_of_range_even_if_there_is_technically_sufficient_bits()
+    {
+        IBitReader reader = IBitReader.Create(new BitArray(length: 100));
+
+        IBitReader subreader = reader.Clone(0, end: 20);
+
+        // just a base check that _within_ range is possible
+        subreader.Clone(0, 10);
+
+        try {
+            subreader.Clone(0, 30);
+        }
+        catch (ArgumentOutOfRangeException) {
+            return;
+        }
+        Contract.Assert(false, "Exception was expected");
+    }
+
+    [TestMethod]
+    public virtual void Cannot_create_subsection_out_of_range_even_if_there_is_technically_sufficient_bits()
+    {
+        IBitReader reader = IBitReader.Create(new BitArray(length: 100));
+        IBitReader subreader = reader.Clone(0, 20);
+
+        // just a base check that _within_ range is possible
+        _ = subreader[0, 10];
+
+
+        try {
+            _ = subreader[0, 30];
+        }
+        catch (ArgumentOutOfRangeException) {
+            return;
+        }
+        Contract.Assert(false, "Exception was expected");
+    }
 }
 
 
