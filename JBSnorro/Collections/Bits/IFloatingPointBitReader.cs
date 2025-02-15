@@ -125,7 +125,7 @@ public interface IFloatingPointBitReader : IBitReader
             Contract.Requires(start.Fits(this.Length));
             Contract.Requires(end.Fits(this.Length));
 
-            return Reader[start, end]; 
+            return Reader[start, end];
         }
     }
     ulong IBitReader.Length
@@ -135,6 +135,10 @@ public interface IFloatingPointBitReader : IBitReader
     ulong IBitReader.Position
     {
         get => Reader.Position;
+    }
+    ulong IBitReader.RemainingLength
+    {
+        get => Reader.RemainingLength; // is not necessarily the same as Length - Position, due to rounding
     }
     ulong IBitReader.ReadUInt64(int bitCount)
     {

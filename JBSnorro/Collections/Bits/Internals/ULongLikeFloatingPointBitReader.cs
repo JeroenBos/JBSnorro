@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using JBSnorro.Diagnostics;
 
 namespace JBSnorro.Collections.Bits.Internals;
 
@@ -65,6 +66,8 @@ internal class ULongLikeFloatingPointBitReader : IFloatingPointBitReader
 
     public double ReadDouble(int bitCount)
     {
+        Contract.Requires(0 <= bitCount);
+        Contract.Requires((ulong)bitCount <= ((IFloatingPointBitReader)this).RemainingLength);
         return ULongLikeFloatingPointBitReader.ReadDouble(this.Reader, bitCount);
     }
     IBitReader IBitReader.Clone(LongIndex start, LongIndex end)
