@@ -125,7 +125,7 @@ public interface IFloatingPointBitReader : IBitReader
             Contract.Requires(start.Fits(this.Length));
             Contract.Requires(end.Fits(this.Length));
 
-            return Reader[start, end]; 
+            return Reader[start, end];
         }
     }
     ulong IBitReader.Length
@@ -135,6 +135,10 @@ public interface IFloatingPointBitReader : IBitReader
     ulong IBitReader.Position
     {
         get => Reader.Position;
+    }
+    ulong IBitReader.RemainingLength
+    {
+        get => Reader.RemainingLength; // is not necessarily the same as Length - Position, due to rounding
     }
     ulong IBitReader.ReadUInt64(int bitCount)
     {
@@ -161,9 +165,36 @@ public static class IFloatingPointBitReaderEncodingExtensions
                 return ULongLikeFloatingPointBitReader.ComputeMax(bitCount);
 
             default:
-                throw new ArgumentException(encoding.ToString(), nameof(tuple) + "." + nameof(tuple.Encoding));
+                throw new DefaultSwitchCaseUnreachableException(encoding.ToString());
         }
     }
+    /// <summary>
+    /// Gets the maximum number of bits it would require to encode the specified number of bits.
+    /// </summary>
+    public static ulong GetMaxEncodingLength(this IFloatingPointBitReaderEncoding encoding, ulong unencodedBitCount)
+    {
+        return encoding switch
+        {
+            IFloatingPointBitReaderEncoding.Default => unencodedBitCount,
+            IFloatingPointBitReaderEncoding.ULongLike => (ulong)Math.Ceiling(checked(unencodedBitCount * 1.5)),
+            _ => throw new DefaultSwitchCaseUnreachableException(encoding.ToString()),
+        };
+    }
+    /// <summary>
+    /// Gets the maximum number of bits that can be encoded by the specified encoding.
+    /// </summary>
+    public static ulong GetMaxEncodedLength(this IFloatingPointBitReaderEncoding encoding, ulong encodedBitCount)
+    {
+        return encoding switch
+        {
+            IFloatingPointBitReaderEncoding.Default => encodedBitCount,
+            IFloatingPointBitReaderEncoding.ULongLike => (ulong)Math.Ceiling(encodedBitCount / 1.5d),
+            _ => throw new DefaultSwitchCaseUnreachableException(encoding.ToString()),
+        };
+    }
+    /// <summary>
+    /// Gets the maximum value encodable by the specified encoding in the specified number of bits.
+    /// </summary>
     public static double GetMaxValue(this IFloatingPointBitReaderEncoding encoding, int bitCount)
     {
         return cachedMaxValues[(encoding, bitCount)];
@@ -184,6 +215,9 @@ public static class IFloatingPointBitReaderEncodingExtensions
                 throw new ArgumentException(encoding.ToString(), nameof(tuple) + "." + nameof(tuple.Encoding));
         }
     }
+    /// <summary>
+    /// Gets the minimum value encodable by the specified encoding in the specified number of bits.
+    /// </summary>
     public static double GetMinValue(this IFloatingPointBitReaderEncoding encoding, int bitCount)
     {
         return cachedMinValues[(encoding, bitCount)];

@@ -138,7 +138,7 @@ internal class BitReader : IBitReader
         Contract.Requires<ArgumentOutOfRangeException>(0 <= bitIndex);
         Contract.Requires<ArgumentOutOfRangeException>(bitIndex <= Length);
 
-        current = bitIndex;
+        current = this.startOffset + bitIndex;
     }
     /// <summary>
     /// Gets the index in the stream the pattern occurs at.

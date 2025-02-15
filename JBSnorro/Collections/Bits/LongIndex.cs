@@ -35,6 +35,8 @@ public readonly struct LongIndex
     {
     }
 
+    public static LongIndex Start => FromStart(0);
+    public static LongIndex End => FromEnd(0);
     public static LongIndex FromStart(int value)
     {
         Contract.Requires<ArgumentOutOfRangeException>(value >= 0);
@@ -56,6 +58,7 @@ public readonly struct LongIndex
         return new LongIndex(value, true);
     }
 
+    /// <remarks>We don't provide range validation in line with <see cref="System.Index"/>, except for negative lengths because we use the ulongs here which overflow. </remarks>
     public ulong GetOffset(ulong length)
     {
         if (this.value >= 0)
@@ -65,8 +68,7 @@ public readonly struct LongIndex
         else
         {
             ulong fromEnd = (ulong)~this.value;
-            if (fromEnd > length) throw new ArgumentOutOfRangeException(nameof(length));
-            return length - fromEnd;
+            return checked(length - fromEnd);
         }
     }
     /// <summary>
@@ -95,11 +97,13 @@ public readonly struct LongIndex
     {
         return new LongIndex(index);
     }
-    public static explicit operator LongIndex(ulong index)
+    public static implicit operator LongIndex(ulong index)
     {
+        Contract.Requires(index <= long.MaxValue);
         return new LongIndex(index);
     }
-    public static implicit operator LongIndex(long index)
+    // explicit because otherwise a constant is ambiguous between long and ulong
+    public static explicit operator LongIndex(long index)
     {
         Contract.Requires(index >= 0);
         return new LongIndex((ulong)index);
