@@ -165,9 +165,36 @@ public static class IFloatingPointBitReaderEncodingExtensions
                 return ULongLikeFloatingPointBitReader.ComputeMax(bitCount);
 
             default:
-                throw new ArgumentException(encoding.ToString(), nameof(tuple) + "." + nameof(tuple.Encoding));
+                throw new DefaultSwitchCaseUnreachableException(encoding.ToString());
         }
     }
+    /// <summary>
+    /// Gets the maximum number of bits it would require to encode the specified number of bits.
+    /// </summary>
+    public static ulong GetMaxEncodingLength(this IFloatingPointBitReaderEncoding encoding, ulong unencodedBitCount)
+    {
+        return encoding switch
+        {
+            IFloatingPointBitReaderEncoding.Default => unencodedBitCount,
+            IFloatingPointBitReaderEncoding.ULongLike => (ulong)Math.Ceiling(checked(unencodedBitCount * 1.5)),
+            _ => throw new DefaultSwitchCaseUnreachableException(encoding.ToString()),
+        };
+    }
+    /// <summary>
+    /// Gets the maximum number of bits that can be encoded by the specified encoding.
+    /// </summary>
+    public static ulong GetMaxEncodedLength(this IFloatingPointBitReaderEncoding encoding, ulong encodedBitCount)
+    {
+        return encoding switch
+        {
+            IFloatingPointBitReaderEncoding.Default => encodedBitCount,
+            IFloatingPointBitReaderEncoding.ULongLike => (ulong)Math.Ceiling(encodedBitCount / 1.5d),
+            _ => throw new DefaultSwitchCaseUnreachableException(encoding.ToString()),
+        };
+    }
+    /// <summary>
+    /// Gets the maximum value encodable by the specified encoding in the specified number of bits.
+    /// </summary>
     public static double GetMaxValue(this IFloatingPointBitReaderEncoding encoding, int bitCount)
     {
         return cachedMaxValues[(encoding, bitCount)];
@@ -188,6 +215,9 @@ public static class IFloatingPointBitReaderEncodingExtensions
                 throw new ArgumentException(encoding.ToString(), nameof(tuple) + "." + nameof(tuple.Encoding));
         }
     }
+    /// <summary>
+    /// Gets the minimum value encodable by the specified encoding in the specified number of bits.
+    /// </summary>
     public static double GetMinValue(this IFloatingPointBitReaderEncoding encoding, int bitCount)
     {
         return cachedMinValues[(encoding, bitCount)];
