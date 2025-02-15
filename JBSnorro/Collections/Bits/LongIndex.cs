@@ -102,7 +102,8 @@ public readonly struct LongIndex
         Contract.Requires(index <= long.MaxValue);
         return new LongIndex(index);
     }
-    public static implicit operator LongIndex(long index)
+    // explicit because otherwise a constant is ambiguous between long and ulong
+    public static explicit operator LongIndex(long index)
     {
         Contract.Requires(index >= 0);
         return new LongIndex((ulong)index);
