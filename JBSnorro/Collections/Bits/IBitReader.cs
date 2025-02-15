@@ -47,6 +47,8 @@ public interface IBitReader
     /// <summary>
     /// Clones a segment of this <see cref="IBitReader"/>. Moving the position of the returned <see cref="IBitReader"/> should not affect the current position.
     /// </summary>
+    /// <param name="start"> The index with respect to the start of this reader (not the current position) to start the clone. </param>
+    /// <param name="end"> The index with respect to the start of this reader (not the current position) to end the clone. </param>
     IBitReader Clone(LongIndex start, LongIndex end);
     /// <summary>
     /// Gets an in-lock-step bitreader starting at the current position for the specified number of bits.
@@ -60,7 +62,19 @@ public interface IBitReader
     /// <param name="start"> The index with respect to the start of this bitreader (not from the current position) of the start of subsection of the reader to return. </param>
     /// <param name="end"> The index with respect to the start of this bitreader (not from the current position) of the end of subsection of the reader to return. </param>
     IBitReader this[LongIndex start, LongIndex end] { get; }
+    /// <summary>
+    /// Reads a specified number of bits, and wraps it in a new <see cref="IBitReader"/> of the same type as the current one (through <see cref="Clone(LongIndex, LongIndex)"/>).
+    /// </summary>
+    /// <param name="length">The number of bits to read.</param>
+    public IBitReader ReadBitReader(ulong length)
+    {
+        ulong endIndex = checked(this.Position + length);
+        if (endIndex > this.Length) throw new ArgumentOutOfRangeException(nameof(length));
 
+        var derivedReader = this.Clone((LongIndex)this.Position, (LongIndex)endIndex);
+        this.Seek(endIndex);
+        return derivedReader;
+    }
 
     public bool ReadBit()
     {
