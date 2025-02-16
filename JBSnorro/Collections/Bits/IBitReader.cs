@@ -122,7 +122,7 @@ public interface IBitReader
         if (RemainingLength < (ulong)bitCount)
             throw new InsufficientBitsException("ushort");
 
-        return (ushort)ReadInt64(bitCount);
+        return (ushort)ReadUInt64(bitCount);
     }
     [DebuggerHidden]
     public int ReadInt32(int bitCount = 32)
@@ -175,7 +175,7 @@ public interface IBitReader
         Contract.Requires<ArgumentOutOfRangeException>(0 <= startBitIndex);
         Contract.Requires<ArgumentOutOfRangeException>(startBitIndex <= Length);
 
-        var nextBitIndex = startBitIndex;
+        ulong nextBitIndex = startBitIndex;
         while (true)
         {
             Seek(nextBitIndex);
