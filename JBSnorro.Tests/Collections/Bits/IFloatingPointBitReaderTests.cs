@@ -190,6 +190,7 @@ public abstract class IFloatingPointBitReaderTests
 
         // just a base check that _within_ range is possible
         _ = subreader.CreateSubReader(10);
+        reader.Seek(0);
 
 
         try {

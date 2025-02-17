@@ -15,7 +15,7 @@ internal class SubBitReader : IBitReader
     public SubBitReader(IBitReader baseBitReader, ulong length)
     {
         Contract.Requires(baseBitReader is not null);
-        Contract.Requires(length <= baseBitReader.RemainingLength);
+        Contract.Requires<ArgumentOutOfRangeException>(length <= baseBitReader.RemainingLength);
 
         this._base = baseBitReader;
         this.startPosition = baseBitReader.Position;
