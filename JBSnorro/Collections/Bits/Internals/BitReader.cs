@@ -14,7 +14,7 @@ internal class BitReader : IBitReader
     /// </summary>
     protected readonly ulong startOffset;
     /// <summary> In bits, relative to the start of <see cref="data"/>. </summary>
-    /// <remarks> It's only internal for <see cref="BitReaderWithAlongTagger"/></remarks>
+    /// <remarks> It's only internal for <see cref="SubBitReader"/></remarks>
     protected internal virtual ulong current { get; set; }
     /// <summary> 
     /// Gets the length of the stream this <see cref="IBitReader"/> can read, in bits.
@@ -38,18 +38,7 @@ internal class BitReader : IBitReader
     {
         get => current - startOffset;
     }
-    /// <inheritdoc cref="IBitReader.this[LongIndex, LongIndex]"/>
-    public virtual IBitReader this[LongIndex start, LongIndex end]
-    {
-        get
-        {
-            var startIndex = /* this.Position  +  → no: indexing is w.r.t. start, not w.r.t. current position*/ start.GetOffset(this.Length);
-            var endIndex = end.GetOffset(this.Length) - startIndex;
-            if (this.End < endIndex) throw new ArgumentOutOfRangeException(nameof(end));
-            if (startIndex > endIndex) throw new ArgumentException("start > end");
-            return new BitReaderWithAlongTagger(this.data, startIndex, endIndex, this);
-        }
-    }
+
 
     /// <summary>
     /// Gets the remainder of the bits in a segment.

@@ -155,7 +155,7 @@ public abstract class IFloatingPointBitReaderTests
         IBitReader reader = IBitReader.Create(new BitArray(length: 100));
         reader.Seek(10);
 
-        var derivative = reader[80];
+        var derivative = reader.CreateSubReader(80);
         derivative.ReadUInt32();
 
         Contract.Assert(reader.Position == 10 + 32);
@@ -189,11 +189,11 @@ public abstract class IFloatingPointBitReaderTests
         IBitReader subreader = reader.Clone(0, 20);
 
         // just a base check that _within_ range is possible
-        _ = subreader[0, 10];
+        _ = subreader.CreateSubReader(10);
 
 
         try {
-            _ = subreader[0, 30];
+            _ = subreader.CreateSubReader(30);
         }
         catch (ArgumentOutOfRangeException) {
             return;

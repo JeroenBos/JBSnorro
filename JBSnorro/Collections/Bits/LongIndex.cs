@@ -134,4 +134,16 @@ public readonly struct LongIndex
     {
         return !(left == right);
     }
+    public static LongIndex operator +(LongIndex a, ulong b)
+    {
+        if (a.IsFromEnd)
+        {
+            return new LongIndex(~checked(((ulong)~a.value) + b), true);
+        }
+        return new LongIndex(checked((ulong)a.value + b), false);
+    }
+    public static LongIndex operator +(ulong a, LongIndex b)
+    {
+        return b + a;
+    }
 }
