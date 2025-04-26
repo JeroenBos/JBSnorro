@@ -213,9 +213,17 @@ namespace JBSnorro.Text
 	{
 		public static JSString Escape(string value)
 		{
-			return new JSString(escape(value, escapeSingleQuotes: true, escapeDoubleQuotes: true));
+			return new JSString(escape(value, escapeSingleQuotes: true, escapeDoubleQuotes: true), escapedSingleQuotes: true, escapedDoubleQuotes: true);
 		}
-		internal JSString(string value) : base(value, true, true) { }
+		/// <summary>
+		/// I suspect there's a bug in JSString.Escape, or how it's handled, because the quotes appear escaped in the actual JS.
+		/// This method allowed eschewing that, by setting the arguments to false (where true is the default).
+		/// </summary>
+		public static JSString Escape_Unsafe(string value, bool escapeSingleQuotes = true, bool escapeDoubleQuotes = true)
+		{
+			return new JSString(escape(value, escapeSingleQuotes, escapeDoubleQuotes), escapeSingleQuotes, escapeDoubleQuotes);
+		}
+		internal JSString(string value, bool escapedSingleQuotes = false, bool escapedDoubleQuotes = false) : base(value, escapedSingleQuotes, escapedDoubleQuotes) { }
 
 		public static implicit operator string(JSString s) => s.Value;
 	}
