@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using JBSnorro;
 using JBSnorro.Csx;
 using JBSnorro.Extensions;
@@ -178,7 +178,7 @@ public class GitTestsBase
             Console.WriteLine("Most likely the script is waiting for the ssh passphrase");
             throw;
         }
-        Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr);
+        Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr + "\n" + stdOut);
         //Console.WriteLine(stdOut);
         //Assert.AreEqual(stdErr.Split('\n').Length, 3, message: stdOut);
         var stdErrLines = stdErr.Split('\n')
