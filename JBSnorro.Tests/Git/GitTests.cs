@@ -178,7 +178,7 @@ public class GitTestsBase
             Console.WriteLine("Most likely the script is waiting for the ssh passphrase");
             throw;
         }
-        Assert.AreEqual((exitCode, stdOut), (0, ""), message: stdErr + "\n" + stdOut);
+        Assert.AreEqual(actual: (exitCode, stdOut), expected: (0, ""), message: stdErr + "\n" + stdOut);
         //Console.WriteLine(stdOut);
         //Assert.AreEqual(stdErr.Split('\n').Length, 3, message: stdOut);
         var stdErrLines = stdErr.Split('\n')
@@ -517,7 +517,7 @@ public class NewTests : GitHubTestsBase
         Assert.IsTrue(File.Exists(Path.Combine(repo.Dir, "u")));
     }
 
-    [TestMethod]
+    // [TestMethod] // reimplement when GH login works from CI
     public async Task Test_New_Pulls_Remote()
     {
         var commitHash = new Reference<string>();
