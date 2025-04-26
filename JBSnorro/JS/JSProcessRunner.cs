@@ -361,22 +361,22 @@ const reviver = function (key, value) {
     private static string ToJavascriptImportStatement(JSString pathOrPackageOrImportStatement) => ToJavascriptImportStatement(pathOrPackageOrImportStatement.Value);
     private static string ToJavascriptImportStatement(string pathOrPackageOrImportStatement)
     {
-        if (pathOrPackageOrImportStatement.StartsWith("var "))
+        if (pathOrPackageOrImportStatement.StartsWith("var ") || pathOrPackageOrImportStatement.StartsWith("const "))
             return pathOrPackageOrImportStatement;
 
         if (pathOrPackageOrImportStatement.Contains('\\') || pathOrPackageOrImportStatement.Contains('/') || pathOrPackageOrImportStatement.Contains('.'))
         {
             string packageName = Path.GetFileNameWithoutExtension(pathOrPackageOrImportStatement)
                                      .ToLower();
-            // POSIX "Fully portable filenames" basically only contain these:
-            packageName = new string(packageName.Where(StringExtensions.IsLetterOrDigitOrUnderscore).ToArray());
+            // POSIX "Fully portable filenames" basically only contain these. Once we hit e.g. a '.' it's pr
+            packageName = new string(packageName.TakeWhile(StringExtensions.IsLetterOrDigitOrUnderscore).ToArray());
 
-            return $"var {packageName} = require('{pathOrPackageOrImportStatement}');";
+            return $"const {packageName} = require('{pathOrPackageOrImportStatement}');";
         }
         else
         {
             string packageName = pathOrPackageOrImportStatement;
-            return $"var {packageName} = require('{packageName}');";
+            return $"const {packageName} = require('{packageName}');";
         }
     }
 
