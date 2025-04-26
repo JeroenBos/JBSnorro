@@ -1,12 +1,6 @@
-﻿using JBSnorro.Diagnostics;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using JBSnorro.Diagnostics;
 
 namespace JBSnorro;
 
@@ -15,7 +9,7 @@ namespace JBSnorro;
 /// So it is like a nullable type, but the also for reference types and it is like option in F#. 
 /// </summary>
 /// <typeparam name="T"> The type of the instance to represent. </typeparam>
-public struct Option<T> : IEquatable<Option<T>>
+public readonly struct Option<T> : IEquatable<Option<T>>
 {
 	/// <summary> Gets the option representing no instance of type <code>T</code>. </summary>
 	public static readonly Option<T> None = new Option<T>();
@@ -41,12 +35,13 @@ public struct Option<T> : IEquatable<Option<T>>
 	}
 	/// <summary> Gets whether this instance represents an instance of type <typeparamref name="T"/>. </summary>
 	[MemberNotNullWhen(returnValue: true, nameof(Value))]
-	public bool HasValue { get; private set; }
+	public bool HasValue { get; }
 	/// <summary>
 	/// Gets the value of this option, of the specified default otherwise.
 	/// </summary>
 	/// <param name="defaultAlternative"> The default to return in case this option does not hold a value. </param>
-	public T? ValueOrDefault(T? defaultAlternative = default)
+	[return: NotNullIfNotNull(nameof(defaultAlternative))]
+	public readonly T? ValueOrDefault(T? defaultAlternative = default)
 	{
 		if (this.HasValue)
 			return this.value;
@@ -69,11 +64,11 @@ public struct Option<T> : IEquatable<Option<T>>
 
 	/// <summary> Gets whether the specified object is equal to this option or the value held by this option, if any. </summary>
 	/// <param name="obj"> The object to compare for equality against. </param>
-	public override bool Equals(object? obj)
+	public override readonly bool Equals(object? obj)
 	{
-		if (obj is Option<T>)
+		if (obj is Option<T> option)
 		{
-			return Equals((Option<T>)obj);
+			return Equals(option);
 		}
 		if (this.HasValue)
 		{
@@ -83,7 +78,7 @@ public struct Option<T> : IEquatable<Option<T>>
 	}
 	/// <summary> Gets whether the specified option equals this option, where two values are compared with the default equality comparer. </summary>
 	/// <param name="other"> The option to compare for equality against. </param>
-	public bool Equals(Option<T> other)
+	public readonly bool Equals(Option<T> other)
 	{
 		return Equals(other, EqualityComparer<T>.Default);
 	}
@@ -91,7 +86,7 @@ public struct Option<T> : IEquatable<Option<T>>
 	/// <summary> Gets whether the specified option equals this option, where two values are compared with a specified equality comparer. </summary>
 	/// <param name="other"> The option to compare for equality against. </param>
 	/// <param name="equalityComparer"> The equality comparer to use for comparing for equality. </param>
-	public bool Equals(Option<T> other, IEqualityComparer<T> equalityComparer)
+	public readonly bool Equals(Option<T> other, IEqualityComparer<T> equalityComparer)
 	{
 		Contract.Requires(equalityComparer != null);
 
@@ -114,8 +109,17 @@ public struct Option<T> : IEquatable<Option<T>>
 		}
 		else
 		{
-			return 0; // assuming this is the hash code of null
+			return 0;
 		}
+	}
+	public static bool operator ==(Option<T> left, Option<T> right)
+	{
+		return left.Equals(right);
+	}
+
+	public static bool operator !=(Option<T> left, Option<T> right)
+	{
+		return !(left == right);
 	}
 }
 public static class Option

@@ -1,10 +1,5 @@
 ﻿using JBSnorro.Diagnostics;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JBSnorro.Csx.Node;
 
@@ -16,7 +11,7 @@ public interface INodePathResolver
     string Path { get; }
 
     /// <summary>
-    /// Gets a <see cref="INodePathResolver"/> that doesn't resolve the path to node, but refers to it by the command name `node`.
+    /// Gets a <see cref="INodePathResolver"/> that doesn't resolve the path to node, but refers to it by the command name `node`, so uses PATH.
     /// </summary>
     [DebuggerHidden]
     public static INodePathResolver FromCommand()
@@ -24,25 +19,24 @@ public interface INodePathResolver
         return NodeCommand.Instance;
     }
     /// <summary>
-    /// Gets a <see cref="INodePathResolver"/> from a path.
+    /// Gets a <see cref="INodePathResolver"/> by specifying where node is.
     /// </summary>
-    /// <param name="path"></param>
-    /// <param name="verifyPathExists">Whether to verify that the path can be resolved.</param>
+    /// <param name="path">The path of the node executable.</param>
+    /// <param name="skipVerify">Whether to skip verifying that the path can be resolved.</param>
     /// <exception cref="FileNotFoundException"></exception>
     [DebuggerHidden]
-    public static INodePathResolver FromPath(string path, bool verifyPathExists = true)
+    public static INodePathResolver FromPath(string path, bool skipVerify = false)
     {
         Contract.Requires(!string.IsNullOrWhiteSpace(path));
 
         var expandedPath = Environment.ExpandEnvironmentVariables(path);
-        if (verifyPathExists && !File.Exists(expandedPath))
+        if (!skipVerify && !File.Exists(expandedPath))
         {
             throw new FileNotFoundException($"Resolving node failed. Not found at '{expandedPath}'", fileName: expandedPath);
         }
 
         return new NodePathResolverFromPath { Path = expandedPath };
     }
-
 }
 
 

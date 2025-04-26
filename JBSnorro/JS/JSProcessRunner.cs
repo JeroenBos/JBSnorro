@@ -1,8 +1,7 @@
-﻿#pragma warning disable CS1066
+#pragma warning disable CS1066
 using JBSnorro;
 using JBSnorro.Csx;
 using JBSnorro.Csx.Node;
-using JBSnorro.Diagnostics;
 using JBSnorro.Extensions;
 using JBSnorro.IO;
 using JBSnorro.Text;
@@ -266,14 +265,14 @@ public class JSProcessRunner : IJSRunner
             throw new ArgumentNullException(nameof(jsIdentifiers));
         foreach (var id in jsIdentifiers)
         {
-            if (id.Key == null) throw new ArgumentException(nameof(jsIdentifiers) + ".Key is null");
-            if (string.IsNullOrEmpty(id.Value)) throw new ArgumentException(nameof(jsIdentifiers) + ".Value is null or empty");
-            if (id.Key.GetType() == typeof(string)) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be string");
-            if (id.Key.GetType().IsEnum) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be enums");
-            if (id.Key.GetType().IsPrimitive) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be primitives");
-            if (id.Key.GetType().IsInterface) throw new NotImplementedException(nameof(jsIdentifiers) + " interfaces not implemented");
-            if (id.Key.GetType().IsGenericParameter) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be generic type parameters");
-            if (id.Key.GetType().IsSignatureType) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be delegate types");
+            if (id.Key == null) throw new ArgumentException($"{nameof(jsIdentifiers)}.Key is null");
+            if (string.IsNullOrEmpty(id.Value)) throw new ArgumentException($"{nameof(jsIdentifiers)}.Value is null or empty");
+            if (id.Key.GetType() == typeof(string)) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be string");
+            if (id.Key.GetType().IsEnum) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be enums");
+            if (id.Key.GetType().IsPrimitive) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be primitives");
+            if (id.Key.GetType().IsInterface) throw new NotImplementedException($"{nameof(jsIdentifiers)} interfaces not implemented");
+            if (id.Key.GetType().IsGenericParameter) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be generic type parameters");
+            if (id.Key.GetType().IsSignatureType) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be delegate types");
         }
 
         options = CreateNewAndAssertValid(options);
@@ -336,7 +335,7 @@ const reviver = function (key, value) {
                 return s;
 
             string serialized = serialize(arg, extraPropOptions);
-            bool isArray = serialized.StartsWith("[");
+            bool isArray = serialized.StartsWith('[');
             if (isArray || IExtraPropertyJsonConverter.WillAddExtraProperty(arg, obj => getTypeIdentifierValue(jsIdentifiers, obj)))
             {
                 string yesSerializeAgain = JsonSerializer.Serialize(serialized, options);
@@ -362,22 +361,22 @@ const reviver = function (key, value) {
     private static string ToJavascriptImportStatement(JSString pathOrPackageOrImportStatement) => ToJavascriptImportStatement(pathOrPackageOrImportStatement.Value);
     private static string ToJavascriptImportStatement(string pathOrPackageOrImportStatement)
     {
-        if (pathOrPackageOrImportStatement.StartsWith("var "))
+        if (pathOrPackageOrImportStatement.StartsWith("var ") || pathOrPackageOrImportStatement.StartsWith("const "))
             return pathOrPackageOrImportStatement;
 
-        if (pathOrPackageOrImportStatement.Contains("\\") || pathOrPackageOrImportStatement.Contains("//") || pathOrPackageOrImportStatement.Contains("."))
+        if (pathOrPackageOrImportStatement.Contains('\\') || pathOrPackageOrImportStatement.Contains('/') || pathOrPackageOrImportStatement.Contains('.'))
         {
             string packageName = Path.GetFileNameWithoutExtension(pathOrPackageOrImportStatement)
                                      .ToLower();
-            // POSIX "Fully portable filenames" basically only contain these:
-            packageName = new string(packageName.Where(StringExtensions.IsLetterOrDigitOrUnderscore).ToArray());
+            // POSIX "Fully portable filenames" basically only contain these. Once we hit e.g. a '.' it's pr
+            packageName = new string(packageName.TakeWhile(StringExtensions.IsLetterOrDigitOrUnderscore).ToArray());
 
-            return $"var {packageName} = require('{pathOrPackageOrImportStatement}');";
+            return $"const {packageName} = require('{pathOrPackageOrImportStatement}');";
         }
         else
         {
             string packageName = pathOrPackageOrImportStatement;
-            return $"var {packageName} = require('{packageName}');";
+            return $"const {packageName} = require('{packageName}');";
         }
     }
 
@@ -412,18 +411,5 @@ const reviver = function (key, value) {
         }
 
         public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
-    }
-}
-[DebuggerDisplay("JSSourceCode({Value})")]
-public class JSSourceCode
-{
-    public static JSSourceCode Null { get; } = new JSSourceCode("null");
-    public static JSSourceCode Undefined { get; } = new JSSourceCode("undefined");
-
-    public string Value { get; }
-    public JSSourceCode(string sourceCode)
-    {
-        Contract.Requires(sourceCode != null, nameof(sourceCode));
-        Value = sourceCode;
     }
 }
