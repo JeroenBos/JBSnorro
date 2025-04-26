@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using JBSnorro.Diagnostics;
 
@@ -112,15 +112,15 @@ public readonly struct Option<T> : IEquatable<Option<T>>
 			return 0;
 		}
 	}
-    public static bool operator ==(Option<T> left, Option<T> right)
-    {
-        return left.Equals(right);
-    }
+	public static bool operator ==(Option<T> left, Option<T> right)
+	{
+		return left.Equals(right);
+	}
 
-    public static bool operator !=(Option<T> left, Option<T> right)
-    {
-        return !(left == right);
-    }
+	public static bool operator !=(Option<T> left, Option<T> right)
+	{
+		return !(left == right);
+	}
 }
 public static class Option
 {
