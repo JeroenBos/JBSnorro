@@ -265,14 +265,14 @@ public class JSProcessRunner : IJSRunner
             throw new ArgumentNullException(nameof(jsIdentifiers));
         foreach (var id in jsIdentifiers)
         {
-            if (id.Key == null) throw new ArgumentException(nameof(jsIdentifiers) + ".Key is null");
-            if (string.IsNullOrEmpty(id.Value)) throw new ArgumentException(nameof(jsIdentifiers) + ".Value is null or empty");
-            if (id.Key.GetType() == typeof(string)) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be string");
-            if (id.Key.GetType().IsEnum) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be enums");
-            if (id.Key.GetType().IsPrimitive) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be primitives");
-            if (id.Key.GetType().IsInterface) throw new NotImplementedException(nameof(jsIdentifiers) + " interfaces not implemented");
-            if (id.Key.GetType().IsGenericParameter) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be generic type parameters");
-            if (id.Key.GetType().IsSignatureType) throw new ArgumentException(nameof(jsIdentifiers) + " types cannot be delegate types");
+            if (id.Key == null) throw new ArgumentException($"{nameof(jsIdentifiers)}.Key is null");
+            if (string.IsNullOrEmpty(id.Value)) throw new ArgumentException($"{nameof(jsIdentifiers)}.Value is null or empty");
+            if (id.Key.GetType() == typeof(string)) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be string");
+            if (id.Key.GetType().IsEnum) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be enums");
+            if (id.Key.GetType().IsPrimitive) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be primitives");
+            if (id.Key.GetType().IsInterface) throw new NotImplementedException($"{nameof(jsIdentifiers)} interfaces not implemented");
+            if (id.Key.GetType().IsGenericParameter) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be generic type parameters");
+            if (id.Key.GetType().IsSignatureType) throw new ArgumentException($"{nameof(jsIdentifiers)} types cannot be delegate types");
         }
 
         options = CreateNewAndAssertValid(options);
@@ -335,7 +335,7 @@ const reviver = function (key, value) {
                 return s;
 
             string serialized = serialize(arg, extraPropOptions);
-            bool isArray = serialized.StartsWith("[");
+            bool isArray = serialized.StartsWith('[');
             if (isArray || IExtraPropertyJsonConverter.WillAddExtraProperty(arg, obj => getTypeIdentifierValue(jsIdentifiers, obj)))
             {
                 string yesSerializeAgain = JsonSerializer.Serialize(serialized, options);
@@ -364,7 +364,7 @@ const reviver = function (key, value) {
         if (pathOrPackageOrImportStatement.StartsWith("var "))
             return pathOrPackageOrImportStatement;
 
-        if (pathOrPackageOrImportStatement.Contains("\\") || pathOrPackageOrImportStatement.Contains("//") || pathOrPackageOrImportStatement.Contains("."))
+        if (pathOrPackageOrImportStatement.Contains('\\') || pathOrPackageOrImportStatement.Contains('/') || pathOrPackageOrImportStatement.Contains('.'))
         {
             string packageName = Path.GetFileNameWithoutExtension(pathOrPackageOrImportStatement)
                                      .ToLower();
