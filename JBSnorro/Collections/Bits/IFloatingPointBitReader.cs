@@ -118,16 +118,7 @@ public interface IFloatingPointBitReader : IBitReader
 
     #region IBitReader Members
     protected IBitReader Reader { get; }
-    IBitReader IBitReader.this[LongIndex start, LongIndex end]
-    {
-        get
-        {
-            Contract.Requires(start.Fits(this.Length));
-            Contract.Requires(end.Fits(this.Length));
 
-            return Reader[start, end];
-        }
-    }
     ulong IBitReader.Length
     {
         get => Reader.Length;
