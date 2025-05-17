@@ -19,10 +19,10 @@ public class ExactPolymorphicJsonConverter<T> : PolymorphicJsonConverter<T>, IJs
 	{
 		foreach (var (t, timpl) in derivedTypePairs)
 		{
-			Contract.Requires(t.IsAssignableFrom(timpl));
-			Contract.Requires(!timpl.IsAbstract());
+			Contract.Requires(t.IsAssignableFrom(timpl), $"Implementation type '{timpl.FullName}' is not assignable to '${t.FullName}'");
+			Contract.Requires(!timpl.IsAbstract(), $"Implementation type '{timpl.FullName}' is not allowed to be abstract");
 			if (t == typeof(T))
-				Contract.Requires(timpl != typeof(T));
+				Contract.Requires(timpl != typeof(T), $"If the key type '{t.FullName}' is the generic type parameter, then the implementation type must be different.");
 		}
 
 		this.implementationTypes = derivedTypePairs.ToReadOnlyDictionary(keySelector: t => t.T, valueSelector: t => t.TImpl);
