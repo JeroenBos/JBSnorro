@@ -137,10 +137,8 @@ public class JSProcessRunner : IJSRunner
         // the only character treated specially by UnsafeRelaxedJsonEscaping are \ and "
         // see https://github.com/dotnet/runtime/blob/cd8759d1bc94778f0bf35bc99dcdabf1b40cd71c/src/libraries/System.Text.Encodings.Web/src/System/Text/Encodings/Web/UnsafeRelaxedJavaScriptEncoder.cs
         options ??= new JsonSerializerOptions();
-        if (options.Encoder == null)
-        {
-            options.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-        }
+        options.Encoder ??= JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+
         string encoded = options.Encoder.Encode("\"");
         switch (encoded)
         {
