@@ -1,5 +1,4 @@
-﻿#nullable enable
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
 using JBSnorro.Text.Json;
 using JBSnorro.Diagnostics;

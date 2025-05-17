@@ -1,4 +1,3 @@
-#nullable enable
 using JBSnorro;
 using JBSnorro.Csx.Node;
 using JBSnorro.Extensions;

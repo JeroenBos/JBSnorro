@@ -1,5 +1,4 @@
-﻿#nullable enable
-using JBSnorro.JS;
+﻿using JBSnorro.JS;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static JBSnorro.Diagnostics.Contract;
 
