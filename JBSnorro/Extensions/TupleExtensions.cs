@@ -76,4 +76,13 @@ public static class TupleExtensions
 	{
 		return new KeyValuePair<TKey, TValue>(tuple.Item1, tuple.Item2);
 	}
+
+	public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)> tuples) where TKey : notnull
+	{
+		return tuples.Select(ToKeyValuePair).ToDictionary();
+	}
+	public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)> tuples, IEqualityComparer<TKey> comparer) where TKey : notnull
+	{
+		return tuples.Select(ToKeyValuePair).ToDictionary(comparer);
+	}
 }
