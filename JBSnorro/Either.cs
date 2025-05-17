@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace JBSnorro;
 
 public sealed class Either<T, U> where T : notnull where U : notnull
@@ -27,7 +29,7 @@ public sealed class Either<T, U> where T : notnull where U : notnull
     /// Extracts the value, whichever one it is.
     /// </summary>
     /// <returns><see langword="true"/> if this is a <typeparamref name="T"/>, <see langword="false"/> if this is a <typeparamref name="U"/>. </returns>
-    public bool Get(out T value1, out U value2)
+    public bool Get([NotNullWhen(true)] out T value1, [NotNullWhen(false)] out U value2)
     {
         value1 = this.Value1!;
         value2 = this.Value2!;
