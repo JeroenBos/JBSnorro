@@ -161,7 +161,6 @@ public class JSProcessRunner : IJSRunner
         }
         return options;
     }
-    // internal for testing
     string IJSRunner.ExecuteJS_Builder(IEnumerable<JSString> imports,
                                        object identifier,
                                        IReadOnlyList<object>? arguments = null,
@@ -202,7 +201,7 @@ public class JSProcessRunner : IJSRunner
             return "undefined";
         if (arg is JSSourceCode js)
             return js.Value;
-        if (arg is string s && s.StartsWith("'"))
+        if (arg is string s && s.StartsWith('\''))
             throw new ArgumentException("JSONs can't start with \"'\"");
         Type type = arg.GetType();
         // HACK: If the argument is an array, maybe it should an array of type `object[]` instead of `T[]` for some T
