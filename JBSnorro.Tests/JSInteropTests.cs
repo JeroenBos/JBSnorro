@@ -1,4 +1,3 @@
-#nullable enable
 using JBSnorro;
 using JBSnorro.Csx.Node;
 using JBSnorro.Extensions;
@@ -167,7 +166,7 @@ public class JSInteropTests : JSTestsBase
         const string input = "\t";
 
         // test the built JS:
-        string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, input);
+        string js = JSBuilder.Build(NO_IMPORTS, input);
         Assert(correct_js == js);
 
         // test the built JS, escaping to bash and executing: 
@@ -228,19 +227,19 @@ public class JSInteropTests : JSTestsBase
             string arg = new string(Array.Empty<char>());
             var a = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(a.StandardOutput == "\n");
-            Assert(this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { a.StandardOutput }).Contains(arg));
+            Assert(JSBuilder.Build(NO_IMPORTS, "", new object[] { a.StandardOutput }).Contains(arg));
         }
         {
             string arg = new string(new char[] { '\'', '\'' });
             var b = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(b.StandardOutput == "\n");
-            // Assert(this.jsRunner.ExecuteJS_Builder(new string[0], "", new object[] { b.StandardOutput }).Contains(arg));
+            // Assert(JSBuilder.Build(new string[0], "", new object[] { b.StandardOutput }).Contains(arg));
         }
         {
             string arg = new string(new char[] { '"', '"', '"', '"' });
             var b2 = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(b2.StandardOutput == "\n");
-            // Assert(this.jsRunner.ExecuteJS_Builder(new string[0], "", new object[] { b2.StandardOutput }).Contains(arg));
+            // Assert(JSBuilder.Build(new string[0], "", new object[] { b2.StandardOutput }).Contains(arg));
         }
         {
             string arg = new string(new char[] { '"', 'a', '"' });
@@ -253,7 +252,7 @@ public class JSInteropTests : JSTestsBase
             string arg = new string(new char[] { '\\', '"', 'a', '\\', '"' });
             var d = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(d.StandardOutput == "a\n");
-            string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { d.StandardOutput[..^1] });
+            string js = JSBuilder.Build(NO_IMPORTS, "", new object[] { d.StandardOutput[..^1] });
             Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
         }
         {
@@ -262,7 +261,7 @@ public class JSInteropTests : JSTestsBase
             string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '"', '\\', '"' });
             var e = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(e.StandardOutput == "\"\n");
-            string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { e.StandardOutput[..^1] });
+            string js = JSBuilder.Build(NO_IMPORTS, "", new object[] { e.StandardOutput[..^1] });
             Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
         }
         {
@@ -271,7 +270,7 @@ public class JSInteropTests : JSTestsBase
             string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '\\', '\\', '"' });
             var f = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(f.StandardOutput == "\\\n");
-            string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { f.StandardOutput[..^1] });
+            string js = JSBuilder.Build(NO_IMPORTS, "", new object[] { f.StandardOutput[..^1] });
             Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
         }
         {
@@ -280,7 +279,7 @@ public class JSInteropTests : JSTestsBase
             string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '"', 'h', 'i', '\\', '"' });
             var g = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(g.StandardOutput == "\"hi\n");
-            string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { g.StandardOutput[..^1] });
+            string js = JSBuilder.Build(NO_IMPORTS, "", new object[] { g.StandardOutput[..^1] });
             Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
         }
         {
@@ -289,7 +288,7 @@ public class JSInteropTests : JSTestsBase
             string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '"', '\\', '\\', '\\', '"', '\\', '"' });
             var h = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(h.StandardOutput == "\"\"\n");
-            string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { h.StandardOutput[..^1] });
+            string js = JSBuilder.Build(NO_IMPORTS, "", new object[] { h.StandardOutput[..^1] });
             Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
         }
         {
@@ -298,7 +297,7 @@ public class JSInteropTests : JSTestsBase
             string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '\\', '\\', '"' });
             var i = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(i.StandardOutput == "\\\n");
-            string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { i.StandardOutput[..^1] });
+            string js = JSBuilder.Build(NO_IMPORTS, "", new object[] { i.StandardOutput[..^1] });
             Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
         }
         {
@@ -307,7 +306,7 @@ public class JSInteropTests : JSTestsBase
             string arg = new string(new char[] { '\\', '"', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '"' });
             var j = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
             Assert(j.StandardOutput == "\\\\\n");
-            string js = this.jsRunner.ExecuteJS_Builder(NO_IMPORTS, "", new object[] { j.StandardOutput[..^1] });
+            string js = JSBuilder.Build(NO_IMPORTS, "", new object[] { j.StandardOutput[..^1] });
             Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
         }
     }
@@ -319,7 +318,7 @@ public class JSInteropTests : JSTestsBase
         string arg = new string(new char[] { '\\', '"', '\\', 't', '\\', '"' });
         var t = await new System.Diagnostics.ProcessStartInfo(this.nodePathResolver.Path, $"-e \"console.log({arg});\"").WaitForExitAndReadOutputAsync();
         Assert(t.StandardOutput == "\t\n");
-        string js = this.jsRunner.ExecuteJS_Builder(identifier: t.StandardOutput[..^1], imports: NO_IMPORTS);
+        string js = JSBuilder.Build(identifier: t.StandardOutput[..^1], imports: NO_IMPORTS);
         Assert(js.Contains(arg.Replace("\\\\", "\\").Replace("\\\"", "\"")));
     }
     [TestMethod]
@@ -382,7 +381,7 @@ public class JSSerializationIdTests : JSTestsBase
     [TestMethod]
     public void SerializesWithTypeId()
     {
-        var options = JSProcessRunner.CreateExtraPropertyJsonConverter(
+        var options = JSBuilder.CreateExtraPropertyJsonConverter(
             jsIdentifiers: new[] { TestObject.Identifier },
             options: null,
             typeIdPropertyName: "FFF"
@@ -428,7 +427,7 @@ public class JSSerializationIdTests : JSTestsBase
     {
         var typeIdPropertyName = "FFF";
         var fakeImport = new JSString("var X; class TestObject { A = 'b' }; const f = function(a) { return a.constructor.name; }");
-        var js = this.jsRunner.ExecuteJS_Builder(
+        var js = JSBuilder.Build(
             imports: new[] { fakeImport },
             identifier: new JSSourceCode("f"),
             jsIdentifiers: new[] { TestObject.Identifier },
@@ -447,7 +446,7 @@ public class JSSerializationIdTests : JSTestsBase
     {
         var typeIdPropertyName = "FFF";
         var fakeImport = new JSString("var X; class TestObject { A = 'b' }; const f = function(a) { return a.constructor.name; }");
-        var js = this.jsRunner.ExecuteJS_Builder(
+        var js = JSBuilder.Build(
             imports: new[] { fakeImport },
             identifier: new JSSourceCode("f"),
             jsIdentifiers: new[] { TestObject.Identifier },

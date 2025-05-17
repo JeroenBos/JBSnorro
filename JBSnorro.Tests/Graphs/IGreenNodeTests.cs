@@ -1,5 +1,4 @@
-﻿#nullable enable
-using JBSnorro;
+﻿using JBSnorro;
 using JBSnorro.Diagnostics;
 using JBSnorro.Graphs;
 using JBSnorro.Graphs.RedGreen;

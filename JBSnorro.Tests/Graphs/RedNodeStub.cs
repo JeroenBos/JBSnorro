@@ -1,7 +1,5 @@
-﻿#nullable enable
-using JBSnorro.Diagnostics;
+﻿using JBSnorro.Diagnostics;
 using JBSnorro.Graphs.RedGreen;
-using System.Xml.Linq;
 
 namespace JBSnorro.Tests.Graphs;
 
