@@ -164,8 +164,8 @@ internal class JSBuilder
                                  JsonSerializerOptions? options,
                                  string typeIdPropertyName)
     {
-        if (jsIdentifiers == null)
-            throw new ArgumentNullException(nameof(jsIdentifiers));
+        ArgumentNullException.ThrowIfNull(jsIdentifiers);
+
         foreach (var id in jsIdentifiers)
         {
             if (id.Key == null) throw new ArgumentException($"{nameof(jsIdentifiers)}.Key is null");
