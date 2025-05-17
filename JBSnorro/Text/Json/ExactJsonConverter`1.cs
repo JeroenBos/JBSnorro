@@ -20,6 +20,7 @@ public class ExactPolymorphicJsonConverter<T> : PolymorphicJsonConverter<T>, IJs
 		foreach (var (t, timpl) in derivedTypePairs)
 		{
 			Contract.Requires(t.IsAssignableFrom(timpl));
+			Contract.Requires(!timpl.IsAbstract());
 			if (t == typeof(T))
 				Contract.Requires(timpl != typeof(T));
 		}
