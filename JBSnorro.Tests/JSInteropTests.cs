@@ -1,6 +1,5 @@
 using JBSnorro;
 using JBSnorro.Csx.Node;
-using JBSnorro.Extensions;
 using JBSnorro.JS;
 using JBSnorro.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,7 +13,7 @@ namespace Tests.JBSnorro.JS;
 public class JSTestsBase
 {
     protected static readonly IEnumerable<JSString> NO_IMPORTS = Array.Empty<JSString>();
-    protected static string? NodePath => EnvironmentExtensions.GetRequiredEnvironmentVariable("NODE_PATH");
+    protected static string? NodePath => Environment.GetEnvironmentVariable("NODE_PATH");
     protected readonly INodePathResolver nodePathResolver;
     protected readonly IJSRunner jsRunner;
     public JSTestsBase()
