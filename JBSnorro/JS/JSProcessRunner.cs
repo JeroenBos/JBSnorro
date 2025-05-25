@@ -107,21 +107,17 @@ public class JSProcessRunner : IJSRunner
         }
         return new string(result.ToArray());
     }
-    /// <param name="imports"> Either paths or resolvable package names. </param>
-    /// <param name="identifier"> A member to access. To treat a string as raw JS, wrap it in a JSString. </param>
-    /// <param name="arguments"> 
-    /// The arguments used in the method invocation (assuming the member access resolves to method). 
-    /// Specify null if the member access is attribute access. 
-    /// To treat a string argument as raw JS, wrap it in a JSString. 
-    /// </param>
+
+    /// <inheritdoc cref="IJSRunner.ExecuteJS(IEnumerable{JSString}, object, IReadOnlyList{object}?, string?, JsonSerializerOptions?, bool)"/>
     public Task<DebugProcessOutput> ExecuteJS(
         IEnumerable<JSString> imports,
         object identifier,
         IReadOnlyList<object>? arguments = null,
         string? intermediateJS = null,
-        JsonSerializerOptions? options = null)
+        JsonSerializerOptions? options = null,
+        bool serializeTypeName = false)
     {
-        string js = JSBuilder.Build(imports, identifier, arguments, intermediateJS, options);
+        string js = JSBuilder.Build(imports, identifier, arguments, intermediateJS, options, serializeTypeName);
 
         Global.AddDebugObject(js);
 
@@ -129,16 +125,17 @@ public class JSProcessRunner : IJSRunner
     }
 
 
-    /// <param name="jsIdentifiers"> The JS identifiers must be imported by imports. Order matters! </param>
+    /// <inheritdoc cref="IJSRunner.ExecuteJS(IEnumerable{JSString}, object, IReadOnlyList{KeyValuePair{Type, string}}, IReadOnlyList{object}?, JsonSerializerOptions?, string, bool)"/>
     public Task<DebugProcessOutput> ExecuteJS(
         IEnumerable<JSString> imports,
         object identifier,
         IReadOnlyList<KeyValuePair<Type, string>> jsIdentifiers,
         IReadOnlyList<object>? arguments = null,
         JsonSerializerOptions? options = null,
-        string typeIdPropertyName = "SERIALIZATION_TYPE_ID")
+        string typeIdPropertyName = "SERIALIZATION_TYPE_ID",
+        bool serializeTypeName = false)
     {
-        string js = JSBuilder.Build(imports, identifier, jsIdentifiers, arguments, options, typeIdPropertyName);
+        string js = JSBuilder.Build(imports, identifier, jsIdentifiers, arguments, options, typeIdPropertyName, serializeTypeName);
         Global.AddDebugObject(js);
         return ExecuteJS(js);
     }
@@ -162,10 +159,11 @@ internal class JSBuilder
                                  IReadOnlyList<KeyValuePair<Type, string>> jsIdentifiers,
                                  IReadOnlyList<object>? arguments,
                                  JsonSerializerOptions? options,
-                                 string typeIdPropertyName)
+                                 string typeIdPropertyName,
+                                 bool serializeTypeName)
     {
-        if (jsIdentifiers == null)
-            throw new ArgumentNullException(nameof(jsIdentifiers));
+        ArgumentNullException.ThrowIfNull(jsIdentifiers);
+
         foreach (var id in jsIdentifiers)
         {
             if (id.Key == null) throw new ArgumentException($"{nameof(jsIdentifiers)}.Key is null");
@@ -228,6 +226,24 @@ const reviver = function (key, value) {
 	return value;
 }";
 
+        if (serializeTypeName)
+        {
+            intermediateJs += @"
+/**
+ * Deserializes nonprimitive JS objects with __type__ containing the class name for non-primitives.
+ */
+function replacer(key, value) {
+  if (value && typeof value === 'object' && value.constructor !== Object && value.constructor !== Array) {
+    return {
+      __type__: value.constructor.name,
+      ...value,
+    };
+  }
+  return value;
+}
+";
+        }
+
         // pre-serialize the arguments, such that they can be wrapped with `JSON.parse(..., reviver)`:
         var serializedArguments = arguments?.Select(WrapInReviver).ToReadOnlyList<object>();
         var serializedIdentifier = WrapInReviver(identifier);
@@ -250,14 +266,15 @@ const reviver = function (key, value) {
             }
         }
 
-        return Build(imports, serializedIdentifier, serializedArguments, intermediateJs, options);
+        return Build(imports, serializedIdentifier, serializedArguments, intermediateJs, options, serializeTypeName);
     }
 
     public static string Build(IEnumerable<JSString> imports,
-                                   object identifier,
-                                   IReadOnlyList<object>? arguments = null,
-                                   string? intermediateJS = null,
-                                   JsonSerializerOptions? options = null)
+                               object identifier,
+                               IReadOnlyList<object>? arguments = null,
+                               string? intermediateJS = null,
+                               JsonSerializerOptions? options = null,
+                               bool serializeTypeName = false)
     {
         options = CreateNewAndAssertValid(options);
         var jsBuilder = new ConfigurableStringBuilder();
@@ -281,8 +298,8 @@ const reviver = function (key, value) {
 
         jsBuilder.AppendLine($"var result = {identifier_js}{memberaccess};");
         jsBuilder.AppendLine();
-        jsBuilder.AppendLine("console.log('__DEBUG__');");
-        jsBuilder.AppendLine("console.log(JSON.stringify(result));");
+        jsBuilder.AppendLine("console.log('__DEBUG__');"); // marks the end of the debug section
+        jsBuilder.AppendLine($"console.log(JSON.stringify(result{(serializeTypeName ? ", replacer" : "")}));");
 
         string js = jsBuilder.ToString();
         return js;

@@ -1,6 +1,5 @@
 using JBSnorro;
 using JBSnorro.Csx.Node;
-using JBSnorro.Extensions;
 using JBSnorro.JS;
 using JBSnorro.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,7 +13,7 @@ namespace Tests.JBSnorro.JS;
 public class JSTestsBase
 {
     protected static readonly IEnumerable<JSString> NO_IMPORTS = Array.Empty<JSString>();
-    protected static string? NodePath => EnvironmentExtensions.GetRequiredEnvironmentVariable("NODE_PATH");
+    protected static string? NodePath => Environment.GetEnvironmentVariable("NODE_PATH");
     protected readonly INodePathResolver nodePathResolver;
     protected readonly IJSRunner jsRunner;
     public JSTestsBase()
@@ -428,12 +427,13 @@ public class JSSerializationIdTests : JSTestsBase
         var typeIdPropertyName = "FFF";
         var fakeImport = new JSString("var X; class TestObject { A = 'b' }; const f = function(a) { return a.constructor.name; }");
         var js = JSBuilder.Build(
-            imports: new[] { fakeImport },
+            imports: [fakeImport],
             identifier: new JSSourceCode("f"),
-            jsIdentifiers: new[] { TestObject.Identifier },
-            arguments: new object[] { new TestObject() },
+            jsIdentifiers: [TestObject.Identifier],
+            arguments: [new TestObject()],
             options: null,
-            typeIdPropertyName: typeIdPropertyName
+            typeIdPropertyName: typeIdPropertyName,
+            serializeTypeName: false
         );
 
 
@@ -447,16 +447,33 @@ public class JSSerializationIdTests : JSTestsBase
         var typeIdPropertyName = "FFF";
         var fakeImport = new JSString("var X; class TestObject { A = 'b' }; const f = function(a) { return a.constructor.name; }");
         var js = JSBuilder.Build(
-            imports: new[] { fakeImport },
+            imports: [fakeImport],
             identifier: new JSSourceCode("f"),
-            jsIdentifiers: new[] { TestObject.Identifier },
-            arguments: new object[] { new[] { new TestObject() } },
+            jsIdentifiers: [TestObject.Identifier],
+            arguments: [new[] { new TestObject() }],
             options: null,
-            typeIdPropertyName: typeIdPropertyName
+            typeIdPropertyName: typeIdPropertyName,
+            serializeTypeName: false
         );
 
         Console.WriteLine(js);
         Assert(js.Contains("var arg0 = JSON.parse(\"[{\\\"FFF\\\":1,\\\"A\\\":\\\"A\\\"}]\", reviver);"));
+    }
+
+    [TestMethod]
+    public async Task TestThatReplacerInsertsTypeName()
+    {
+        var output = await this.jsRunner.ExecuteJS(
+            imports: [new JSString("var X; class TestObject { A = 'b' }; const obj = new TestObject()")],
+            identifier: new JSSourceCode("obj"),
+            jsIdentifiers: [],
+            arguments: null,
+            options: null,
+            typeIdPropertyName: "?",
+            serializeTypeName: true
+        );
+
+        Assert(output.StandardOutput.Contains("\"__type__\":\"TestObject\""));
     }
 
     [TestMethod]
@@ -472,7 +489,6 @@ public class JSSerializationIdTests : JSTestsBase
 
         Assert(stderr == "");
         Assert(stdout == "ok\n");
-
     }
     [TestMethod]
     public async Task TestDirectDeserialization()
